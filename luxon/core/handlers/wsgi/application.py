@@ -157,16 +157,19 @@ class Application(object):
                 # stale cache entry. Expire remote cache in same duration
                 # as internal cache.
                 if session_id:
-                    response.cache_control = "must-revalidate" + \
-                            ", private, max-age=" + str(cache)
+                    response.set_header(
+                        "must-revalidate, private, max-age=" + str(cache)
+                    )
                 else:
-                    response.cache_control = "must-revalidate" + \
-                            ", max-age=" + str(cache)
+                    response.set_header(
+                        "must-revalidate, max-age=" + str(cache)
+                    )
 
                 # Set Vary Header
                 # NOTE(cfrademan): Client should uniquely cache
                 # based these request headers.
-                response.set_header('Vary', 'Cookie, Accept-Encoding' +
+                response.set_header('Vary',
+                                    'Cookie, Accept-Encoding' +
                                     ', Content-Type')
 
                 # Set Etag
@@ -190,7 +193,8 @@ class Application(object):
                     # Last-Modified matches do not return full body.
                     response.not_modified()
             else:
-                response.cache_control = "no-store, no-cache, max-age=0"
+                response.set_header("cache-control",
+                                    "no-store, no-cache, max-age=0")
 
             # Return response object.
             return response()
