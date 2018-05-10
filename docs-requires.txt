@@ -1,0 +1,13 @@
+# Sphinx Documentation
+Sphinx
+sphinxcontrib-napoleon
+
+# Pretty / Themes
+tachyonic-sphinx
+Pygments
+
+# Miscellaneous
+docutils
+MarkupSafe
+watchdog
+mock

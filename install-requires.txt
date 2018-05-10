@@ -1,0 +1,29 @@
+# Cryptography
+cryptography
+bcrypt
+passlib
+
+# Templating
+Jinja2
+
+# Validation
+phonenumbers
+
+# HTTP / RESTAPI
+requests
+
+# Timezones
+pytz
+tzlocal
+
+# RST
+docutils
+
+# Mysql
+PyMySQL
+
+# Redis
+redis
+# NOTE(cfrademan):
+# do not remove hiredis - performance
+hiredis

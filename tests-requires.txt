@@ -1,0 +1,17 @@
+# Testing
+pytest
+py
+tox
+
+# Linting
+flake8
+mccabe
+pep8
+pyflakes
+
+# Coverage
+pytest-cov
+
+# Miscellaneous
+colorama
+mock

@@ -1,0 +1,10 @@
+Luxon Framework.
+Copyright (c) 2018 Myria Solutions (PTY) Ltd. All rights reserved.
+All rights reserved.
+
+Also see files 'Authors' and 'Contributors' respectively.
+
+This product includes software developed by:
+============================================
+Falcon (code used for wsgi compiled router)
+https://github.com/falconry/falcon
