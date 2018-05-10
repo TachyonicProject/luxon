@@ -28,7 +28,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 import traceback
-from datetime import timedelta
 
 from luxon import g
 from luxon.utils.app import init
@@ -44,14 +43,9 @@ from luxon import GetLogger
 from luxon.constants import TEXT_HTML
 from luxon.utils.objects import object_name
 from luxon.utils.timer import Timer
-from luxon.core.cache import Cache
-from luxon.utils.timezone import now
 from luxon.utils.http import etagger
-from luxon.utils.hashing import md5sum
 
 log = GetLogger(__name__)
-
-_cache_engine = None
 
 
 class Application(object):
@@ -170,45 +164,6 @@ class Application(object):
                 # Get session_id if any for Caching
                 session_id = request.cookies.get(request.host)
 
-                if request.method == 'GET' and cache > 0:
-                    # Request Cache-Control
-                    cache_max_age = cache
-                    if request.cache_control.max_age:
-                        cache_max_age = int(
-                            request.cache_control.max_age
-                        )
-                    cached_key = method
-                    cached_key += request.route
-                    cached_key += str(session_id)
-                    if request.credentials.authenticated:
-                        cached_key += str(request.credentials.token)
-                    cached_key = md5sum(cached_key)
-
-                    if _cache_engine is None:
-                        _cache_engine = Cache()
-
-                    cached = _cache_engine.load(cached_key)
-
-                if (request.method == 'GET' and
-                        cache > 0 and
-                        request.query_string is None and
-                        not session_id):
-
-                    if cached is not None:
-                        age = (cached[3] - now()).total_seconds()
-                        if age > cache:
-                            age = cache
-                        if age <= cache_max_age:
-                            response.age = int(cache - age)
-
-                            response._headers = cached[0]
-                            response._stream = cached[1]
-                            response.content_type = cached[2]
-
-                            validate_etag_and_modified()
-
-                            return response()
-
                 # If route tagged validate with policy
                 if tag is not None:
                     if not request.policy.validate(tag):
@@ -268,19 +223,6 @@ class Application(object):
                                     ', Content-Type')
             else:
                 response.cache_control = "no-store, no-cache, max-age=0"
-
-            if (method == 'GET' and
-                    response.status == 200 and
-                    cache > 0 and
-                    request.query_string is None and
-                    not session_id and
-                    isinstance(response._stream, bytes)):
-
-                expires = (now() + timedelta(seconds=cache))
-                cache_content = (response._headers, response._stream,
-                                 response.content_type, expires)
-
-                _cache_engine.store(cached_key, cache_content, cache)
 
             validate_etag_and_modified()
 
