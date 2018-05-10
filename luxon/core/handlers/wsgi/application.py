@@ -158,10 +158,12 @@ class Application(object):
                 # as internal cache.
                 if session_id:
                     response.set_header(
+                        "cache-control",
                         "must-revalidate, private, max-age=" + str(cache)
                     )
                 else:
                     response.set_header(
+                        "cache-control",
                         "must-revalidate, max-age=" + str(cache)
                     )
 
