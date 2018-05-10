@@ -116,11 +116,6 @@ class Response(object):
             pass
 
         try:
-            return self._stream.nbtyes()
-        except AttributeError:
-            pass
-
-        try:
             return len(self._stream)
         except TypeError:
             return None

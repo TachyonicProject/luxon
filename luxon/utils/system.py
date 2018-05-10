@@ -176,6 +176,7 @@ def execute(*args, check=True):
         subprocess.run(*args, stdout=loginfo,
                        stderr=logerr,
                        check=True)
+        loginfo.seek(0)
         return if_bytes_to_unicode(loginfo.read())
     except subprocess.CalledProcessError as e:
         logerr.seek(0)

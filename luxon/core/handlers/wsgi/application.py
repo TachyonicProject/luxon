@@ -36,7 +36,7 @@ from luxon.core.handlers.wsgi.response import Response
 from luxon.exceptions import (Error, NotFoundError,
                               AccessDeniedError, JSONDecodeError,
                               ValidationError, FieldError,
-                              HTTPError, HTTPPreconditionFailed)
+                              HTTPError)
 from luxon.structs.htmldoc import HTMLDoc
 from luxon import render_template
 from luxon import GetLogger
@@ -92,47 +92,6 @@ class Application(object):
 
         Response object is returned.
         """
-        global _cache_engine
-
-        def validate_etag_and_modified():
-            # Validates if-match and raises HTTPPreconditionFailed,
-            # with 412 status, if not valid.
-            #
-            # Compare 'if-none-match' and as 'last resort' modified-since
-            # for cache hits.
-
-            # Cache hit will set status 304 with empty response instructing
-            # external cache or user-agent to use local cache.
-
-            # Set Etag
-            # NOTE(cfrademan): Needed Encoding for Different Etag.
-            if request.method == 'GET':
-                if isinstance(response._stream, bytes):
-                    encoding = request.get_header('Accept-Encoding')
-                    response.etag.set(etagger(response._stream, encoding))
-
-                # Validate Request Conditional Etag with current content.
-                if (len(request.if_match) > 0 and
-                        request.if_match not in response.etag):
-                    # If match does not match etags
-                    # raise HTTPPreconditionFailed
-                    raise HTTPPreconditionFailed()
-
-                # If Etag matches do not return full body use
-                # external/user-agent cache.
-                if (len(request.if_none_match) > 0 and
-                        request.if_none_match in response.etag):
-                    # Etag matches do not return full body.
-                    response.not_modified()
-
-                # NOTE(cfrademan): Use last_modified as last resort for
-                # external/user-agent cache.
-                elif (request.if_modified_since and
-                      response.last_modified and
-                      request.if_modified_since <= response.last_modified):
-                    # Last-Modified matches do not return full body.
-                    response.not_modified()
-
         try:
             with Timer() as elapsed:
                 # Request Object.
@@ -160,9 +119,6 @@ class Application(object):
 
                 # Set route tag in requests.
                 request.tag = tag
-
-                # Get session_id if any for Caching
-                session_id = request.cookies.get(request.host)
 
                 # If route tagged validate with policy
                 if tag is not None:
@@ -192,39 +148,49 @@ class Application(object):
                         middleware(request, response)
 
             # Cache GET Response.
-            if request.method == 'GET':
-                # Only cache for GET responses!
-                if cache > 0 and request.query_string is None:
-                    # NOTE(cfrademan): Instruct to use cache but revalidate on,
-                    # stale cache entry. Expire remote cache in same duration
-                    # as internal cache.
-                    if session_id:
-                        response.cache_control = "must-revalidate" + \
-                                ", private, max-age=" + str(cache)
-                    else:
-                        response.cache_control = "must-revalidate" + \
-                                ", max-age=" + str(cache)
+            # Only cache for GET responses!
+            if cache > 0 and request.method == 'GET':
+                # Get session_id if any for Caching
+                session_id = request.cookies.get(request.host)
+
+                # NOTE(cfrademan): Instruct to use cache but revalidate on,
+                # stale cache entry. Expire remote cache in same duration
+                # as internal cache.
+                if session_id:
+                    response.cache_control = "must-revalidate" + \
+                            ", private, max-age=" + str(cache)
                 else:
-                    # NOTE(cfrademan): Instruct not use cache but revalidate,
-                    # then use cached copy when content is same. (304 response)
-                    # Also only keep copy in external/user-agent cache for
-                    # 7 days. (604800 seconds)
-                    if session_id:
-                        response.cache_control = "must-revalidate" + \
-                                ", private, no-cache, max-age=604800"
-                    else:
-                        response.cache_control = "must-revalidate" + \
-                                ", no-cache, max-age=604800"
+                    response.cache_control = "must-revalidate" + \
+                            ", max-age=" + str(cache)
 
                 # Set Vary Header
                 # NOTE(cfrademan): Client should uniquely cache
                 # based these request headers.
                 response.set_header('Vary', 'Cookie, Accept-Encoding' +
                                     ', Content-Type')
+
+                # Set Etag
+                # NOTE(cfrademan): Needed Encoding for Different Etag.
+                if isinstance(response._stream, bytes):
+                    encoding = request.get_header('Accept-Encoding')
+                    response.etag.set(etagger(response._stream, encoding))
+
+                # If Etag matches do not return full body use
+                # external/user-agent cache.
+                if (len(request.if_none_match) > 0 and
+                        request.if_none_match in response.etag):
+                    # Etag matches do not return full body.
+                    response.not_modified()
+
+                # NOTE(cfrademan): Use last_modified as last resort for
+                # external/user-agent cache.
+                elif (request.if_modified_since and
+                      response.last_modified and
+                      request.if_modified_since <= response.last_modified):
+                    # Last-Modified matches do not return full body.
+                    response.not_modified()
             else:
                 response.cache_control = "no-store, no-cache, max-age=0"
-
-            validate_etag_and_modified()
 
             # Return response object.
             return response()

@@ -31,6 +31,7 @@
 import os
 import stat
 import fcntl
+import shutil
 from io import BytesIO
 
 from luxon.utils.encoding import (if_bytes_to_unicode,
@@ -106,10 +107,9 @@ class CachedInput(object):
         self._cached_pos = pos
         self._cached.seek(pos)
 
-    def nbytes(self):
-        """Returns a readable and writable view over the contents of the cache
-        """
-        return self._cached.getbuffer().nbytes
+    @property
+    def getbuffer(self):
+        return self._cached.getbuffer
 
 
 class TrackFile(metaclass=NamedSingleton):
@@ -390,15 +390,8 @@ def rm(path, recursive=False):
         if os.path.isfile(path):
             os.remove(path)
         elif recursive is True:
-            tree = reversed(walk(path))
             try:
-                for f in tree:
-                    if f[0] == 'directory':
-                        os.removedirs(f[1])
-                    else:
-                        os.remove(f[1])
-
-                os.removedirs(path)
+                shutil.rmtree(path)
             except FileNotFoundError:
                 pass
         else:
