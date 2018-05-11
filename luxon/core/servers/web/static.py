@@ -36,12 +36,13 @@ from luxon import register_resource
 from luxon import constants as const
 from luxon.structs.htmldoc import HTMLDoc
 
+
 @register_resource([ 'GET', 'POST' ],
                    'regex:^/' +
                    g.config.get('application', 'static').strip('/')
                    + '.*$')
 def static(req, resp):
-    sfile_path = g.app.app_root.rstrip('/') + '/static' \
+    sfile_path = g.app_root.rstrip('/') + '/static' \
         + '/' + '/'.join(req.relative_resource_uri.strip('/').split('/')[1:])
     try:
         if os.path.isfile(sfile_path):
