@@ -54,11 +54,12 @@ from luxon.utils.files import Open, chmod, exists, ls, rm
 from luxon.core.config import Config
 from luxon.utils.timezone import now
 
+
 def setup(args):
     path = args.path.rstrip('/')
     module = Module(args.pkg)
 
-    no_install = [ 'luxon', 'psychokinetic' ]
+    no_install = ['luxon', 'psychokinetic']
 
     if args.pkg in no_install:
         print("Your suppose to install luxon applications not '%s'" % args.pkg)
@@ -74,8 +75,11 @@ def setup(args):
     mkdir(path)
     copy('policy.json', 'default')
     copy('settings.ini', 'default')
-    if exists(path + '/settings.ini'):
-        chmod(path + '/settings.ini', 600)
+    try:
+        if exists(path + '/settings.ini'):
+            chmod(path + '/settings.ini', 640)
+    except PermissionError:
+        pass
     copy('wsgi.py', 'default')
     copy('static')
     mkdir('%s/templates/%s' % (path, args.pkg), recursive=True)
@@ -130,6 +134,7 @@ def db_crud(args):
 
         # Restore data.
         restore_tables(conn, backups)
+
 
 def main(argv):
     description = metadata.description + ' ' + metadata.version
