@@ -28,25 +28,20 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 import os
-import sys
 import site
 import multiprocessing
 
-from luxon.core.handlers.wsgi import Wsgi
 
 def server(app_root=None, ip='127.0.0.1', port='8000'):
     try:
-        from gunicorn.app.base import Application
+        import gunicorn.app.base
+        from gunicorn.six import iteritems
     except ImportError:
         print("Requires Gunicorn - pip install gunicorn")
         exit()
 
-    from gunicorn import util
-    import gunicorn.app.base
-    from gunicorn.six import iteritems
-
     def number_of_workers():
-        return (multiprocessing.cpu_count() * 2) + 1
+        return (multiprocessing.cpu_count() * 4) + 1
 
     class StandaloneApplication(gunicorn.app.base.BaseApplication):
         def __init__(self, app, options=None):
@@ -55,14 +50,14 @@ def server(app_root=None, ip='127.0.0.1', port='8000'):
             super(StandaloneApplication, self).__init__()
 
         def load_config(self):
-            config = dict([(key, value) for key, value in iteritems(self.options)
+            config = dict([(key, value)
+                           for key, value in iteritems(self.options)
                            if key in self.cfg.settings and value is not None])
             for key, value in iteritems(config):
                 self.cfg.set(key.lower(), value)
 
         def load(self):
             return self.application
-
 
     print('Loading Application %s' % app_root)
 
@@ -72,7 +67,8 @@ def server(app_root=None, ip='127.0.0.1', port='8000'):
         'capture_output': True
     }
     app_root = os.path.abspath(app_root)
-    site.addsitedir(os.path.abspath(os.path.curdir))
+    site.addsitedir(os.path.join(os.getcwd(), '../'))
+
     os.chdir(app_root)
     if not os.path.isfile(app_root.rstrip('/') + '/wsgi.py'):
         raise FileNotFoundError(app_root.rstrip('/') + '/wsgi.py')
