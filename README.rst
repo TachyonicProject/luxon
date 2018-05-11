@@ -1,17 +1,7 @@
-=================================
-Tachyonic Project Luxon Framework
-=================================
-
-Quick links
------------
-
-* `Website <http://www.tachyonic.org/>`__.
-* `Documentation <http://www.tachyonic.org/sphinx/luxon>`__.
-
 Installation
-------------
+============
 
-Tachyonic currently fully supports `CPython <https://www.python.org/downloads/>`__ 3.6.
+Tachyonic Luxon currently fully supports `CPython <https://www.python.org/downloads/>`__ 3.6.
 
 
 CPython
