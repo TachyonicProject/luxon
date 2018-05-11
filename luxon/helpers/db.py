@@ -78,7 +78,7 @@ def db():
         return _cached_pool()
     elif kwargs.get('type') == 'sqlite3':
         from luxon.core.db.sqlite import connect
-        db = kwargs.get('database')
+        db = "sqlite3.db"
 
         db = (os.path.abspath(os.path.join(
             g.app_root,
