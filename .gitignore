@@ -2,12 +2,7 @@ TODO.txt
 TODO
 .venv
 venv
-
-# Ignore .c extesion for cythonized pyfiles.
-*.c
-
-# Unit Testing
-test.db
+*.db
 
 #####=== Archives ===#####
 ## It's better to unpack these files and commit the raw source because
@@ -269,7 +264,6 @@ $RECYCLE.BIN/
 *.py[co]
 
 ## Packages
-.eggs
 *.egg
 *.egg-info
 dist
