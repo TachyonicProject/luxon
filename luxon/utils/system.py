@@ -164,7 +164,7 @@ def get_load_avg():
     return os.getloadavg()
 
 
-def execute(*args, check=True):
+def execute(*args, check=True, virtualenv=False):
     from luxon import GetLogger
     log = GetLogger(__name__)
 
@@ -172,10 +172,15 @@ def execute(*args, check=True):
     logerr = TemporaryFile()
 
     try:
+        env = os.environ.copy()
+        if virtualenv is False:
+            if '__PYVENV_LAUNCHER__' in env:
+                del env['__PYVENV_LAUNCHER__']
+
         log.info("Execute '%s'" % " ".join(args[0]))
         subprocess.run(*args, stdout=loginfo,
                        stderr=logerr,
-                       check=True)
+                       check=True, env=env)
         loginfo.seek(0)
         return if_bytes_to_unicode(loginfo.read())
     except subprocess.CalledProcessError as e:
