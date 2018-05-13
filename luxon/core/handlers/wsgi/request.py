@@ -95,7 +95,6 @@ class Request(object):
 
         forwarded_app_uri (str): Absolute original URI to WSGI Application.
         uri (str): The fully-qualified absolute URI for the request.
-        relative_resource_uri (str): Resource URI excludes query string.
         forwarded_uri (str): URI for proxied requests.
         relative_uri (str): The path and query string portion.
 
@@ -290,7 +289,6 @@ class Request(object):
         'response',
         '_cached_uri',
         '_cached_app_uri',
-        '_cached_relative_resource_uri',
         '_cached_forwarded_app_uri',
         '_cached_forwarded_uri',
         '_cached_relative_uri',
@@ -357,7 +355,6 @@ class Request(object):
         self._cached_app_uri = None
         self._cached_forwarded_app_uri = None
         self._cached_uri = None
-        self._cached_relative_resource_uri = None
         self._cached_forwarded_uri = None
         self._cached_relative_uri = None
         self._cached_forwarded = None
@@ -598,13 +595,6 @@ class Request(object):
             self._cached_forwarded_uri = value
 
         return self._cached_forwarded_uri
-
-    @property
-    def relative_resource_uri(self):
-        if self._cached_relative_resource_uri is None:
-            self._cached_relative_resource_uri = self.app + self.route
-
-        return self._cached_relative_resource_uri
 
     @property
     def relative_uri(self):
