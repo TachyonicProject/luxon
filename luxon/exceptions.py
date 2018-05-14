@@ -30,10 +30,12 @@
 
 from luxon.constants import HTTP_STATUS_CODES
 
+
 class Error(Exception):
     """Tachyonic Root Exception
 
     """
+
 
 class NoContextError(Error):
     """No Context Error.
@@ -46,6 +48,7 @@ class NoContextError(Error):
     """
     def __init__(self, message):
         super().__init__(message)
+
 
 class ExecuteError(Error):
     """Execute Error.
@@ -71,6 +74,7 @@ class ValidationError(Error):
     def __init__(self, message):
         super().__init__(message)
 
+
 class AccessDeniedError(ValidationError):
     """Access Denied.
 
@@ -88,6 +92,7 @@ class AccessDeniedError(ValidationError):
     def __init__(self, message):
         super().__init__(message)
 
+
 class NotFoundError(ValidationError):
     """Not Found.
 
@@ -98,7 +103,8 @@ class NotFoundError(ValidationError):
         message (str): Representation of resource not found.
     """
     def __init__(self, message):
-        super().__init__( message)
+        super().__init__(message)
+
 
 class FieldError(ValidationError):
     """Field Error.
@@ -124,6 +130,7 @@ class FieldError(ValidationError):
         msg += " %s" % description
         super().__init__(msg)
 
+
 class FieldMissing(ValidationError):
     """Field Missing.
 
@@ -143,6 +150,7 @@ class FieldMissing(ValidationError):
                                                             description,)
         super().__init__(msg)
 
+
 class MultipleOblectsReturned(ValidationError):
     """Multiple Objects Returned.
 
@@ -153,6 +161,7 @@ class MultipleOblectsReturned(ValidationError):
     """
     def __init__(self, message):
         super().__init__(message)
+
 
 class JSONDecodeError(Error):
     """JSON Decode Error.
@@ -179,6 +188,227 @@ class PoolExhausted(Error):
         description = "%s pool reached size %s" % (pool_name, max_size)
         super().__init__(description)
 
+
+class HTTPClientError(Error):
+    """All HTTP Client Errors"""
+    def __init__(self, message):
+        super().__init__(message)
+
+
+class HTTPClientConnectionError(HTTPClientError):
+    """HTTP Connection Error.
+
+    A Connection error occurred.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientProxyError(HTTPClientConnectionError):
+    """HTTP Proxy Error.
+
+    A proxy error occurred.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientSSLError(HTTPClientConnectionError):
+    """HTTP SSL Error.
+
+    An SSL error occurred.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientTimeoutError(HTTPClientError):
+    """HTTP Timeout Error.
+
+    This error is raised during HTTP Timeout.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientConnectTimeoutError(HTTPClientTimeoutError,
+                                    HTTPClientConnectionError):
+    """HTTP Connect Timeout Error.
+
+    The request timed out while trying to connect to the remote server.
+
+    Requests that produced this error are safe to retry.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientReadTimeoutError(HTTPClientTimeoutError):
+    """HTTP Client Read Timeout Error.
+
+    The server did not send any data in the allotted amount of time.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientURLRequired(HTTPClientError):
+    """HTTP Client URL Required Error.
+
+    A valid URL is required to make a request.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientTooManyRedirects(HTTPClientError):
+    """HTTP Client Too Many Redirects Error.
+
+    Too Many Redirects
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientMissingSchema(HTTPClientError, ValueError):
+    """HTTP Client Missing Schema
+
+    The URL schema (e.g. http or https) is missing.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientInvalidSchema(HTTPClientError, ValueError):
+    """HTTP Client Invalid Schema
+
+    See defaults.py for valid schemas.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientInvalidURL(HTTPClientError, ValueError):
+    """HTTP Client Invalid URL
+
+    The URL provided was somehow invalid.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientInvalidHeader(HTTPClientError, ValueError):
+    """HTTP Client Invalid Header
+
+    The header value provided was somehow invalid.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientInvalidProxyURL(HTTPClientInvalidURL):
+    """HTTP Client Invalid Proxy URL
+
+    The proxy URL provided is invalid.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientChunkedEncodingError(HTTPClientError):
+    """HTTP Client Chunked Encoding Error
+
+    The server declared chunked encoding but sent an invalid chunk.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientContentDecodingError(HTTPClientError, ValueError):
+    """HTTP Client Content Decoding Error
+
+    Failed to decode response content
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientStreamConsumedError(HTTPClientError, TypeError):
+    """HTTP Client Stream Consumed Error
+
+    The content for this response was already consumed
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientRetryError(HTTPClientError):
+    """HTTP Client Retry Error
+
+    Custom retries logic failed
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientUnrewindableBodyError(HTTPClientError):
+    """HTTP Client Unrewindeable Body Error
+
+    Requests encountered an error when trying to rewind a body
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientWarning(Warning):
+    """HTTP Client Warning.
+
+    Base warning for Requests.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientFileModeWarning(HTTPClientWarning, DeprecationWarning):
+    """HTTP Client File Mode Warning
+
+    A file was opened in text mode, but Requests determined
+    its binary length.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
+class HTTPClientDependencyWarning(HTTPClientWarning):
+    """HTTP Client Dependency Warning
+
+    An imported dependency doesn't match the expected version range.
+
+    Args:
+        message (str): Reason for error.
+    """
+
+
 class HTTPError(Error):
     """Base HTTP Error.
 
@@ -195,11 +425,12 @@ class HTTPError(Error):
 
     def __init__(self, status=500, description=None, title=None,
                  headers={}, href=None):
-        self.status = status
+        self.status = int(status)
         self.href = href
 
         if title is None:
-            self.title = "%s %s" % (self.status, HTTP_STATUS_CODES[self.status])
+            self.title = "%s %s" % (self.status,
+                                    HTTP_STATUS_CODES[self.status])
         else:
             self.title = title
 
@@ -210,15 +441,17 @@ class HTTPError(Error):
 
         self.headers = headers
 
-        super().__init__(self.title + ' ' +  self.description)
+        super().__init__(self.title + ' ' + self.description)
 
-class RestClientError(HTTPError):
+
+class HTTPClientError(HTTPError):
     """RESTful API Client Error.
 
     Args:
         message (str): Reason for error.
     """
     pass
+
 
 class HTTPBadRequest(HTTPError):
     """400 Bad Request.
@@ -239,24 +472,25 @@ class HTTPBadRequest(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(400, *args, **kwargs)
 
+
 class HTTPUnauthorized(HTTPError):
     """401 Unauthorized.
 
     This 401 Unauthorized indicates that the request has not been applied
     because it lacks valid authentication credentials for the target resource.
     The server generating a 401 response MUST send a WWW-Authenticate header
-    field (RFC 7231, Section 4.1) containing at least one challenge applicable
-    to the target resource.
+    field (RFC 7231, Section 4.1) containing at least one challenge
+    applicable to the target resource.
 
     If the request included authentication credentials, then the 401 response
     indicates that authorization has been refused for those response indicates
-    that authorization has been refused for those credentials.  The user agent
+    that authorization has been refused for those credentials. The user agent
     MAY repeat the request with a new or replaced Authorization header field
-    (RFC 7231, Section 4.2).  If the 401 response contains the same challenge as
-    the prior response, and the user agent has already attempted authentication
-    at least once, then the user agent SHOULD present the enclosed
-    representation to the user, since it usually contains relevant diagnostic
-    information.
+    (RFC 7231, Section 4.2).  If the 401 response contains the same challenge
+    as the prior response, and the user agent has already attempted
+    authentication at least once, then the user agent SHOULD present the
+    enclosed representation to the user, since it usually contains relevant
+    diagnostic information.
 
     Reference RFC 7235, Section 3.1
 
@@ -274,6 +508,7 @@ class HTTPUnauthorized(HTTPError):
         if challenges is not None:
             headers['WWW-Authenticate'] = ', '.join(challenges)
         super().__init__(401, description, title, headers)
+
 
 class HTTPPaymentRequired(HTTPError):
     """402 Payment Required.
