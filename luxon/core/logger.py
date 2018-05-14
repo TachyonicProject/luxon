@@ -66,47 +66,49 @@ def log_formatted(logger_facility, message, prepend=None, append=None,
         request = ''
 
     message = str(if_bytes_to_unicode(message)).strip()
-    if timer is not None:
-        message += ' (DURATION: %s)' % format_seconds(timer)
 
-    _message = list_of_lines(message)
-    message = []
-    for line in _message:
-        # Safe Limit per message...
-        # There is resrictions on message sizes.
-        # https://tools.ietf.org/html/rfc3164
-        # https://tools.ietf.org/html/rfc5426
-        message += split_by_n(line, 500)
+    if message != '':
+        if timer is not None:
+            message += ' (DURATION: %s)' % format_seconds(timer)
 
-    if len(message) > 1:
-        if log_id is None:
-            log_id = string_id(6)
+        _message = list_of_lines(message)
+        message = []
+        for line in _message:
+            # Safe Limit per message...
+            # There is resrictions on message sizes.
+            # https://tools.ietf.org/html/rfc3164
+            # https://tools.ietf.org/html/rfc5426
+            message += split_by_n(line, 500)
 
-        if prepend is not None:
-            logger_facility("(%s) #0 %s" % (log_id, prepend,))
+        if len(message) > 1:
+            if log_id is None:
+                log_id = string_id(6)
 
-        for line, p in enumerate(message):
-            msg = '(%s) %s# %s' % (log_id, line+1, p)
+            if prepend is not None:
+                logger_facility("(%s) #0 %s" % (log_id, prepend,))
+
+            for line, p in enumerate(message):
+                msg = '(%s) %s# %s' % (log_id, line+1, p)
+                logger_facility(msg)
+
+            if append is not None:
+                logger_facility("(%s) #%s %s" % (log_id, line+2, append))
+        else:
+            if log_id is not None:
+                msg = '(%s) ' % log_id
+            else:
+                msg = ''
+            if prepend is not None:
+                msg += '%s %s' % (prepend, message[0])
+            else:
+                msg += '%s' % message[0]
+
+            if append is not None:
+                msg = '%s %s' % (msg, append)
+
+            msg = '%s %s' % (msg, request)
+
             logger_facility(msg)
-
-        if append is not None:
-            logger_facility("(%s) #%s %s" % (log_id, line+2, append))
-    else:
-        if log_id is not None:
-            msg = '(%s) ' % log_id
-        else:
-            msg = ''
-        if prepend is not None:
-            msg += '%s %s' % (prepend, message[0])
-        else:
-            msg += '%s' % message[0]
-
-        if append is not None:
-            msg = '%s %s' % (msg, append)
-
-        msg = '%s %s' % (msg, request)
-
-        logger_facility(msg)
 
 
 class _TachyonFilter(logging.Filter):

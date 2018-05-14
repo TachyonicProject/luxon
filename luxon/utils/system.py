@@ -36,6 +36,7 @@ from tempfile import TemporaryFile
 
 from luxon.exceptions import ExecuteError
 from luxon.utils.encoding import if_bytes_to_unicode
+from luxon.utils.unique import string_id
 
 
 def get_current_uid():
@@ -171,16 +172,22 @@ def execute(*args, check=True, virtualenv=False):
     loginfo = TemporaryFile()
     logerr = TemporaryFile()
 
+    log_id = string_id(length=6)
+
     try:
         env = os.environ.copy()
         if virtualenv is False:
             if '__PYVENV_LAUNCHER__' in env:
                 del env['__PYVENV_LAUNCHER__']
 
-        log.info("Execute '%s'" % " ".join(args[0]))
+        log.info("Execute '%s'" % " ".join(args[0]), log_id=log_id)
         subprocess.run(*args, stdout=loginfo,
                        stderr=logerr,
                        check=True, env=env)
+        loginfo.seek(0)
+        logerr.seek(0)
+        log.info(if_bytes_to_unicode(loginfo.read()), log_id=log_id)
+        log.error(if_bytes_to_unicode(logerr.read()), log_id=log_id)
         loginfo.seek(0)
         return if_bytes_to_unicode(loginfo.read())
     except subprocess.CalledProcessError as e:
@@ -189,12 +196,13 @@ def execute(*args, check=True, virtualenv=False):
             cmd = " ".join(*args)
             raise ExecuteError(cmd,
                                if_bytes_to_unicode(logerr.read())) from None
-        return if_bytes_to_unicode(logerr.read())
-    finally:
         loginfo.seek(0)
         logerr.seek(0)
-        log.info(if_bytes_to_unicode(loginfo.read()))
-        log.error(if_bytes_to_unicode(logerr.read()))
+        log.info(if_bytes_to_unicode(loginfo.read()), log_id=log_id)
+        log.error(if_bytes_to_unicode(logerr.read()), log_id=log_id)
+        logerr.seek(0)
+        return if_bytes_to_unicode(logerr.read())
+    finally:
         loginfo.close()
         logerr.close()
 
