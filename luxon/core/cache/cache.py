@@ -47,11 +47,11 @@ class Cache(metaclass=Singleton):
                                                              max_object_size)
 
     def store(self, reference, obj, expire=60):
-        if expire > 28800: # 8 hour
-            expire = 28800
+        if expire > 604800:  # 7 days
+            expire = 604800
 
         _cached_backend.store(reference, obj,
-                        expire)
+                              expire)
 
     def load(self, reference):
         return _cached_backend.load(reference)
