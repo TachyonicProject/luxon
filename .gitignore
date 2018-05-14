@@ -1,12 +1,19 @@
+###############################
+# Tachyonic ###################
+###############################
 TODO.txt
 TODO
-.venv
-venv
+# Dont upload sqlite3 databases.
 *.db
+# Dont upload cython .c modules.
+*.c
 
-#####=== Archives ===#####
-## It's better to unpack these files and commit the raw source because
-## git has its own built in compression methods.
+###############################
+# Archives ####################
+###############################
+
+# It's better to unpack these files and commit the raw source because
+# git has its own built in compression methods.
 *.7z
 *.jar
 *.rar
@@ -20,7 +27,7 @@ venv
 *.iso
 *.tar
 
-#package management formats
+# package management formats
 *.dmg
 *.xpi
 *.gem
@@ -31,11 +38,16 @@ venv
 *.msm
 *.msp
 
-#####=== Autotools ===#####
+###############################
+# Autotools ###################
+###############################
+
 # http://www.gnu.org/software/automake
 Makefile.in
 
-#####=== C ===#####
+###############################
+# C Programming ###############
+###############################
 
 # Object files
 *.o
@@ -66,7 +78,9 @@ Makefile.in
 *.x86_64
 *.hex
 
-#####=== C++ ===#####
+###############################
+# C++ Programming #############
+###############################
 
 # Compiled Object files
 *.slo
@@ -96,7 +110,10 @@ Makefile.in
 *.out
 *.app
 
-#####=== Eclipse ===#####
+###############################
+# Eclipse #####################
+###############################
+
 *.pydevproject
 .metadata
 .gradle
@@ -126,7 +143,10 @@ local.properties
 # TeXlipse plugin
 .texlipse
 
-#####=== Emacs ===#####
+###############################
+# Emacs #######################
+###############################
+
 # -*- mode: gitignore; -*-
 *~
 \#*\#
@@ -160,7 +180,14 @@ tramp
 # cask packages
 .cask/
 
-#####=== Python ===#####
+.ropeproject
+.project
+.pydevproject
+.settings
+
+###############################
+# Python ######################
+###############################
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -184,7 +211,40 @@ sdist/
 .installed.cfg
 *.egg
 
-# PyInstaller
+# pyenv version file
+.python-version
+
+bin
+var
+deb_dist
+develop-eggs
+.installed.cfg
+
+## Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Translations
+*.mo
+*.pot
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+###############################
+# PyInstaller #################
+###############################
+
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
@@ -216,7 +276,10 @@ docs/_build/
 # PyBuilder
 target/
 
-#####=== Vim ===#####
+###############################
+# VIM #########################
+###############################
+
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]
 *.un~
@@ -224,98 +287,18 @@ Session.vim
 .netrwhist
 *~
 
-#####=== VirtualEnv ===#####
-# Virtualenv
-pythonenv
+###############################
+# VirtualEnv ##################
+###############################
 
-#####=== Windows ===#####
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
-
-# Folder config file
-Desktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
-# Windows Installer files
-*.cab
-*.msi
-*.msm
-*.msp
-
-# Windows shortcuts
-*.lnk
-
-
-
-
-# Emacs rope configuration
-.ropeproject
-.project
-.pydevproject
-.settings
-
-# pyenv version file
-.python-version
-
-# Python
-*.py[co]
-
-## Packages
-*.egg
-*.egg-info
-dist
-build
-eggs
-parts
-bin
-var
-sdist
-deb_dist
-develop-eggs
-.installed.cfg
-
-## Installer logs
-pip-log.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.cache
-nosetests.xml
-coverage.xml
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-#####=== Vim ===#####
-[._]*.s[a-w][a-z]
-[._]s[a-w][a-z]
-*.un~
-Session.vim
-.netrwhist
-*~
-
-#####=== VirtualEnv ===#####
-# Virtualenv
 pythonenv
 venv
 .venv
 
-#####=== Windows ===#####
+###############################
+# Windows #####################
+###############################
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
@@ -335,7 +318,10 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-#####=== OSX ===#####
+###############################
+# MAC OS X ####################
+###############################
+
 .DS_Store
 .AppleDouble
 .LSOverride
