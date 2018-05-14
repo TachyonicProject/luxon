@@ -1,6 +1,7 @@
 ===
 URI
 ===
+
 .. _decode:
 
 URI Decoder

@@ -31,7 +31,7 @@ WARNING:
 
 During iteration or fetch methods all return lists of rows containing dict. The dict keys are equeal to the column names used in the database.
 
-Configuration should be done via settings.ini.
+Configuration should be done via *settings.ini*
 
 settings.ini
 ------------
@@ -85,3 +85,17 @@ The exceptions are as per PEP-0249 Standards. They can be caught at object, modu
 
 .. automodule:: luxon.core.db.base.exceptions
     :members:
+
+Arguments Function
+-------------------
+Used if arguments need to be converted. List of formats given above; *paramstyles*
+
+.. autofunction:: luxon.core.db.base.args.args_to
+
+Python Drivers
+------------------
+Luxon provides Python Drivers for **Mysqls** and **Sqlite** both have a *connect* function
+
+.. autofunction:: luxon.core.db.mysql.connect
+
+

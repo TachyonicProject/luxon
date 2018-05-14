@@ -1,6 +1,7 @@
 .. _formatting:
 
-Format Milliseconds
+===================
+Format Seconds
 ===================
 
-.. autofunction:: luxon.utils.formatting.format_ms
+.. autofunction:: luxon.utils.formatting.format_seconds

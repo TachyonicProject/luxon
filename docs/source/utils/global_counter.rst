@@ -1,5 +1,6 @@
 .. _global_counter:
 
+==============
 Global Counter
 ==============
 

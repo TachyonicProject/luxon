@@ -1,7 +1,8 @@
 .. _templating:
 
-Templating
-==========
+===================
+Templating Engine
+===================
 
 Luxon provides templating engine interface to Jinja2. Our interface only
 inherits from Jinja2 and extends the functionality needed in the framework. The
@@ -33,3 +34,14 @@ for example it will look inside package: *templates/stuff/template.html*
 You can use the templating engine directly with the templates by using
 Environment class from luxon.core.template.
 
+Environment Class
+=====================
+
+.. autoclass:: luxon.core.template.Environment
+	:members:
+
+Tachyonic Loader Class
+=============================
+
+.. autoclass:: luxon.core.template.TachyonicLoader
+	:members:
