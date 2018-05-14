@@ -213,7 +213,7 @@ class SessionCookie(object):
             raise ValueError('SessionCookie size exceeded 15KB')
 
         cookie = self._session_id
-        path = '/' + req.app
+        path = '/' + req.app.lstrip('/')
         req.response.set_cookie(cookie,
                                 content,
                                 path=path,
@@ -223,7 +223,7 @@ class SessionCookie(object):
     def clear(self):
         req = g.current_request
         cookie = self._session_id
-        path = '/' + req.app
+        path = '/' + req.app.lstrip('/')
         req.response.unset_cookie(cookie,
                                   path=path,
                                   domain=req.host)
@@ -233,7 +233,7 @@ class TrackCookie(object):
     def __init__(self, expire=86400):
         self._req = g.current_request
         self._cookie_name = self._req.host
-        self._path = '/' + self._req.app
+        self._path = '/' + self._req.app.lstrip('/')
         self._expire = expire
 
         if self._cookie_name in self._req.cookies:
