@@ -18,8 +18,6 @@ Responders can be referred to as the 'views'. These can be:
 
 We internally refer to responders as resources and register them via resource decorators.
 
-To see the base classes refer to :ref:`statepassing`
-
 Single Responder
 ----------------
 
