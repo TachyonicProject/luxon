@@ -5,7 +5,6 @@ Framework Guide
     :maxdepth: 2
 
     structure
-    features
     command
     globals
     routing

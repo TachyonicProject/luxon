@@ -33,6 +33,10 @@ import multiprocessing
 
 
 def server(app_root=None, ip='127.0.0.1', port='8000'):
+    """Webserver on localhost at port 8000 by default
+        when **luxon -s** is run
+
+    """
     try:
         import gunicorn.app.base
         from gunicorn.six import iteritems

@@ -42,6 +42,7 @@ from luxon.structs.htmldoc import HTMLDoc
                    g.config.get('application', 'static').strip('/')
                    + '.*$', cache=604800)
 def static(req, resp):
+    """Serves files from static directory"""
     sfile_path = g.app_root.rstrip('/') + '/static' \
         + '/' + '/'.join(req.relative_resource_uri.strip('/').split('/')[1:])
     try:

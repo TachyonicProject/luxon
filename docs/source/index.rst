@@ -30,7 +30,7 @@ Documentation
    :caption: Contents:
 
 
-   introduction
+   license
    install
    framework/index
    main/index
@@ -41,4 +41,4 @@ Documentation
    utils/index
    extras/index
    community/index
-   license
+  
