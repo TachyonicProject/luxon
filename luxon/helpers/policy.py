@@ -37,6 +37,11 @@ _cached_compiled = None
 
 
 def policy(**kwargs):
+    """Policy helper function
+
+    Spawns a Policy() object with the rule set specified in the policy.json
+    file.
+    """
     global _cached_compiled
 
     if _cached_compiled is None:

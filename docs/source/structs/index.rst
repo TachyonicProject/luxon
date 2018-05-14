@@ -1,5 +1,7 @@
+=============
 Structs Guide
 =============
+Luxon Data Structures
 
 .. toctree::
     :maxdepth: 2
@@ -9,5 +11,4 @@ Structs Guide
     htmldoc
     threaddict
     threadlist	
-
-
+    dbstructs

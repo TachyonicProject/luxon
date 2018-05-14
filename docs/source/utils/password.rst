@@ -1,6 +1,7 @@
 =========
 Passwords
 =========
+
 .. _hash:
 
 Hash Password

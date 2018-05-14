@@ -1,4 +1,4 @@
-Community Guide
+Community 
 ===============
 
 Contribute to Luxon Framework

@@ -10,17 +10,17 @@ Luxon routes incoming requests to resources based on a route path defined. The p
 
 If the path requested by the client matches the template for a given route, the request is then passed on to the associated responder for processing. This responder then returns relevant payload.
 
-If no route matches the request, then luxon.exceptions.NotFound is raised. This will result in sending a 404 response back to the client.
+If no route matches the request, then **luxon.exceptions.NotFound** is raised. This will result in sending a 404 response back to the client.
 
 Note: The router is global for application.
 
 The router supports three types of route expressions:
-	* Standard: '/' or '/page/page'.
-	* Keyword Expression: '/users/{domain}/{id}'
-	* Regex: 'regex:^/users.*$'
+	* Standard: *'/' or '/page/page'*
+	* Keyword Expression: *'/users/{domain}/{id}'*
+	* Regex: *'regex:^/users.*$'*
 
-**Standerd Routes**
-Stanard routes are faster and simply dictionary lookup routine. It automatically trims '/' from route for more predictive matching.
+**Standard Routes**
+Stanard routes are faster and simply a dictionary lookup routine. It automatically trims '/' from route for more predictive matching.
 
 **Keyword Expression Routes**
 These are pretty fast and scaleable using compiled router. A field expression consists of a bracketed field name. For example '/users/{domain}/{id}'
@@ -36,4 +36,12 @@ However if you only use a couple of these, there will be no major performance im
 Regex route follows the format of 'regex:expression'. Its important that 'regex:' is prepended since its used to determine the processing needed for the route.
 
 Please refer to (:ref:`Responders <responders>`) for view using routes.
+
+
+Router Class
+-------------
+.. autoclass:: luxon.core.router.Router
+   :members:
+
+
 

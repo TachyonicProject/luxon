@@ -56,6 +56,15 @@ from luxon.utils.timezone import now
 
 
 def setup(args):
+    """Setup Tachyonic Package with Luxon
+
+    Creates relevant directories and copies relevant files
+
+    Called when **-i** is used
+
+    Args:
+        args (parse_args object): arguments gathered from terminal
+    """
     path = args.path.rstrip('/')
     module = Module(args.pkg)
 
@@ -86,6 +95,7 @@ def setup(args):
 
 
 def rsa(args):
+    """Generates a new RSA *private.pem* and *public.pem*"""
     print("Generating new RSA private.pem and public.pem")
     rsakey = RSAKey()
     pk = rsakey.generate_private_key(password=args.password)
@@ -96,6 +106,7 @@ def rsa(args):
 
 
 def clean_sessions(args):
+    """Removes all expired session files"""
     path = args.path.rstrip('/')
     tmp_path = os.path.join(path, 'tmp')
     config = Config()
@@ -112,10 +123,25 @@ def clean_sessions(args):
 
 
 def server(args):
+    """Start Internal Testing Server
+
+    | Called when **-s** is used
+    | Requires Gunicorn
+
+    Args:
+        args (parse_args object): arguments gathered from terminal
+    """
     web_server(app_root=args.path, ip=args.ip, port=args.port)
 
 
 def db_crud(args):
+    """Create/Update Database for given package
+
+    Called when **-d** is used
+
+    Args:
+        args (parse_args object): arguments gathered from terminal
+    """
     with open(args.path.rstrip('/') + '/wsgi.py', 'r') as wsgi_file:
         exec_g = {}
         exec(wsgi_file.read(), exec_g, exec_g)

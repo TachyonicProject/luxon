@@ -1,6 +1,6 @@
 .. _globals:
 
-
+=======
 Globals
 =======
 
@@ -21,7 +21,7 @@ Once a thread is processing a request it has access to globals via 'g' and utili
 Request objects simply provides a representation of the client request. Such as route, method and payload. Different handlers such as wsgi extend the request methods and properties.
 
 Using 'g' by example
---------------------
+=====================
 
 **The following raises an error**
 
@@ -56,7 +56,7 @@ You can create global objects on each process and reference them in 'g'.
     g.db = db
 
 Access the request object
--------------------------
+==========================
 
 .. code:: python
 
@@ -64,3 +64,16 @@ Access the request object
 
     # However this must be done within the context.
     print(g.current_request.method)
+
+Globals Class
+=================
+
+.. autoclass:: luxon.core.globals.Globals
+    :members:
+	
+	.. automethod:: models(self)
+        .. automethod:: middleware_pre(self)
+        .. automethod:: middleware_resource(self)
+        .. automethod:: middleware_post(self)
+        .. automethod:: router(self)
+    

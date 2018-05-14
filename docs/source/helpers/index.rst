@@ -5,5 +5,6 @@ Helpers Guide
     :maxdepth: 2
 
     db
-    redis
     jinja2
+    mail
+    policy

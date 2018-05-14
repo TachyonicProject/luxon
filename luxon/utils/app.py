@@ -37,6 +37,14 @@ from luxon.core.config.defaults import defaults as default_config
 log = GetLogger(__name__)
 
 def determine_app_root(name, app_root=None):
+    """Determines the root directory of a given application
+
+    Args:
+        name (str): application name
+
+    Returns:
+        Root directory of app, as a string
+    """
     if app_root is None:
         if name == "__main__" or "_mod_wsgi" in name:
             app_mod = imports.import_module(name)
@@ -56,6 +64,15 @@ def determine_app_root(name, app_root=None):
                                     % app_root) from None
 
 def load_config(ini, defaults=True):
+    """Loads the app config from a given file
+
+    Args:
+        ini (file object): settings file
+        defaults (bool): option to load default config
+
+    Returns:
+          *g.config* object
+    """
     if defaults:
         g.config.read_dict(default_config)
 
@@ -69,6 +86,24 @@ def load_config(ini, defaults=True):
 
 
 def init(name, app_root=None, ini=None, defaults=True):
+    """Initialises application
+
+    Sets the global attributes:
+
+        - g.app_name
+        - g.app_root
+
+    Loads the app config from the *settings.ini* file or
+    from a given file
+
+    Configures the logger for the app
+
+    Args:
+        name (str): app name
+        app_root (str): app root
+        ini (file obj): config file
+
+    """
     # Set Application Name
     g.app_name = name
 

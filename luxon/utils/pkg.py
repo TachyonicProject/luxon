@@ -35,6 +35,11 @@ from luxon.utils.imports import import_module
 from luxon.utils.files import mkdir, exists, is_dir
 
 class Module(object):
+    """Imports installed module and performs actions on it
+
+    Args:
+        module (str): Module import path definition.
+    """
     def __init__(self, module):
         try:
             import_module(module)
@@ -43,6 +48,11 @@ class Module(object):
             raise ImportError(module) from None
 
     def exists(self, path, error=False):
+        """Does the resource exist
+
+        Args:
+            path (str): resource location
+        """
         try:
             val = resource_exists(self._module, path)
             if val is False and error is True:
@@ -53,6 +63,11 @@ class Module(object):
             raise ImportError(self._module) from None
 
     def read(self, path):
+        """Returns resource as a string
+
+        Args:
+            path (str): resource location
+        """
         try:
             self.exists(path, True)
             with resource_stream(self._module,
@@ -62,6 +77,11 @@ class Module(object):
             raise ImportError(self._module) from None
 
     def list(self, path):
+        """List directories in the resource
+
+        Args:
+            path (str): resource location
+        """
         try:
             self.exists(path, True)
             return resource_listdir(self._module, path)
@@ -70,6 +90,11 @@ class Module(object):
             raise ImportError(self._module) from None
 
     def is_dir(self, path):
+        """Is the resource a directory
+
+        Args:
+            path (str): resource location
+        """
         try:
             self.exists(path, True)
             return resource_isdir(self._module, path)
@@ -77,6 +102,11 @@ class Module(object):
             raise ImportError(self._module) from None
 
     def is_file(self, path):
+        """Is the resource a file
+
+        Args:
+            path (str): resource location
+        """
         try:
             self.exists(path, True)
             if resource_isdir(self._module, path):
@@ -85,6 +115,11 @@ class Module(object):
             raise ImportError(self._module) from None
 
     def walk(self, path):
+        """Walk through the resource
+
+        Args:
+            path (str): resource location
+        """
         try:
             self.exists(path, True)
 
@@ -107,6 +142,12 @@ class Module(object):
             raise ImportError(self._module) from None
 
     def copy(self, src, dst, new_extension=None):
+        """Copy the resource
+
+        Args:
+            src (str): resource location
+            dst (str): destination
+        """
         try:
             self.exists(src, True)
 
