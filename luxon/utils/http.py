@@ -30,15 +30,27 @@
 import re
 import cgi
 import string
-import requests
 from collections import OrderedDict
 
+import requests
 from luxon import g
 from luxon import js
 from luxon import __identity__
 from luxon import GetLogger
 from luxon.utils.timer import Timer
-from luxon.exceptions import RestClientError, NoContextError
+from luxon.exceptions import (NoContextError,
+                              HTTPClientInvalidHeader,
+                              HTTPClientInvalidURL,
+                              HTTPClientInvalidSchema,
+                              HTTPClientMissingSchema,
+                              HTTPClientConnectionError,
+                              HTTPClientProxyError,
+                              HTTPClientSSLError,
+                              HTTPClientTimeoutError,
+                              HTTPClientConnectTimeoutError,
+                              HTTPClientReadTimeoutError,
+                              HTTPClientContentDecodingError,
+                              HTTPError)
 from luxon.constants import HTTP_STATUS_CODES
 from luxon.utils.encoding import if_unicode_to_bytes, if_bytes_to_unicode
 from luxon.exceptions import JSONDecodeError
@@ -396,7 +408,7 @@ class Response(object):
 
     @property
     def status_code(self):
-        return self._result.status_code
+        return int(self._result.status_code)
 
     def __len__(self):
         return len(self.body)
@@ -417,8 +429,8 @@ class Response(object):
     def json(self):
         if self._cached_json is None:
             if self.encoding is not None and self.encoding != 'UTF-8':
-                raise RestClientError(400,
-                                      'JSON requires UTF-8 Encoding') from None
+                raise HTTPClientContentDecodingError(
+                    'JSON requires UTF-8 Encoding') from None
 
             try:
                 if self.status_code != 204:
@@ -427,7 +439,8 @@ class Response(object):
                     self._cached_json = None
 
             except JSONDecodeError as e:
-                raise RestClientError(400, 'JSON Decode: %s' % e) from None
+                raise HTTPClientContentDecodingError(
+                    'JSON Decode: %s' % e) from None
 
         return self._cached_json
 
@@ -481,17 +494,58 @@ def request(client, method, uri, params=None,
         if isinstance(data, bytes):
             headers['Content-Length'] = str(len(data))
 
-        response = client._s.request(method.upper(),
-                                     url,
-                                     params=params,
-                                     data=data,
-                                     headers=headers,
-                                     stream=stream)
+        try:
+            response = Response(client._s.request(method.upper(),
+                                                  url,
+                                                  params=params,
+                                                  data=data,
+                                                  headers=headers,
+                                                  stream=stream))
+            if response.status_code > 400:
+                try:
+                    title = None
+                    description = None
+                    if 'error' in response.json:
+                        error = response.json['error']
+                        try:
+                            title = error.get('title')
+                            description = error.get('description')
+                        except AttributeError:
+                            pass
+
+                    raise HTTPError(response.status_code, description, title)
+                except HTTPClientContentDecodingError:
+                    raise HTTPError(response.status_code)
+
+        # except requests.exceptions.InvalidProxyURL as e:
+        #    raise HTTPClientInvalidProxyURL(e)
+        except requests.exceptions.InvalidHeader as e:
+            raise HTTPClientInvalidHeader(e)
+        except requests.exceptions.InvalidURL as e:
+            raise HTTPClientInvalidURL(e)
+        except requests.exceptions.InvalidSchema as e:
+            raise HTTPClientInvalidSchema(e)
+        except requests.exceptions.MissingSchema as e:
+            raise HTTPClientMissingSchema(e)
+        except requests.exceptions.ConnectionError as e:
+            raise HTTPClientConnectionError(e)
+        except requests.exceptions.ProxyError as e:
+            raise HTTPClientProxyError(e)
+        except requests.exceptions.SSLError as e:
+            raise HTTPClientSSLError(e)
+        except requests.exceptions.Timeout as e:
+            raise HTTPClientTimeoutError(e)
+        except requests.exceptions.ConnectTimeout as e:
+            raise HTTPClientConnectTimeoutError(e)
+        except requests.exceptions.ReadTimeout as e:
+            raise HTTPClientReadTimeoutError(e)
+        except requests.exceptions.HTTPError as e:
+            raise HTTPError(e.response.status_code, e)
 
         _debug(method, url, params, data, headers, response.headers,
                response.content, response.status_code, elapsed())
 
-    return Response(response)
+    return response
 
 
 class Stream(object):
