@@ -61,6 +61,7 @@ from luxon.utils.hashing import md5sum
 from luxon.core.cache import Cache
 from luxon.utils.timezone import utc, now
 from luxon.utils.objects import orderdict
+from luxon.utils.unique import string_id
 
 log = GetLogger(__name__)
 
@@ -364,6 +365,7 @@ def parse_cache_control_header(header):
 def _debug(method, url, params, payload, request_headers, response_headers,
            response, status_code, elapsed, cached=None):
     if g.debug:
+        log_id = string_id(length=6)
         try:
             payload = js.loads(payload)
             payload = js.dumps(payload)
@@ -380,15 +382,22 @@ def _debug(method, url, params, payload, request_headers, response_headers,
                   ', Params: %s' % params +
                   ' (%s %s)' % (status_code, HTTP_STATUS_CODES[status_code]) +
                   ' Cache: %s' % cached,
-                  timer=elapsed)
+                  timer=elapsed,
+                  log_id=log_id)
         for header in request_headers:
-            log.debug('Request Header: %s="%s"' % (header,
-                                                   request_headers[header]))
+            log.debug('Request Header: %s="%s"' % (
+                header,
+                request_headers[header]),
+                log_id=log_id)
         for header in response_headers:
-            log.debug('Response Header: %s="%s"' % (header,
-                                                    response_headers[header]))
-        log.debug(payload, prepend='Request Payload')
-        log.debug(response, prepend='Response Payload')
+            log.debug('Response Header: %s="%s"' % (
+                header,
+                response_headers[header]),
+                log_id=log_id)
+        log.debug(payload,
+                  prepend='Request Payload', log_id=log_id)
+        log.debug(response,
+                  prepend='Response Payload', log_id=log_id)
 
 
 class Response(object):

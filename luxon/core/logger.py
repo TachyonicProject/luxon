@@ -39,24 +39,32 @@ from luxon.utils.formatting import format_seconds
 from luxon.utils.files import is_socket
 from luxon.utils.split import list_of_lines, split_by_n
 from luxon.utils.encoding import if_bytes_to_unicode
+from luxon.utils.unique import string_id
 
 
 log_format = logging.Formatter('%(asctime)s%(app_name)s' +
                                ' %(name)s' +
                                '[%(process)d]' +
-                               '[%(thread)d]' +
-                               ' <%(levelname)s>: %(message)s %(request)s',
+                               ' <%(levelname)s>: %(message)s',
                                datefmt='%b %d %H:%M:%S')
 
 
 def log_formatted(logger_facility, message, prepend=None, append=None,
-                  timer=None):
+                  timer=None, log_id=None):
     """Using logger log formatted content
 
     Args:
         logger_facility (object): Python logger. (log.debug for example)
         content (str): Message to log.
     """
+    try:
+        log_items = list(g.current_request.log.items())
+        log_items.append(('REQUEST-ID', g.current_request.id))
+        request = " ".join(['(%s: %s)' % (key, value)
+                           for (key, value) in log_items])
+    except NoContextError:
+        request = ''
+
     message = str(if_bytes_to_unicode(message)).strip()
     if timer is not None:
         message += ' (DURATION: %s)' % format_seconds(timer)
@@ -71,24 +79,32 @@ def log_formatted(logger_facility, message, prepend=None, append=None,
         message += split_by_n(line, 500)
 
     if len(message) > 1:
-        for l, p in enumerate(message):
-            if prepend is not None:
-                msg = '%s %s# %s' % (prepend, l, p)
-            else:
-                msg = '%s# %s' % (l, p)
+        if log_id is None:
+            log_id = string_id(6)
 
-            if append is not None:
-                msg = '%s %s' % (msg, append)
-
-            logger_facility(msg)
-    else:
         if prepend is not None:
-            msg = '%s %s' % (prepend, message[0])
+            logger_facility("(%s) #0 %s" % (log_id, prepend,))
+
+        for line, p in enumerate(message):
+            msg = '(%s) %s# %s' % (log_id, line+1, p)
+            logger_facility(msg)
+
+        if append is not None:
+            logger_facility("(%s) #%s %s" % (log_id, line+2, append))
+    else:
+        if log_id is not None:
+            msg = '(%s) ' % log_id
         else:
-            msg = '%s' % message[0]
+            msg = ''
+        if prepend is not None:
+            msg += '%s %s' % (prepend, message[0])
+        else:
+            msg += '%s' % message[0]
 
         if append is not None:
             msg = '%s %s' % (msg, append)
+
+        msg = '%s %s' % (msg, request)
 
         logger_facility(msg)
 
@@ -104,14 +120,6 @@ class _TachyonFilter(logging.Filter):
                                                  fallback='')
         except NoContextError:
             record.app_name = ''
-        try:
-            log_items = list(g.current_request.log.items())
-            log_items.append(('REQUEST-ID', g.current_request.id))
-            record.request = " ".join(['(%s: %s)' % (key, value)
-                                      for (key, value) in
-                                      log_items])
-        except NoContextError:
-            record.request = ''
 
         return True
 
@@ -218,7 +226,8 @@ class GetLogger(metaclass=NamedSingleton):
             if isinstance(sub_logger, logging.Logger):
                 configure(logger, sub_logger)
 
-    def critical(self, msg, prepend=None, append=None, timer=None):
+    def critical(self, msg, prepend=None, append=None, timer=None,
+                 log_id=None):
         """Log Critical Message.
 
         Args:
@@ -232,9 +241,10 @@ class GetLogger(metaclass=NamedSingleton):
 
         """
         if self.level <= logging.CRITICAL:
-            log_formatted(self.logger.critical, msg, prepend, append, timer)
+            log_formatted(self.logger.critical, msg, prepend, append, timer,
+                          log_id)
 
-    def error(self, msg, prepend=None, append=None, timer=None):
+    def error(self, msg, prepend=None, append=None, timer=None, log_id=None):
         """Log Error Message.
 
         Args:
@@ -248,9 +258,10 @@ class GetLogger(metaclass=NamedSingleton):
 
         """
         if self.level <= logging.ERROR:
-            log_formatted(self.logger.error, msg, prepend, append, timer)
+            log_formatted(self.logger.error, msg, prepend, append, timer,
+                          log_id)
 
-    def warning(self, msg, prepend=None, append=None, timer=None):
+    def warning(self, msg, prepend=None, append=None, timer=None, log_id=None):
         """Log Warning Message.
 
         Args:
@@ -264,9 +275,10 @@ class GetLogger(metaclass=NamedSingleton):
 
         """
         if self.level <= logging.WARNING:
-            log_formatted(self.logger.warning, msg, prepend, append, timer)
+            log_formatted(self.logger.warning, msg, prepend, append, timer,
+                          log_id)
 
-    def info(self, msg, prepend=None, append=None, timer=None):
+    def info(self, msg, prepend=None, append=None, timer=None, log_id=None):
         """Log Info Message.
 
         Args:
@@ -280,9 +292,10 @@ class GetLogger(metaclass=NamedSingleton):
 
         """
         if self.level <= logging.INFO:
-            log_formatted(self.logger.info, msg, prepend, append, timer)
+            log_formatted(self.logger.info, msg, prepend, append, timer,
+                          log_id)
 
-    def debug(self, msg, prepend=None, append=None, timer=None):
+    def debug(self, msg, prepend=None, append=None, timer=None, log_id=None):
         """Log Debug Message.
 
         Args:
@@ -296,4 +309,5 @@ class GetLogger(metaclass=NamedSingleton):
 
         """
         if self.level <= logging.DEBUG:
-            log_formatted(self.logger.debug, msg, prepend, append, timer)
+            log_formatted(self.logger.debug, msg, prepend, append, timer,
+                          log_id)
