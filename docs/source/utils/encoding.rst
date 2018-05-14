@@ -1,6 +1,7 @@
-========
-Encoding
-========
+==================
+Encoding Utility
+==================
+
 .. _bytes_to_unicode:
 
 Bytes to Unicode

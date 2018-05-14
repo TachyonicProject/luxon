@@ -1,17 +1,20 @@
 .. _settings:
 
+======
 Config
 ======
 
+Luxon performs configuration by using a global *settings* file. The *settings* file can be used globaly and and localy on a per module basis.
+
+Settings
+=========
+
 Luxon will attempt to discover the route path when starting the handler e.g. Wsgi.
-You can place a settings.ini file in the same directory of your wsgi file which is loaded by Wsgi handler.
+You can place a *settings.ini* file in the same directory of your wsgi file which is loaded by Wsgi handler. The *settings.ini* file will be read by Luxon's config parser.
 
-The configuration can be access globally from g.app.config which is python configparser that has only been enhanced by adding more methods to the exisiting base Python configparser.
+settings.ini layout
+-------------------
 
-Python configparser implements a basic configuration language which provides a structure similar to what’s found in Microsoft Windows INI files. You can use this to write Python programs which can be customized by end users easily.
-
-settings.ini
--------------
 .. code:: ini
 
     # Main Application configuration
@@ -57,6 +60,20 @@ settings.ini
     # Log to file for module.
     # If not defined will not log file.
     log_file = /tmp/package_module.log
+
+
+Default settings.ini
+---------------------
+
+.. literalinclude:: /../../luxon/core/config/defaults.py
+   :lines: 30-68
+
+Configparser
+=============
+
+The Python configparser implements a basic configuration language which provides a structure similar to what’s found in Microsoft Windows INI files. You can use this to write Python programs which can be customized by end users easily.
+
+The configuration can be access globally from **g.app.config** which Luxon's Python configparser that has been enhanced by adding more methods to the exisiting base Python configparser.
 
 Config Class
 ------------

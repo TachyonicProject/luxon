@@ -1,6 +1,7 @@
 =======
 Strings
 =======
+
 .. _try_lower:
 
 Lowercase

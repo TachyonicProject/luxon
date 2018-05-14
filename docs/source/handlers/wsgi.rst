@@ -1,7 +1,25 @@
-.. _tutorial: 
+====================
+WSGI Handler
+====================
+
+The WSGI handler provides environment that is fast, flexible, scalable and simple for building 'Web Applications' and APIs. The WSGI handler has minimal dependencies and unncessary abstraction. Templating for example is not initilized if not needed. However once used its pre-initilized for any other requests.
+
+**Hello world in** *'6'* **lines**
+
+.. code:: python
+
+    from luxon.core.handlers.wsgi import Wsgi
+    from luxon import register_resource
+
+    application = Wsgi(__name__)
+
+    @register_resource('GET', '/hello')
+    def hello(req, resp):
+        return 'hello world'
+
 
 Tutorial
-========
+=========
 
 In this tutorial you will walk through building simple web interface. The same principles with different methods and responder code would be used for REST API.
 
@@ -118,3 +136,32 @@ Now start with the webserver again.
 	$ luxon -s --ip 127.0.0.1 --port 8000 myapp
 	
 Browse to http://127.0.0.1:8000. You should see the 'Welcome to Myapp'
+
+Classes
+===========
+
+
+
+Application Class
+------------------------
+
+.. autoclass:: luxon.core.handlers.wsgi.application.Application
+	:members:
+
+Request Class
+------------------------
+
+.. autoclass:: luxon.core.handlers.wsgi.request.Request
+	:members:
+
+Response Class
+------------------------
+
+.. autoclass:: luxon.core.handlers.wsgi.response.Response
+	:members:
+
+Response Class
+------------------------
+
+.. autoclass:: luxon.core.handlers.wsgi.response.Response
+	:members:

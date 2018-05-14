@@ -16,4 +16,12 @@ Framework Guide
     templating
     database
     models
-    exceptions
+    sessions
+    policy
+    classes
+    servers
+    cache
+    auth
+
+
+

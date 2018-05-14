@@ -213,6 +213,27 @@ class FileObject(object):
 
 
 class Open(object):
+    """Open File
+
+    Opens a given file and performs actions on the file object.
+    A number of default options can be specified as keyword arguments when
+    spawning the file object.
+
+    Options such as:
+
+        * buffering
+        * encoding
+        * errors
+        * newline
+        * closefd
+        * opener
+
+
+    Args:
+        file (file): file to be opened
+        mode (str): mode
+
+    """
     def __init__(self, file, mode='r', buffering=-1, encoding=None,
                  errors=None, newline=None, closefd=True, opener=None):
         self._lock_file = file + '.lock'
@@ -236,6 +257,9 @@ class Open(object):
 
     @property
     def encoding(self):
+        """Property
+
+        Encode file"""
         if hasattr(self.fd, 'encoding'):
             return self.fd.encoding
         else:
@@ -243,6 +267,9 @@ class Open(object):
 
     @property
     def errors(self):
+        """Property
+
+        Unicode Error Handler"""
         if hasattr(self.fd, 'errors'):
             return self.fd.errors
         else:
@@ -250,6 +277,9 @@ class Open(object):
 
     @property
     def newlines(self):
+        """Property
+
+        end-of-line convention"""
         if hasattr(self.fd, 'newlines'):
             return self.fd.newlines
         else:
@@ -257,42 +287,52 @@ class Open(object):
 
     @property
     def buffer(self):
+        """Property
+
+        Buffer size"""
         if hasattr(self.fd, 'buffer'):
             return self.fd.buffer
         else:
             raise AttributeError('buffer')
 
     def read(self, size=-1):
+        """Read file"""
         return self.fd.read(size)
 
     def readline(self, size=-1):
+        """Read line"""
         if hasattr(self.fd, 'readline'):
             return self.fd.readline(size)
         else:
             raise AttributeError('readline')
 
     def seek(self, offset, whence=0):
+        """Move to new file position"""
         if hasattr(self.fd, 'seek'):
             return self.fd.seek(offset, whence)
         else:
             raise AttributeError('seek')
 
     def tell(self):
+        """Current file position"""
         if hasattr(self.fd, 'tell'):
             return self.fd.tell()
         else:
             raise AttributeError('tell')
 
     def write(self, value):
+        """Write File"""
         self.fd.write(value)
 
     def flush(self):
+        """Clear the buffer"""
         if hasattr(self.fd, 'flush'):
             return self.fd.flush
         else:
             raise AttributeError('flush')
 
     def close(self):
+        """Close File"""
         self.flush()
         self.fd.close()
         self._lock_file_fd.close()
@@ -347,6 +387,13 @@ def chdir(path):
 
 
 def chown(path, uid=None, gid=None, recursive=False):
+    """Change Ownership
+
+    Args:
+        path (str): file path
+        uid (str): new user id
+        gid (str): new group id
+    """
     if recursive is True:
         for file in walk(path):
             chown(file[1], gid)
@@ -366,26 +413,37 @@ def chown(path, uid=None, gid=None, recursive=False):
 
 
 def exists(path):
+    """Is the path a directory"""
     return os.path.exists(path)
 
 
 def is_dir(path):
+    """Is the path a directory"""
     return os.path.isdir(path)
 
 
 def is_file(path):
+    """Is the path a file"""
     return os.path.isfile(path)
 
 
 def is_link(path):
+    """Is the path a link"""
     return os.path.islink(path)
 
 
 def is_mount(path):
+    """Is the path a mount"""
     return os.path.ismount(path)
 
 
 def rm(path, recursive=False):
+    """Remove file or directory at given location
+
+    Args:
+        path (str): path to be removed
+        recursive (bool): recursive option
+    """
     if os.path.exists(path):
         if os.path.isfile(path):
             os.remove(path)
@@ -466,6 +524,24 @@ def chmod(path, perms):
 
 
 def file_info(path):
+    """File Information
+
+    Args (str): location of file
+
+    Returns a tuple with the following info:
+
+        * file type
+        * full path
+        * short name
+        * uid
+        * gid
+        * file mode
+        * file size
+        * access time
+        * modified time
+        * create time
+        * extra
+    """
     if os.path.isdir(path):
         file_type = 'directory'
     elif os.path.isfile(path):
@@ -513,6 +589,13 @@ def file_info(path):
 
 
 def walk(path):
+    """Walks through directory
+
+    Args:
+        path (str): location of directory
+
+    Returns a list of file information tuples for each file in directory
+    """
     walk = []
     for directory, dirnames, filenames in os.walk(path):
         walk.append(file_info(directory))

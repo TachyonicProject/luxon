@@ -32,6 +32,18 @@ import os
 import shutil
 
 def create_env(venv, wipe=False, clear=True, site_packages=False):
+    """Creates a new virtual environment in given path
+
+    Args:
+        venv (str): location of new environment
+        wipe (bool): clean location
+        clear (bool): clear environment
+
+
+    If ``site_packages`` is true, then the global ``site-packages/``
+    directory will be on the path.
+
+    """
     try:
         import virtualenv
     except ModuleNotFoundError:

@@ -11,7 +11,7 @@ The basics:
     * luxon.models contains list/rows of objects with fields.
     * Using models optionally gives you conveniantly maintained and generated database.
 
-The 'luxon' command line tool provides an optioon -d to create or update database schema. However it requires the application root to have a correctly configured 'settings.ini' with relevant database configuration.
+The **luxon** command line tool provides an option **luxon -d** to create or update database schema. However it requires the application root to have a correctly configured *settings.ini* with relevant database configuration.
 
 Warning:
 	Please backup your database before updating the schema.
@@ -21,8 +21,8 @@ While working with 'models' object you can iterate, update rows and so forth. It
 Using models with database require you to define Primary Key using 'primary_key' class attribute. Its a reference to relevant field.
 
 Note:
-	To use a model with database you will need to decorate it with 'luxon.database'
-	'Integer' type fields as 'primary_key' will automatically increment. However auto increment is only relevant when using database.
+	To use a model with database you will need to decorate it with **luxon.database**
+	'Integer' type fields as *primary_key* will automatically increment. However auto increment 		is only relevant when using database.
 
 Example
 -------

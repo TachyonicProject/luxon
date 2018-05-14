@@ -3,9 +3,6 @@ Welcome to Luxon Framework documentation!
 
 Release v\ |version| (:ref:`Installation <install>`)
 
-About this project
-------------------
-
 The project is in 'Alpha' phase, some of the documentation and functionality is under-way.
 
 Luxon Framework is a flexible Python application framework for rapid development. It's free and open source and before you ask: It's BSD Licensed! Contributions and contributors are welcome!
@@ -18,44 +15,30 @@ End goal is to provide common interfaces for developing functionality for views.
 
 All responders have a common interface receiving request, response objects. Keyword arguements are provided to the responders based on the route used.
 
-How is Luxon Different?
------------------------
-Luxon was designed to support demanding needs of large-scale services and 
-responsive applications. Luxon provides many of the required day to day 
-utilities, interfaces and helpers yet they cleanly implemented and the 
-additional functionality does not utilize any resources unless required. In
-general it complements any python projects by providing a bare-metal
-performance, reliability and flexibility where you need it. 
+Useful Links
+------------
 
-More functionality on same hardware and more requests per second. We go through
-great lengths to avoid introducing breaking changes and when we do they will be
-fully documented. 
-
-Luxon finally leaves a lot of the design decisions and implementation details
-to you. You have the freedom to cusomize and tune the environment. 
-
-Complete logging facility that solves many of the questions raised by many
-developers on other similiar frameworks. Middleware or request views can append
-information to logs that are only relevant to the current request. Such as
-username etc. All requests are tagged with an ID which can be used to traceback
-user related errors. 
-
+- `Website <http://www.tachyonic.org/>`_.
+- `Github <https://github.com/TachyonicProject/luxon>`_.
+- `Pypi <https://pypi.python.org/pypi/luxon>`_.
 
 Documentation
 -------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
+   :caption: Contents:
 
-   license
+
+   introduction
    install
    framework/index
-   wsgi/index
-   minion/index
-   script/index
-   cli/index
+   main/index
+   handlers/index
+   resources/index
+   structs/index
    helpers/index
    utils/index
+   extras/index
    community/index
-   structs/index
-   
+   license

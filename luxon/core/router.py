@@ -163,8 +163,7 @@ class Router(metaclass=Singleton):
         after the respective field names defined in the template.
 
         A field expression consists of a bracketed field name.
-        For example, given the following template:
-            "/music/{genre}"
+        For example, given the following template: "/music/{genre}"
 
         The view would look like:
             def genre(self, req, resp, genre):

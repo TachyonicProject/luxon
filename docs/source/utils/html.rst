@@ -7,7 +7,7 @@ HTML
 MENU
 ====
 
-.. autoclass:: luxon.utils.html.Menu
+.. autoclass:: luxon.utils.html.NAVMenu
     :members:
 
 .. _datatable:
