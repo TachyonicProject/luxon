@@ -235,17 +235,24 @@ class Open(object):
 
     """
     def __init__(self, file, mode='r', buffering=-1, encoding=None,
-                 errors=None, newline=None, closefd=True, opener=None):
+                 errors=None, newline=None, closefd=True, opener=None,
+                 perms=600, create=True):
+
+        if create is False:
+            if not exists(file):
+                raise FileNotFoundError(file)
+
+        perms = _perm_to_octal(perms)
         self._lock_file = file + '.lock'
         self._lock_file_fd = open(
             os.open(self._lock_file, os.O_CREAT | os.O_WRONLY,
-                    0o600),
+                    perms),
             'wb')
         fcntl.flock(self._lock_file_fd, fcntl.LOCK_EX)
 
         try:
             self.fd = open(
-                os.open(file, os.O_RDWR | os.O_CREAT, 0o600),
+                os.open(file, os.O_RDWR | os.O_CREAT, perms),
                 mode=mode, buffering=buffering,
                 encoding=encoding, errors=errors,
                 newline=newline, closefd=closefd,
@@ -469,56 +476,64 @@ def mkdir(path, recursive=False):
             os.mkdir(path)
 
 
+def _perm_str_to_octal(perms):
+    missing = 9 - len(perms)
+    perms = "-" * missing + perms
+    set_uid = False
+    set_gid = False
+    mode = 0
+    perm_struct = [['x', 's'], 'w', 'r']
+    for level in reversed(range(3)):
+        level_mode = 0
+        for pos, perm in enumerate(reversed(perms[level*3:(level*3)+3])):
+            if perm not in perm_struct[pos]:
+                raise Exception("Invalid file mode provided '%s'" % perms)
+
+            if perm == 's':
+                if level == 0:
+                    set_uid = True
+                if level == 1:
+                    set_gid = True
+            if perm != '-':
+                level_mode += (2 ** pos)
+
+        level = (level / 2) * 2
+        mode += int((8 ** level)) * level_mode
+
+    if set_uid is True and set_gid is True:
+        mode += int((8 ** 3)) * 6
+    elif set_uid is True:
+        mode += int((8 ** 3)) * 4
+    elif set_gid is True:
+        mode += int((8 ** 3)) * 2
+
+    return mode
+
+
+def _perm_int_to_octal(val):
+    octal = 0
+    for i, v in enumerate(reversed(str(val))):
+        octal += (8 ** i) * int(v)
+    return octal
+
+
+def _perm_to_octal(perms):
+    if isinstance(perms, (str, bytes,)):
+        perms = if_bytes_to_unicode(perms)
+        perms = _perm_str_to_octal(perms)
+    else:
+        perms = _perm_int_to_octal(perms)
+
+    return perms
+
+
 def chmod(path, perms):
     """Change file mode permissi0ns.
 
     Expects value of int such as 755,
     Alternatively you can provide format in string rwxrwxrwx.
     """
-    def _perm_str_to_octal(perms):
-        missing = 9 - len(perms)
-        perms = "-" * missing + perms
-        set_uid = False
-        set_gid = False
-        mode = 0
-        perm_struct = [['x', 's'], 'w', 'r']
-        for level in reversed(range(3)):
-            level_mode = 0
-            for pos, perm in enumerate(reversed(perms[level*3:(level*3)+3])):
-                if perm not in perm_struct[pos]:
-                    raise Exception("Invalid file mode provided '%s'" % perms)
-
-                if perm == 's':
-                    if level == 0:
-                        set_uid = True
-                    if level == 1:
-                        set_gid = True
-                if perm != '-':
-                    level_mode += (2 ** pos)
-
-            level = (level / 2) * 2
-            mode += int((8 ** level)) * level_mode
-
-        if set_uid is True and set_gid is True:
-            mode += int((8 ** 3)) * 6
-        elif set_uid is True:
-            mode += int((8 ** 3)) * 4
-        elif set_gid is True:
-            mode += int((8 ** 3)) * 2
-
-        return mode
-
-    def _perm_int_to_octal(val):
-        octal = 0
-        for i, v in enumerate(reversed(str(val))):
-            octal += (8 ** i) * int(v)
-        return octal
-
-    if isinstance(perms, (str, bytes,)):
-        perms = if_bytes_to_unicode(perms)
-        perms = _perm_str_to_octal(perms)
-    else:
-        perms = _perm_int_to_octal(perms)
+    perms = _perm_to_octal(perms)
 
     os.chmod(path, perms)
 
