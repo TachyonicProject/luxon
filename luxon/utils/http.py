@@ -65,8 +65,6 @@ from luxon.utils.unique import string_id
 
 log = GetLogger(__name__)
 
-_etag_re = re.compile(r'^([Ww]/)?"?(.*?)"?$')
-
 
 def etagger(*args):
     to_hash = b"".join([
@@ -74,6 +72,9 @@ def etagger(*args):
     ])
     if to_hash != b'':
         return md5sum(to_hash)
+
+
+_etag_re = re.compile(r'^([Ww]/)?"?(.*?)"?$')
 
 
 class ETags(object):
@@ -315,6 +316,52 @@ def content_type_encoding(header):
         return 'ISO-8859-1'
 
     return None
+
+
+class Links(object):
+    __slots__ = ('_rel',)
+
+    def __init__(self):
+        self._rel = {}
+
+    def set(self, link, rel, **kwargs):
+        if rel not in self._rel:
+            self._rel[rel] = []
+
+        self._rel[rel].append({'link': link, **kwargs})
+
+    def __getattribute__(self, attr):
+        try:
+            return super().__getattribute__(attr)
+        except AttributeError:
+            return self._rel.get(attr)
+
+
+def parse_link_header(header):
+    links = Links()
+    header = parse_headers_values(header)
+    for link in header:
+        link = link.split(';')
+        link_params = link[1:]
+        link_value = link[0].strip('<>')
+        kwargs = {}
+        rel = None
+        for param in link_params:
+            try:
+                param, value = param.split('=')
+                value = unquote_string(value.strip())
+                param = param.lower().strip()
+                if param == 'rel':
+                    rel = value.lower()
+                else:
+                    kwargs[param] = value
+            except IndexError:
+                pass
+
+        if rel is not None:
+            links.set(link_value, rel, **kwargs)
+
+    return links
 
 
 CACHE_CONTROL_RE = re.compile(r"[a-z_\-]+=[0-9]+", re.IGNORECASE)
