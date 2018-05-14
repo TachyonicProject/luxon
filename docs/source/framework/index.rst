@@ -5,7 +5,6 @@ Framework Guide
     :maxdepth: 2
 
     structure
-    features
     command
     globals
     routing
@@ -16,4 +15,12 @@ Framework Guide
     templating
     database
     models
-    exceptions
+    sessions
+    policy
+    classes
+    servers
+    cache
+    auth
+
+
+

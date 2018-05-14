@@ -15,3 +15,13 @@ Dictionary Value Property
 =========================
 
 .. autofunction:: luxon.utils.objects.dict_value_property
+
+Save Object
+==============
+
+.. autofunction:: luxon.utils.objects.save
+
+Load Object
+============
+
+.. autofunction:: luxon.utils.objects.load

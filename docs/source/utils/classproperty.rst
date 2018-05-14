@@ -1,5 +1,6 @@
 .. _classproperty:
 
+==============
 Class Property
 ==============
 

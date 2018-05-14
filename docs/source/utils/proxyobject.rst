@@ -1,5 +1,6 @@
 .. _proxyobject:
 
+============
 Proxy Object
 ============
 
