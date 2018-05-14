@@ -36,12 +36,13 @@ from luxon import register_resource
 from luxon import constants as const
 from luxon.structs.htmldoc import HTMLDoc
 
-@register_resource([ 'GET', 'POST' ],
+
+@register_resource(['GET', 'POST'],
                    'regex:^/' +
                    g.config.get('application', 'static').strip('/')
-                   + '.*$')
+                   + '.*$', cache=604800)
 def static(req, resp):
-    sfile_path = g.app.app_root.rstrip('/') + '/static' \
+    sfile_path = g.app_root.rstrip('/') + '/static' \
         + '/' + '/'.join(req.relative_resource_uri.strip('/').split('/')[1:])
     try:
         if os.path.isfile(sfile_path):
@@ -74,6 +75,8 @@ def static(req, resp):
             h3.append(metadata.identity)
             return str(page)
         else:
-            raise FileNotFoundError("No such file or directory: '%s'" % sfile_path)
+            raise FileNotFoundError(
+                "No such file or directory: '%s'" % sfile_path
+            )
     except Exception as e:
         return "Error %s" % (e,)
