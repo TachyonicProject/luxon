@@ -113,6 +113,7 @@ class Globals(object):
 
     @property
     def models(self):
+        """Returns list of models"""
         return _models
 
     @property

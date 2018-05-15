@@ -58,7 +58,7 @@ def db():
 
     A Connection pool is created if one does not exist yet.
 
-    Database types and paramaters obtained from settings.ini file.
+    Database types and parameters obtained from settings.ini file.
 
     Supported types are:
 

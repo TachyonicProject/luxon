@@ -28,11 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 import pickle
-import fcntl
-import threading
 from collections import OrderedDict
-
-save_lock = threading.Lock()
 
 
 def orderdict(dict):
@@ -61,7 +57,7 @@ def object_name(obj):
             val = obj.__class__.__module__
             val += '.' + obj.__class__.__name__
             # NOTE(cfrademan): the replace makes it slower, only comestic..
-            return val #.replace('builtins.','')
+            return val  # .replace('builtins.','')
         except TypeError:
             return obj.__class__.__name__
         except AttributeError:
@@ -69,6 +65,7 @@ def object_name(obj):
             pass
 
     raise ValueError("Cannot determine object name '%s'" % type(obj)) from None
+
 
 # NOTE(HieronymusCrouse): Not tested yet
 def dict_value_property(dictionary, key):
@@ -92,31 +89,15 @@ def dict_value_property(dictionary, key):
     return property(fget)
 
 
-def save(obj, file_path):
-    save_lock.acquire()
-    try:
-        fp = open(file_path, 'wb', 0)
-        fcntl.flock(fp, fcntl.LOCK_EX)
-        pickle.dump(obj, fp)
-        fp.flush()
-    finally:
-        try:
-            fcntl.flock(fp, fcntl.LOCK_UN)
-            fp.close()
-        except UnboundLocalError:
-            pass
-        save_lock.release()
+def save(obj, file_path, perms=600):
+    from luxon.utils.files import Open
 
-def load(file_path):
-    save_lock.acquire()
-    try:
-        fp = open(file_path, 'rb', 0)
-        fcntl.flock(fp, fcntl.LOCK_EX)
+    with Open(file_path, 'wb', 0, perms=perms) as fp:
+        pickle.dump(obj, fp)
+
+
+def load(file_path, perms=600):
+    from luxon.utils.files import Open
+
+    with Open(file_path, 'rb', 0, create=False, perms=perms) as fp:
         return pickle.load(fp)
-    finally:
-        try:
-            fcntl.flock(fp, fcntl.LOCK_UN)
-            fp.close()
-        except UnboundLocalError:
-            pass
-        save_lock.release()
