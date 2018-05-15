@@ -30,6 +30,7 @@
 import re
 import cgi
 import string
+import pickle
 from collections import OrderedDict
 
 import requests
@@ -57,10 +58,12 @@ from luxon.exceptions import JSONDecodeError
 from luxon.utils.strings import unquote_string
 from luxon.structs.cidict import CiDict
 from luxon.utils.hashing import md5sum
+from luxon.core.cache import Cache
+from luxon.utils.timezone import utc, now
+from luxon.utils.objects import orderdict
+from luxon.utils.unique import string_id
 
 log = GetLogger(__name__)
-
-_etag_re = re.compile(r'^([Ww]/)?"?(.*?)"?$')
 
 
 def etagger(*args):
@@ -69,6 +72,9 @@ def etagger(*args):
     ])
     if to_hash != b'':
         return md5sum(to_hash)
+
+
+_etag_re = re.compile(r'^([Ww]/)?"?(.*?)"?$')
 
 
 class ETags(object):
@@ -312,6 +318,52 @@ def content_type_encoding(header):
     return None
 
 
+class Links(object):
+    __slots__ = ('_rel',)
+
+    def __init__(self):
+        self._rel = {}
+
+    def set(self, link, rel, **kwargs):
+        if rel not in self._rel:
+            self._rel[rel] = []
+
+        self._rel[rel].append({'link': link, **kwargs})
+
+    def __getattribute__(self, attr):
+        try:
+            return super().__getattribute__(attr)
+        except AttributeError:
+            return self._rel.get(attr)
+
+
+def parse_link_header(header):
+    links = Links()
+    header = parse_headers_values(header)
+    for link in header:
+        link = link.split(';')
+        link_params = link[1:]
+        link_value = link[0].strip('<>')
+        kwargs = {}
+        rel = None
+        for param in link_params:
+            try:
+                param, value = param.split('=')
+                value = unquote_string(value.strip())
+                param = param.lower().strip()
+                if param == 'rel':
+                    rel = value.lower()
+                else:
+                    kwargs[param] = value
+            except IndexError:
+                pass
+
+        if rel is not None:
+            links.set(link_value, rel, **kwargs)
+
+    return links
+
+
 CACHE_CONTROL_RE = re.compile(r"[a-z_\-]+=[0-9]+", re.IGNORECASE)
 CACHE_CONTROL_OPTION_RE = re.compile(r"[a-z_\-] +", re.IGNORECASE)
 
@@ -358,21 +410,41 @@ def parse_cache_control_header(header):
 
 
 def _debug(method, url, params, payload, request_headers, response_headers,
-           response, status_code, elapsed):
+           response, status_code, elapsed, cached=None):
     if g.debug:
+        log_id = string_id(length=6)
+        try:
+            payload = js.loads(payload)
+            payload = js.dumps(payload)
+        except Exception:
+            pass
+        try:
+            response = js.loads(response)
+            response = js.dumps(response)
+        except Exception:
+            pass
+
         log.debug('Method: %s' % method +
                   ', URL: %s' % url +
                   ', Params: %s' % params +
-                  ' (%s %s)' % (status_code, HTTP_STATUS_CODES[status_code]),
-                  timer=elapsed)
+                  ' (%s %s)' % (status_code, HTTP_STATUS_CODES[status_code]) +
+                  ' Cache: %s' % cached,
+                  timer=elapsed,
+                  log_id=log_id)
         for header in request_headers:
-            log.debug('Request Header: %s="%s"' % (header,
-                                                   request_headers[header]))
+            log.debug('Request Header: %s="%s"' % (
+                header,
+                request_headers[header]),
+                log_id=log_id)
         for header in response_headers:
-            log.debug('Response Header: %s="%s"' % (header,
-                                                    response_headers[header]))
-        log.debug(payload, prepend='Request Payload')
-        log.debug(response, prepend='Response Payload')
+            log.debug('Response Header: %s="%s"' % (
+                header,
+                response_headers[header]),
+                log_id=log_id)
+        log.debug(payload,
+                  prepend='Request Payload', log_id=log_id)
+        log.debug(response,
+                  prepend='Response Payload', log_id=log_id)
 
 
 class Response(object):
@@ -462,10 +534,29 @@ class Response(object):
         self._result.close()
 
 
-def request(client, method, uri, params=None,
+_cache_engine = None
+
+
+def request(client, method, uri, params={},
             data=None, headers={}, stream=False, **kwargs):
 
+    global _cache_engine
+
     with Timer() as elapsed:
+        method = method.upper()
+        headers = headers.copy()
+        params = params.copy()
+
+        if _cache_engine is None:
+            _cache_engine = Cache()
+
+        if uri.lower().startswith('http'):
+            url = uri
+        elif client._url is not None:
+            url = client._url.rstrip('/') + '/' + uri.lstrip('/')
+        else:
+            raise ValueError('Require valid url')
+
         try:
             if g.current_request.user_token:
                 headers['X-Auth-Token'] = g.current_request.user_token
@@ -486,13 +577,43 @@ def request(client, method, uri, params=None,
                 data = js.dumps(data)
             data = if_unicode_to_bytes(data)
 
-        if uri.startswith('http'):
-            url = uri
-        elif client._url is not None:
-            url = client._url.rstrip('/') + '/' + uri.lstrip('/')
-
         if isinstance(data, bytes):
             headers['Content-Length'] = str(len(data))
+
+        if stream is False and method == 'GET' and data is None:
+            if isinstance(params, dict):
+                cache_params = list(orderdict(params).values())
+
+            if isinstance(headers, dict):
+                cache_headers = list(orderdict(headers).values())
+
+            cache_key = (method, url, cache_params, cache_headers)
+            cache_key = str(md5sum(pickle.dumps(cache_key)))
+            cached = _cache_engine.load(cache_key)
+            if cached is not None:
+                cache_control = parse_cache_control_header(
+                    cached.headers.get('Cache-Control')
+                )
+                max_age = cache_control.max_age
+                date = cached.headers.get('Date')
+                etag = cached.headers.get('Etag')
+                date = utc(date)
+                current = now()
+                diff = (current-date).total_seconds()
+                if cache_control.no_cache:
+                    # If no-cache revalidate.
+                    headers['If-None-Match'] = etag
+                elif max_age and diff < int(max_age):
+                    # If not expired, use cache.
+                    _debug(method, url, params, data,
+                           headers, cached.headers,
+                           cached.content,
+                           cached.status_code,
+                           elapsed(), 'Memory')
+                    return cached
+                else:
+                    # If expired, revalidate..
+                    headers['If-None-Match'] = etag
 
         try:
             response = Response(client._s.request(method.upper(),
@@ -501,6 +622,15 @@ def request(client, method, uri, params=None,
                                                   data=data,
                                                   headers=headers,
                                                   stream=stream))
+            if cached is not None and response.status_code == 304:
+                _debug(method, url, params, data,
+                       headers, cached.headers,
+                       cached.content,
+                       cached.status_code,
+                       elapsed(),
+                       'Validated (304)')
+                return cached
+
             if response.status_code > 400:
                 try:
                     title = None
@@ -517,8 +647,18 @@ def request(client, method, uri, params=None,
                 except HTTPClientContentDecodingError:
                     raise HTTPError(response.status_code)
 
-        # except requests.exceptions.InvalidProxyURL as e:
-        #    raise HTTPClientInvalidProxyURL(e)
+            if stream is False and method == 'GET':
+                if response.status_code == 200:
+                    cache_control = parse_cache_control_header(
+                        response.headers.get('Cache-Control')
+                    )
+                    if (not cache_control.no_store and
+                            cache_control.max_age and
+                            response.headers.get('Etag') and
+                            response.headers.get('Date') and
+                            data is None):
+                        _cache_engine.store(cache_key, response, 604800)
+
         except requests.exceptions.InvalidHeader as e:
             raise HTTPClientInvalidHeader(e)
         except requests.exceptions.InvalidURL as e:
@@ -549,7 +689,7 @@ def request(client, method, uri, params=None,
 
 
 class Stream(object):
-    def __init__(self, client, method, uri, params=None,
+    def __init__(self, client, method, uri, params={},
                  data=None, headers={}, **kwargs):
         self._client = client
         self._method = method
@@ -589,7 +729,7 @@ class Client(object):
         self._s.cert = cert
         self._s.timeout = timeout
 
-    def stream(self, method, uri, params=None,
+    def stream(self, method, uri, params={},
                data=None, headers={}, **kwargs):
 
         return Stream(self,
@@ -600,7 +740,7 @@ class Client(object):
                       headers,
                       **kwargs)
 
-    def execute(self, method, uri, params=None,
+    def execute(self, method, uri, params={},
                 data=None, headers={}, **kwargs):
 
         return request(self, method, uri,
