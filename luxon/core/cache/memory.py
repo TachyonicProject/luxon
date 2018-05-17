@@ -32,9 +32,8 @@ import pickle
 import collections
 from datetime import timedelta
 
-from luxon import GetLogger
+from luxon.core.logger import GetLogger
 from luxon.utils.timezone import now
-from luxon.core.cls.singleton import Singleton
 
 log = GetLogger(__name__)
 

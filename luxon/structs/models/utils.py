@@ -27,35 +27,39 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-from luxon import g
-from luxon.utils.mail import SMTPClient
 
-from luxon import Config
 
-def send_email(email, rcpt=None, subject=None, body=None, msg=None,
-               fail_callback=None, success_callback=None):
+def parse_defaults(value):
+    if hasattr(value, '__call__'):
+        value = value()
 
-    server = g.config.get('smtp', 'server', fallback='127.0.0.1')
-    port = g.config.getint('smtp', 'port', fallback=587)
-    tls = g.config.getboolean('smtp', 'tls', fallback=False)
-    username = g.config.get('smtp', 'username', fallback=None)
-    password = g.config.get('smtp', 'password', fallback=None)
-
-    if username is not None and password is not None:
-        auth = (username, password)
-    else:
-        auth = None
-
-    with SMTPClient(email, server, port=port,
-                    tls=tls, auth=auth) as server:
-        if isinstance(rcpt, (list, tuple)):
-            rcpt_list = rcpt
-            for rcpt in rcpt_list:
-                if server.send(rcpt, subject=subject, body=body, msg=msg):
-                    if success_callback is not None:
-                        success_callback(rcpt)
-                else:
-                    if fail_callback is not None:
-                        fail_callback(rcpt)
+    if isinstance(value, str):
+        value = "'" + value + "'"
+    elif isinstance(value, bool):
+        if value is True or value == 1:
+            value = 1
         else:
-            return server.send(rcpt, subject=subject, body=body, msg=msg)
+            value = 0
+
+    return value
+
+
+def defined_length_check(user_min_length, user_max_length, min_length,
+                         max_length):
+    """Validate user defined lengths for field.
+
+    Returns:
+        Valid minimum length and maximum length as a tuple
+    """
+    if user_min_length is None:
+        user_min_length = min_length
+
+    if user_max_length is None:
+        user_max_length = max_length
+
+    if user_min_length < min_length:
+        raise ValueError("Define Valid Minimum Lenght")
+    if user_max_length > max_length:
+        raise ValueError("Define Valid Maximum Lenght")
+
+    return (min_length, max_length)

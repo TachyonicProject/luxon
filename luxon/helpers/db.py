@@ -31,6 +31,7 @@ import os
 
 from luxon import g
 from luxon.utils.pool import Pool
+from luxon.core.db.mysql import connect
 
 _cached_pool = None
 
@@ -38,15 +39,11 @@ _cached_pool = None
 def _get_conn():
     """_get_conn function for internal use
 
-    Imports connect module if required.
-    i.e. the database type in settings.ini is mysql
-    Returns a connect object populated with the information under the 'database' section
-
+    Returns a connect object populated with the information under
+    the 'database' section
     """
-    # #PERFORMANCE - ONLY IMPORT HERE!
-    kwargs = g.config.kwargs('database')
+    kwargs = g.app.config.kwargs('database')
     if kwargs.get('type') == 'mysql':
-        from luxon.core.db.mysql import connect
         return connect(kwargs.get('host', '127.0.0.1'),
                        kwargs.get('username', 'tachyonic'),
                        kwargs.get('password', 'password'),
@@ -68,7 +65,7 @@ def db():
     Returns:
          Database Connection object
     """
-    kwargs = g.config.kwargs('database')
+    kwargs = g.app.config.kwargs('database')
     global _cached_pool
     if kwargs.get('type') == 'mysql':
         if _cached_pool is None:
@@ -81,7 +78,7 @@ def db():
         db = "sqlite3.db"
 
         db = (os.path.abspath(os.path.join(
-            g.app_root,
+            g.app.path,
             db)))
         return connect(db)
     else:

@@ -37,7 +37,7 @@ from io import BytesIO
 from luxon.utils.encoding import (if_bytes_to_unicode,
                                   if_unicode_to_bytes)
 from luxon.utils.timezone import to_timezone, TimezoneSystem, TimezoneUTC
-from luxon.core.cls.singleton import NamedSingleton
+from luxon.utils.singleton import NamedSingleton
 from luxon.utils.system import (get_login_uid, get_group_gid,
                                 get_uid_login, get_gid_group)
 

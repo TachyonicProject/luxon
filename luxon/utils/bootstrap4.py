@@ -27,101 +27,12 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-from html.parser import HTMLParser
-
+from luxon.utils.html5 import select
 from luxon.structs.htmldoc import HTMLDoc
-from luxon.structs.models.fields import String
-from luxon.structs.models.fields import Boolean
-from luxon.structs.models.fields import DateTime
-from luxon.structs.models.fields import Enum
-from luxon.structs.models.fields import Confirm
+from luxon.structs.models.model import Model
 from luxon.utils.timezone import format_datetime
 from luxon.utils.objects import orderdict
 from collections import OrderedDict
-
-
-class _HTMLStripper(HTMLParser):
-    def __init__(self):
-        self.reset()
-        self.fed = []
-        self.convert_charrefs = True
-
-    def handle_data(self, d):
-        self.fed.append(d)
-
-    def get_data(self):
-        return ''.join(self.fed)
-
-
-def strip_tags(html):
-    html = html.replace('<BR>', "\r")
-    html = html.replace('</br>', "\r")
-    html = html.replace('</BR>', "\r")
-    html = html.replace('<br />', "\r")
-    html = html.replace('<BR />', "\r")
-    html = html.replace('</p>', "\r")
-    html = html.replace('</P>', "\r")
-    stripper = _HTMLStripper()
-    stripper.feed(html)
-    return stripper.get_data()
-
-
-def select(name, options, selected, empty=False, cls=None, onchange=None,
-           disabled=False, readonly=False):
-    html = HTMLDoc()
-
-    if disabled or readonly:
-        input = html.create_element('input')
-        input.set_attribute('type', 'text')
-        input.set_attribute('id', name)
-        input.set_attribute('name', name)
-        input.set_attribute('disabled')
-        if selected is not None:
-            input.set_attribute('value', selected)
-        input.set_attribute('class', 'form-control')
-        return input
-
-    select = html.create_element('select')
-    select.set_attribute('name', name)
-    select.set_attribute('id', name)
-
-    if onchange is not None:
-        select.set_attribute('onchange', onchange)
-
-    if cls is not None:
-        select.set_attribute('class', cls)
-
-    if empty is True:
-        option = select.create_element('option')
-        option.set_attribute('value', '')
-        option.append('')
-
-    if options is not None:
-        for opt in options:
-            if isinstance(options, (list, tuple,)):
-                if isinstance(opt, (list, tuple,)):
-                    try:
-                        option = select.create_element('option')
-                        option.set_attribute('value', opt[0])
-                        option.append(opt[1])
-                        if opt[1] == selected:
-                            option.set_attribute('selected')
-                    except IndexError:
-                        raise ValueError('Malformed values for HTML select')
-                else:
-                    if opt is not None:
-                        option = select.create_element('option')
-                        option.set_attribute('value', opt)
-                        if opt == selected:
-                            option.set_attribute('selected')
-                        option.append(opt)
-            elif isinstance(options, dict):
-                    option = select.create_element('option')
-                    option.set_attribute('value', opt)
-                    if opt == selected:
-                        option.set_attribute('selected')
-                    option.append(options[opt])
-    return html
 
 
 class NAVMenu(object):
@@ -268,30 +179,6 @@ class NAVMenu(object):
         return str(self._html_object)
 
 
-def datatable(id, columns):
-    """Under construction datatables"""
-    raise NotImplementedError('Not Completed')
-    """
-    html = HTMLDoc()
-    table = html.create_element('table')
-    thead = table.create_element('thead')
-    for column in columns:
-        tr = thead.create_element('tr')
-        th = tr.create_element('th')
-        th.append(column.title())
-
-    tfoot = table.create_element('tfoot')
-    for column in columns:
-        tr = tfoot.create_element('tr')
-        th = tr.create_element('th')
-        th.append(column.title())
-
-    tbody = table.create_element('tbody')
-    tbody.set_attribute('id', id)
-    script = html.create_element('script')
-    """
-
-
 def form(model, values=None, readonly=False):
     html = HTMLDoc()
     fields = model.fields
@@ -327,10 +214,10 @@ def form(model, values=None, readonly=False):
             else:
                 field_readonly = readonly
 
-            if isinstance(obj, Enum):
+            if isinstance(obj, Model.Enum):
                 div.append(select(field, obj.enum, value, cls="select",
                                   readonly=field_readonly))
-            elif isinstance(obj, DateTime):
+            elif isinstance(obj, Model.DateTime):
                 if value is not None:
                     value = format_datetime(value)
                 input = div.create_element('input')
@@ -352,7 +239,7 @@ def form(model, values=None, readonly=False):
                     input.set_attribute('required')
                 if obj.placeholder:
                     input.set_attribute('placeholder', obj.placeholder)
-            elif isinstance(obj, Boolean):
+            elif isinstance(obj, Model.Boolean):
                 input = div.create_element('input')
                 input.set_attribute('type', 'checkbox')
                 input.set_attribute('id', field)
@@ -363,7 +250,7 @@ def form(model, values=None, readonly=False):
                     input.set_attribute('checked')
                 input.set_attribute('value', 'true')
 
-            elif isinstance(obj, (String, Confirm,)):
+            elif isinstance(obj, (Model.String, Model.Confirm,)):
                 input = div.create_element('input')
                 if obj.password is False:
                     input.set_attribute('type', 'text')

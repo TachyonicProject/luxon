@@ -32,12 +32,13 @@ import configparser
 import json
 
 from luxon.utils import js
-from luxon.structs.container import Container
+
 
 class Config(configparser.ConfigParser):
     """Tachyonic Python ConfigParser extended.
 
-    You can find complete set of methods from Python ConfigParser documentation.
+    You can find complete set of methods from Python ConfigParser
+    documentation.
 
     Alterations in behaviour:
         * Sections are case-insenstive too.
@@ -51,7 +52,7 @@ class Config(configparser.ConfigParser):
     __slots__ = ()
 
     def __init__(self, config_file=None):
-        super().__init__(dict_type=Container)
+        super().__init__()
         if config_file is not None:
             self.load(config_file)
 
@@ -71,8 +72,9 @@ class Config(configparser.ConfigParser):
                 try:
                     return self[key]
                 except KeyError:
-                    raise AttributeError("config section '%s' has no attribute '%s'" %
-                                         (self._section_name.name, key,))
+                    raise AttributeError(
+                        "config section '%s' has no attribute '%s'" %
+                        (self._section_name.name, key,))
 
         try:
             proxy = Proxy(self[key])
@@ -171,7 +173,7 @@ class Config(configparser.ConfigParser):
                                 fallback=fallback)
 
     def getboolean(self, section, option, *, raw=False, vars=None,
-            fallback=configparser._UNSET):
+                   fallback=configparser._UNSET):
         """Like get(), but convert value to a boolean (currently case
         insensitively defined as 0, false, no, off for False, and 1, true,
         yes, on for True).  Returns False or True.
@@ -182,7 +184,8 @@ class Config(configparser.ConfigParser):
     def items(self, section=None, *, raw=False, vars=None):
         """If section is given, return a list of tuples with (name, value) for
         each option in the section. Otherwise, return a list of tuples with
-        (section_name, section_proxy) for each section, including DEFAULTSECT."""
+        (section_name, section_proxy) for each section, including DEFAULTSECT.
+        """
 
         return super().items(section=section, raw=raw, vars=vars)
 
@@ -263,7 +266,7 @@ class Config(configparser.ConfigParser):
             val = self.get(section, option)
             if val.strip() == '':
                 return []
-            val = val.replace('\n','').replace('\r','').split(',')
+            val = val.replace('\n', '').replace('\r', '').split(',')
         except configparser.NoSectionError as e:
             if fallback is not None:
                 val = fallback

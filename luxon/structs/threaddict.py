@@ -30,7 +30,6 @@
 
 import threading
 
-from luxon.structs.container import Container
 
 class ThreadDict(threading.local):
     """Dictionary for threads.
@@ -38,8 +37,8 @@ class ThreadDict(threading.local):
     Allows thread safe and mutable iterations and unique key/value hash table
     per thread. Context for hash table being the thread id.
 
-    Define globally for process and not within thread to take advantage of unique
-    content functionality.
+    Define globally for process and not within thread to take advantage of
+    unique key/value pair functionality.
     """
     def __setitem__(self, key, value):
         self.__dict__[key] = value

@@ -31,7 +31,7 @@
 from urllib import parse
 import re
 
-from luxon.utils.strings import blank_to_none
+from luxon.utils.text import blank_to_none
 
 _HEX_DIGITS = '0123456789ABCDEFabcdef'
 _HEX_TO_BYTE = dict(((a + b).encode(), bytes([int(a + b, 16)]))

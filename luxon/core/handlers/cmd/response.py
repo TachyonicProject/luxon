@@ -27,31 +27,20 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-
-import os
-import shutil
-
-def create_env(venv, wipe=False, clear=True, site_packages=False):
-    """Creates a new virtual environment in given path
-
-    Args:
-        venv (str): location of new environment
-        wipe (bool): clean location
-        clear (bool): clear environment
+import sys
 
 
-    If ``site_packages`` is true, then the global ``site-packages/``
-    directory will be on the path.
-
+class Response(object):
+    """Represents an CMD response to a client request.
     """
-    try:
-        import virtualenv
-    except ModuleNotFoundError:
-        raise ModuleNotFoundError("Requires 'virtualenv' python 3 package")
+    def __init__(self):
+        pass
 
-    if wipe is True and os.path.exists(venv):
-        shutil.rmtree(venv)
+    def __repr__(self):
+        return '<%s>' % (self.__class__.__name__)
 
-    virtualenv.create_environment(venv,
-                                  clear=clear,
-                                  site_packages=site_packages)
+    def __str__(self):
+        return '<%s>' % (self.__class__.__name__)
+
+    def write(self, value):
+        sys.stdout.write(value)

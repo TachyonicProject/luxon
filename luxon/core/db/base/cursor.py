@@ -27,13 +27,13 @@
 # STRICT LIABILITY,OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 # WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
-from luxon import GetLogger
-from luxon import exceptions
+from luxon.core.logger import GetLogger
 from luxon.core.db.base.args import args_to
 from luxon.core.db.base.exceptions import Exceptions as BaseExeptions
 from luxon.utils.timer import Timer
 
 log = GetLogger(__name__)
+
 
 def _log(cursor, msg, elapsed=0):
     """Debug Log Function

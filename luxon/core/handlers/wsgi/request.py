@@ -40,20 +40,17 @@ from luxon.utils import js
 from luxon.utils.cast import to_tuple
 from luxon.utils.timezone import TimezoneGMT, to_gmt
 from luxon.utils.objects import dict_value_property
-from luxon.utils.strings import blank_to_none
-from luxon.structs.container import Container
+from luxon.utils.text import blank_to_none
 from luxon.utils.imports import get_class
-from luxon import policy as policy_engine
-from luxon.utils.unique import request_id
-from luxon.core.auth import Auth
-from luxon.exceptions import (AccessDeniedError, HTTPInvalidHeader,
+from luxon.exceptions import (HTTPInvalidHeader,
                               HTTPMissingHeader, HTTPMissingFormField)
 from luxon.utils.files import CachedInput
 from luxon.core.session import Session
 from luxon.utils.http import ETags
+from luxon.core.handlers.request import RequestBase
 
 
-class Request(object):
+class Request(RequestBase):
     """Represents a clients HTTP request.
 
     Args:
@@ -305,14 +302,10 @@ class Request(object):
         '_cached_is_bot',
         '_cached_static',
         '_cached_is_ajax',
-        '_cached_auth',
-        '_cached_id',
-        '_cached_policy',
         '_cached_raw',
         '_cached_json',
         '_cached_stream',
         '_cached_session',
-        '_cached_context',
         '_cached_log',
         '_cached_cache_control',
         '_cached_match',
@@ -321,6 +314,7 @@ class Request(object):
     )
 
     def __init__(self, env, start_response):
+        super().__init__()
         # Response Object for Request
         self.response = None
 
@@ -344,10 +338,6 @@ class Request(object):
 
         # Caching
         self._user_token = None
-        self._cached_context = None
-        self._cached_id = None
-        self._cached_auth = None
-        self._cached_policy = None
         self._cached_raw = None
         self._cached_stream = None
         self._cached_json = None
@@ -375,14 +365,6 @@ class Request(object):
         self._cached_match = None
         self._cached_none_match = None
 
-    def __repr__(self):
-        return '<%s: %s %r>' % (self.__class__.__name__, self.method,
-                                self.route)
-
-    def __str__(self):
-        return '<%s: %s %r>' % (self.__class__.__name__, self.method,
-                                self.route)
-
     @property
     def if_match(self):
         if self._cached_match is None:
@@ -407,35 +389,6 @@ class Request(object):
             return int(self.cache_control['max-age'])
         else:
             return 0
-
-    @property
-    def policy(self):
-        if self._cached_policy is None:
-            self._cached_policy = policy_engine(req=self, g=g)
-
-        return self._cached_policy
-
-    @property
-    def id(self):
-        if self._cached_id is None:
-            self._cached_id = request_id()
-        return self._cached_id
-
-    @property
-    def credentials(self):
-        if self._cached_auth is None:
-            expire = g.config.getint('tokens', 'expire', fallback=3600)
-            self._cached_auth = Auth(expire=expire)
-            if self.user_token:
-                try:
-                    self.credentials.token = self.user_token
-                    self.log['USER-ID'] = self._cached_auth.user_id
-                except AccessDeniedError as e:
-                    self.user_token = None
-                    self.session.clear()
-                    raise
-
-        return self._cached_auth
 
     @property
     def stream(self):
@@ -485,12 +438,14 @@ class Request(object):
     @property
     def session(self):
         if self._cached_session is None:
-            expire = g.config.getint('sessions', 'expire', fallback=86400)
-            backend = g.config.get('sessions', 'backend',
-                                   fallback='luxon.core.session:SessionFile')
+            expire = g.app.config.getint('sessions', 'expire', fallback=86400)
+            backend = g.app.config.get(
+                'sessions', 'backend',
+                fallback='luxon.core.session:SessionFile')
             backend = get_class(backend)
-            session_id = g.config.get('sessions', 'session',
-                                      fallback='luxon.core.session:cookie')
+            session_id = g.app.config.get(
+                'sessions', 'session',
+                fallback='luxon.core.session:cookie')
             session_id = get_class(session_id)
 
             self._cached_session = Session(
@@ -504,17 +459,10 @@ class Request(object):
     @property
     def log(self):
         if self._cached_log is None:
-            self._cached_log = Container()
+            self._cached_log = {}
             self._cached_log['REMOTE-HOST'] = self.remote_addr
 
         return self._cached_log
-
-    @property
-    def context(self):
-        if self._cached_context is None:
-            self._cached_context = Container()
-
-        return self._cached_context
 
     @property
     def raw(self):
@@ -534,7 +482,8 @@ class Request(object):
     def static(self):
         if self._cached_static is None:
             try:
-                self._cached_static = g.config.application.static.rstrip('/')
+                self._cached_static = \
+                        g.app.config.application.static.rstrip('/')
             except AttributeError:
                 self._cached_static = ''
 
@@ -543,7 +492,7 @@ class Request(object):
     @property
     def app_uri(self):
         if self._cached_app_uri is None:
-            if g.config.get('application', 'use_forwarded') is True:
+            if g.app.config.get('application', 'use_forwarded') is True:
                 self._cached_app_uri = (self.forwarded_scheme + '://' +
                                         self.forwarded_host +
                                         self.app)
@@ -570,7 +519,7 @@ class Request(object):
     @property
     def uri(self):
         if self._cached_uri is None:
-            if g.config.get('application', 'use_forwarded') is True:
+            if g.app.config.get('application', 'use_forwarded') is True:
                 self._cached_uri = self.forwarded_uri
             else:
                 scheme = self.env['wsgi.url_scheme']
@@ -946,7 +895,7 @@ class Request(object):
         elif self.host in self.cookies and 'region' in self.session:
             return self.session.get('region')
 
-        return g.config.get('restapi', 'region', fallback=None)
+        return g.app.config.get('restapi', 'region', fallback=None)
 
     @property
     def context_interface(self):
@@ -956,7 +905,7 @@ class Request(object):
         elif self.host in self.cookies and 'interface' in self.session:
             return self.session.get('interface')
 
-        return g.config.get('restapi', 'interface', fallback='public')
+        return g.app.config.get('restapi', 'interface', fallback='public')
 
     @property
     def context_domain(self):

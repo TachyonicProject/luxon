@@ -42,12 +42,15 @@ class Daemon(object):
         2. Subclass the Daemon class and override the run() method
         3. Define method to run via keyword arguements.
     """
-    def __init__(self, pidfile, run=None, stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
+    def __init__(self, pidfile, run=None, args=[], kwargs={},
+                 stdin='/dev/null', stdout='/dev/null', stderr='/dev/null'):
         self.stdin = stdin
         self.stdout = stdout
         self.stderr = stderr
         self.pidfile = pidfile
         self._run = run
+        self._args = args
+        self._kwargs = kwargs
 
     def _daemonize(self):
         """Daemonize Process
@@ -217,11 +220,12 @@ class Daemon(object):
     def run(self):
         """Method to run daemonized
 
-        You should override this method when you subclass Daemon. It will be called after the process has been
+        You should override this method when you subclass Daemon.
+        It will be called after the process has been
         daemonized by start() or restart().
         """
         if self._run is not None:
-            self._run()
+            self._run(*self._args, **self._kwargs)
         else:
             raise NotImplementedError('No run method defined or run ' +
                                       ' function provided')

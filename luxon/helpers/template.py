@@ -27,53 +27,53 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import pickle
+from docutils.core import publish_parts
 
-from luxon.utils.decorator import decorator
-from luxon.utils.objects import object_name
-from luxon.core.cache import Cache
-from luxon.utils.hashing import md5sum
-from luxon.utils.objects import orderdict
+from luxon import g
+from luxon.exceptions import NoContextError
 
-_cache_engine = None
+_cached_env = None
 
 
-def cache(expiry_time, func, *args, **kw):
-    global _cache_engine
+def render_template(template, *args, rst2html=False, **kwargs):
+    """Function to return a jinja2 rendered template.
 
-    if _cache_engine is None:
-        _cache_engine = Cache()
+    Imports the Environment class from luxon.core.template only when required,
+    in order to imporve performance as jinja2 libraries are low to import.
 
-    # mem args used to build reference id for cache.
-    mem_args = [object_name(func), ]
+    Args:
+        template (str): filename of template to render.
 
-    # NOTE(cfrademan): This is important, we dont wantobject address,
-    # types etc inside of the cache reference. So using actual names
-    # to build cache. When using redis for cache, the object type,
-    # id/address will not be the same on different threads/
-    # processes/hosts.
-    args = list(args) + list(orderdict(kw).values())
-    for arg in args:
-        if not isinstance(arg, (str, int, float, bytes,)):
-            mem_args.append(object_name(arg))
-        else:
-            mem_args.append(arg)
+    Retruns:
+        jinja2 rendered template with supplied args and kwargs.
 
-    # create the actual key / reference id.
-    key = md5sum(pickle.dumps(mem_args))
+    """
+    try:
+        app = g.current_request.app.strip('/').strip()
+        if app != '':
+            app = '/' + app
 
-    cached = _cache_engine.load(key)
+        context = {
+            'APP': app,
+            'REQ': g.current_request,
+            'REQUEST_ID': g.current_request.id,
+            'STATIC': g.current_request.static,
+            'CONTEXT': g.current_request.context,
+        }
 
-    if cached is not None:
-        return cached
+        if hasattr(g.current_request, 'policy'):
+            context['POLICY'] = g.current_request.policy.validate
 
-    result = func(*args, **kw)
-    _cache_engine.store(key, result, expiry_time)
+    except NoContextError:
+        context = {}
 
-    return result
+    context.update(kwargs)
 
+    template = g.app.templating.get_template(template)
+    content = template.render(*args, **context)
 
-def memoize(expiry_time=3600):
-    def _memoize(func, *args, **kw):
-        return cache(expiry_time, func, *args, **kw)[0]
-    return decorator(_memoize)
+    if rst2html:
+        content = publish_parts(writer_name='html',
+                                source=content)['body']
+
+    return content
