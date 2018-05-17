@@ -27,12 +27,12 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-from luxon import g
-from luxon import register_resource
-from luxon import register_resources
+from luxon import router
+from luxon import register
 
-@register_resource('GET', '/')
+
+@register.resource('GET', '/')
 def index(req, resp):
     """Index of API Resources.
     """
-    return g.router.index
+    return router.index
