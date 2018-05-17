@@ -29,12 +29,11 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 import os
 
-from luxon import g
-from luxon import GetLogger
+from luxon.core.logger import GetLogger
 from luxon.utils import imports
-from luxon.core.config.defaults import defaults as default_config
 
 log = GetLogger(__name__)
+
 
 def determine_app_root(name, app_root=None):
     """Determines the root directory of a given application
@@ -48,8 +47,8 @@ def determine_app_root(name, app_root=None):
     if app_root is None:
         if name == "__main__" or "_mod_wsgi" in name:
             app_mod = imports.import_module(name)
-            return os.path.abspath( \
-                os.path.dirname( \
+            return os.path.abspath(
+                os.path.dirname(
                     app_mod.__file__)).rstrip('/')
         else:
             log.error("Unable to determine application root." +
@@ -62,61 +61,3 @@ def determine_app_root(name, app_root=None):
             raise FileNotFoundError("Invalid path"
                                     + " for root '%s'"
                                     % app_root) from None
-
-def load_config(ini, defaults=True):
-    """Loads the app config from a given file
-
-    Args:
-        ini (file object): settings file
-        defaults (bool): option to load default config
-
-    Returns:
-          *g.config* object
-    """
-    if defaults:
-        g.config.read_dict(default_config)
-
-    if os.path.isfile(ini):
-        g.config.load(ini)
-        return g.config
-
-    log.warning("%s not found" % ini)
-
-    return g.config
-
-
-def init(name, app_root=None, ini=None, defaults=True):
-    """Initialises application
-
-    Sets the global attributes:
-
-        - g.app_name
-        - g.app_root
-
-    Loads the app config from the *settings.ini* file or
-    from a given file
-
-    Configures the logger for the app
-
-    Args:
-        name (str): app name
-        app_root (str): app root
-        ini (file obj): config file
-
-    """
-    # Set Application Name
-    g.app_name = name
-
-    # Attempt to determine application root.
-    g.app_root = app_root = determine_app_root(name,
-                                               app_root)
-
-    # Load Configuration
-    if ini is None:
-        load_config(app_root +
-                    '/settings.ini', defaults)
-    else:
-        load_config(ini, defaults)
-
-    # Configure Logger.
-    log.configure()

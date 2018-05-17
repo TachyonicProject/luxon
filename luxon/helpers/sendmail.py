@@ -27,29 +27,34 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import sys
-import pickle
-
-from luxon.helpers.rd import strict
-from luxon import GetLogger
-
-log = GetLogger(__name__)
+from luxon import g
+from luxon.utils.mail import SMTPClient
 
 
-class Redis(object):
-    def __init__(self, max_objs=None, max_obj_size=50):
-        self._max_obj_size = 1024 * max_obj_size
-        self.redis = strict()
-        log.info('Redis Cache Initialized' +
-                 ' max_obj_size=%sKbytes' % (max_obj_size,))
+def sendmail(email, rcpt=None, subject=None, body=None, msg=None,
+             fail_callback=None, success_callback=None):
 
-    def load(self, key):
-        value = self.redis.get('cache:' + key)
-        if value is not None:
-            return pickle.loads(value)
+    server = g.app.config.get('smtp', 'host', fallback='127.0.0.1')
+    port = g.app.config.getint('smtp', 'port', fallback=587)
+    tls = g.app.config.getboolean('smtp', 'tls', fallback=False)
+    username = g.app.config.get('smtp', 'username', fallback=None)
+    password = g.app.config.get('smtp', 'password', fallback=None)
 
-    def store(self, key, value, expire):
-        if sys.getsizeof(value, 0) <= self._max_obj_size:
-            self.redis.set('cache:' + key,
-                           pickle.dumps(value),
-                           ex=expire)
+    if username is not None and password is not None:
+        auth = (username, password)
+    else:
+        auth = None
+
+    with SMTPClient(email, server, port=port,
+                    tls=tls, auth=auth) as server:
+        if isinstance(rcpt, (list, tuple)):
+            rcpt_list = rcpt
+            for rcpt in rcpt_list:
+                if server.send(rcpt, subject=subject, body=body, msg=msg):
+                    if success_callback is not None:
+                        success_callback(rcpt)
+                else:
+                    if fail_callback is not None:
+                        fail_callback(rcpt)
+        else:
+            return server.send(rcpt, subject=subject, body=body, msg=msg)

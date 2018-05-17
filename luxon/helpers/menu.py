@@ -30,7 +30,7 @@
 from luxon import g
 
 
-class UIMenu(object):
+class Menu(object):
     """Class UIMenu.
 
     Used to generate Menu objects to add items

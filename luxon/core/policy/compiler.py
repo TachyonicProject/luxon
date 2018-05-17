@@ -32,7 +32,7 @@ import re
 
 from luxon.utils.timer import Timer
 from luxon.core.logger import GetLogger
-from luxon.core.cls.singleton import Singleton
+from luxon.utils.singleton import Singleton
 
 log = GetLogger(__name__)
 

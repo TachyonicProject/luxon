@@ -27,46 +27,20 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+from luxon import g
+from luxon.utils.encoding import if_bytes_to_unicode
 
-class Reproduce(type):
-    """Reproduce MetaClass.
 
-    A convienance method to reproduce new object from object class.
+class TrackToken(object):
+    def __init__(self, expire):
+        self._session_id = g.current_request.user_token
 
-    This cleaner than using copy/deepcopy.
+    def clear(self):
+        pass
 
-    New object will be initilized with same args and kwargs as parent.
-    """
-    def __call__(_cls, *args, **kwargs):
-        instance = super(Reproduce, _cls).__call__(*args, **kwargs)
+    def save(self):
+        pass
 
-        instance._args = args
-        instance._kwargs = kwargs
-
-        return instance
-
-    def __new__(mcs, name, bases, attrs, **kwargs):
-        def reproduce(self):
-            """Reproduce object class.
-
-            Returns new object.
-            """
-            # If has __init__ args stored private property
-            if hasattr(self, '_args'):
-                args = self._args
-            else:
-                args = []
-
-            # If has __init__ kwargs stored private property
-            if hasattr(self, '_kwargs'):
-                kwargs = self._kwargs
-            else:
-                kwargs = {}
-
-            return self.__class__(*args, **kwargs)
-
-        attrs['reproduce'] = reproduce
-        return super().__new__(mcs, name, bases, attrs)
-
-    def __init__(cls, name, bases, attrs, **kwargs):
-        return super().__init__(name, bases, attrs)
+    def __str__(self):
+        return if_bytes_to_unicode(str(self._session_id),
+                                   'ISO-8859-1')

@@ -32,8 +32,7 @@ from luxon.constants import HTTP_STATUS_CODES
 
 
 class Error(Exception):
-    """Tachyonic Root Exception
-
+    """Luxon BaseException
     """
 
 
@@ -527,6 +526,7 @@ class HTTPPaymentRequired(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(402, *args, **kwargs)
 
+
 class HTTPForbidden(HTTPError):
     """403 Forbidden.
 
@@ -557,6 +557,7 @@ class HTTPForbidden(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(403, *args, **kwargs)
 
+
 class HTTPNotFound(HTTPError):
     """404 Not Found.
 
@@ -582,6 +583,7 @@ class HTTPNotFound(HTTPError):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(404, *args, **kwargs)
+
 
 class HTTPMethodNotAllowed(HTTPError):
     """405 Method Not Allowed.
@@ -610,6 +612,7 @@ class HTTPMethodNotAllowed(HTTPError):
                  headers={}, **kwargs):
         headers['Allow'] = ', '.join(allowed_methods)
         super().__init__(405, description, title, headers, **kwargs)
+
 
 class HTTPNotAcceptable(HTTPError):
     """406 Not Acceptable.
@@ -669,6 +672,7 @@ class HTTPConflict(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(409, *args, **kwargs)
 
+
 class HTTPGone(HTTPError):
     """410 Gone.
 
@@ -704,6 +708,7 @@ class HTTPGone(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(410, *args, **kwargs)
 
+
 class HTTPLengthRequired(HTTPError):
     """411 Length Required.
 
@@ -721,8 +726,10 @@ class HTTPLengthRequired(HTTPError):
         headers (dict): A dict of header names and values to set.
         href (str): An href that can be used for more information.
     """
-    def __init__(self, description='Content-Length header required from client.', **kwargs):
+    def __init__(self, description='Content-Length header required.',
+                 **kwargs):
         super().__init__(411, description, **kwargs)
+
 
 class HTTPPreconditionFailed(HTTPError):
     """412 Precondition Failed.
@@ -744,6 +751,7 @@ class HTTPPreconditionFailed(HTTPError):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(412, *args, **kwargs)
+
 
 class HTTPPayloadTooLarge(HTTPError):
     """413 Payload Too Large.
@@ -767,6 +775,7 @@ class HTTPPayloadTooLarge(HTTPError):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(413, *args, **kwargs)
+
 
 class HTTPUriTooLong(HTTPError):
     """414 URI Too Long.
@@ -792,6 +801,7 @@ class HTTPUriTooLong(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(414, *args, **kwargs)
 
+
 class HTTPUnsupportedMediaType(HTTPError):
     """415 Unsupported Media Type.
 
@@ -812,6 +822,7 @@ class HTTPUnsupportedMediaType(HTTPError):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(415, *args, **kwargs)
+
 
 class HTTPRangeNotSatisfiable(HTTPError):
     """416 Range Not Satisfiable.
@@ -857,6 +868,7 @@ class HTTPRangeNotSatisfiable(HTTPError):
         headers = {'Content-Range': 'bytes */' + str(resource_length)}
         super().__init__(416, description, title, headers, **kwargs)
 
+
 class HTTPUnprocessableEntity(HTTPError):
     """422 Unprocessable Entity.
 
@@ -880,6 +892,7 @@ class HTTPUnprocessableEntity(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(422, *args, **kwargs)
 
+
 class HTTPLocked(HTTPError):
     """423 Locked.
 
@@ -899,6 +912,7 @@ class HTTPLocked(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(423, *args, **kwargs)
 
+
 class HTTPFailedDependency(HTTPError):
     """424 Failed Dependency.
 
@@ -916,6 +930,7 @@ class HTTPFailedDependency(HTTPError):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(424, *args, **kwargs)
+
 
 class HTTPPreconditionRequired(HTTPError):
     """428 Precondition Required.
@@ -941,6 +956,7 @@ class HTTPPreconditionRequired(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(428, *args, **kwargs)
 
+
 class HTTPTooManyRequests(HTTPError):
     """429 Too Many Requests.
 
@@ -959,6 +975,7 @@ class HTTPTooManyRequests(HTTPError):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(429, *args, **kwargs)
+
 
 class HTTPRequestHeaderFieldsTooLarge(HTTPError):
     """431 Request Header Fields Too Large.
@@ -1006,6 +1023,7 @@ class HTTPUnavailableForLegalReasons(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(451, *args, **kwargs)
 
+
 class HTTPInternalServerError(HTTPError):
     """500 Internal Server Error.
 
@@ -1022,6 +1040,7 @@ class HTTPInternalServerError(HTTPError):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(500, *args, **kwargs)
+
 
 class HTTPNotImplemented(HTTPError):
     """501 Not Implemented.
@@ -1046,6 +1065,7 @@ class HTTPNotImplemented(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(501, *args, **kwargs)
 
+
 class HTTPBadGateway(HTTPError):
     """502 Bad Gateway.
 
@@ -1063,6 +1083,7 @@ class HTTPBadGateway(HTTPError):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(502, *args, **kwargs)
+
 
 class HTTPServiceUnavailable(HTTPError):
     """503 Service Unavailable.
@@ -1090,6 +1111,7 @@ class HTTPServiceUnavailable(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(503, *args, **kwargs)
 
+
 class HTTPGatewayTimeout(HTTPError):
     """504 Gateway Timeout.
 
@@ -1108,6 +1130,7 @@ class HTTPGatewayTimeout(HTTPError):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(504, *args, **kwargs)
+
 
 class HTTPVersionNotSupported(HTTPError):
     """505 HTTP Version Not Supported
@@ -1133,6 +1156,7 @@ class HTTPVersionNotSupported(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(505, *args, **kwargs)
 
+
 class HTTPInsufficientStorage(HTTPError):
     """507 Insufficient Storage.
 
@@ -1155,6 +1179,7 @@ class HTTPInsufficientStorage(HTTPError):
     def __init__(self, *args, **kwargs):
         super().__init__(507, *args, **kwargs)
 
+
 class HTTPLoopDetected(HTTPError):
     """508 Loop Detected.
 
@@ -1173,6 +1198,7 @@ class HTTPLoopDetected(HTTPError):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(508, *args, **kwargs)
+
 
 class HTTPNetworkAuthenticationRequired(HTTPError):
     """511 Network Authentication Required.
@@ -1198,12 +1224,13 @@ class HTTPNetworkAuthenticationRequired(HTTPError):
 
     Keyword Args:
         description (str): Human friendly description of the error.
-        title (str): Error title (default '511 Network Authentication Required')
+        title (str): Title (default '511 Network Authentication Required')
         headers (dict): A dict of header names and values to set.
         href (str): An href that can be used for more information.
     """
     def __init__(self, *args, **kwargs):
         super().__init__(511, *args, **kwargs)
+
 
 class HTTPInvalidHeader(HTTPBadRequest):
     """Header in the request is invalid.
@@ -1220,6 +1247,7 @@ class HTTPInvalidHeader(HTTPBadRequest):
         description = "Value for header '%s'" % header_name + \
             "is invalid. %s" % msg
         super().__init__(description, title, href=href)
+
 
 class HTTPMissingHeader(HTTPBadRequest):
     """Header is missing from the request.
@@ -1251,6 +1279,7 @@ class HTTPInvalidQueryParam(HTTPBadRequest):
         description = "The URI query string '%s' parameter is invalid." % param
         super().__init__(description, title, href=href)
 
+
 class HTTPMissingQueryParam(HTTPBadRequest):
     """Query String parameter in the request is invalid.
 
@@ -1265,6 +1294,7 @@ class HTTPMissingQueryParam(HTTPBadRequest):
         description = "The URI query string '%s' parameter is missing." % param
         super().__init__(description, title, href=href)
 
+
 class HTTPInvalidFormField(HTTPBadRequest):
     """Form field in the request is invalid.
 
@@ -1278,6 +1308,7 @@ class HTTPInvalidFormField(HTTPBadRequest):
     def __init__(self, field, title=None, href=None):
         description = "The form field '%s' is invalid." % field
         super().__init__(description, title, href=href)
+
 
 class HTTPMissingFormField(HTTPBadRequest):
     """Query String parameter in the request is invalid.

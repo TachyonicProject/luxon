@@ -27,15 +27,13 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-
-import datetime
 from timeit import default_timer
-from contextlib import contextmanager
 
-from luxon import GetLogger
 from luxon import g
+from luxon.core.logger import GetLogger
 
 log = GetLogger(__name__)
+
 
 class Timer():
     """Code Execution Timer.
@@ -60,7 +58,7 @@ class Timer():
     # In this case the pattern wins since we use timers in many parts of
     # the framework.
     def __enter__(self):
-        if g.debug:
+        if g.app.debug:
             start = default_timer()
 
             def timed():
@@ -75,5 +73,5 @@ class Timer():
         return lambda: None
 
     def __exit__(self, type, value, traceback):
-        if g.debug:
+        if g.app.debug:
             self.end = self.timed()

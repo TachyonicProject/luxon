@@ -35,7 +35,7 @@ from luxon import __identity__
 from luxon import constants as const
 from luxon.utils.encoding import is_ascii
 from luxon.utils.timezone import TimezoneGMT, to_gmt, format_http_datetime
-from luxon.utils.http import http_see_other, http_not_modified
+from luxon.core.handlers.wsgi.redirects import Redirects
 from luxon.structs.cidict import CiDict
 from luxon.utils.encoding import if_unicode_to_bytes
 from luxon.utils.http import (parse_cache_control_header,
@@ -45,7 +45,7 @@ from luxon.utils import js
 GMT_TIMEZONE = TimezoneGMT()
 
 
-class Response(object):
+class Response(Redirects):
     """Represents an HTTP response to a client request.
 
     Args:
@@ -183,12 +183,6 @@ class Response(object):
     @status.setter
     def status(self, value):
         self._http_response_status_code = int(value)
-
-    def redirect(self, uri):
-        http_see_other(uri)
-
-    def not_modified(self):
-        http_not_modified()
 
     def set_header(self, name, value):
         """Set a header for this response to a given value.

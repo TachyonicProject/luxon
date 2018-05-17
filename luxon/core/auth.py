@@ -34,7 +34,7 @@ from luxon import g
 from luxon.utils.encoding import (if_unicode_to_bytes,
                                   if_bytes_to_unicode,)
 from luxon.utils import rsa
-from luxon import GetLogger
+from luxon.core.logger import GetLogger
 from luxon.exceptions import AccessDeniedError
 from luxon.utils import js
 from luxon.utils.timezone import utc, now
@@ -73,13 +73,15 @@ class Auth(object):
 
         self._rsakey = rsa.RSAKey()
 
-        if files.exists(g.app_root.rstrip('/') + '/private.pem'):
-            password = g.config.get('tokens', 'key_password', fallback=None)
-            self._rsakey.load_pem_key_file(g.app_root.rstrip('/') +
+        if files.exists(g.app.path.rstrip('/') + '/private.pem'):
+            password = g.app.config.get('tokens',
+                                        'key_password',
+                                        fallback=None)
+            self._rsakey.load_pem_key_file(g.app.path.rstrip('/') +
                                            '/private.pem',
                                            password=password)
-        if files.exists(g.app_root.rstrip('/') + '/public.pem'):
-            self._rsakey.load_pem_key_file(g.app_root.rstrip('/') +
+        if files.exists(g.app.path.rstrip('/') + '/public.pem'):
+            self._rsakey.load_pem_key_file(g.app.path.rstrip('/') +
                                            '/public.pem')
 
     def clear(self):

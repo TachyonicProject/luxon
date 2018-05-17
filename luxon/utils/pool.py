@@ -29,7 +29,7 @@
 import queue
 import atexit
 
-from luxon import GetLogger
+from luxon.core.logger import GetLogger
 from luxon.exceptions import PoolExhausted
 from luxon.utils.objects import object_name
 

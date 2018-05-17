@@ -27,27 +27,50 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+import sys
+from luxon.core.handlers.request import RequestBase
 
-from luxon.utils.encoding import is_text
 
-
-def filter_none_text(string):
-    """Parse String and filter Binary
-
-    If Bytes does not contain string then return 'BINARY'
-    else original string will be returned.
-
-    Args:
-        string (bytes): Bytes String
-
-    Returns:
-        "BINARY" if the argument contained binary
-
+class Request(RequestBase):
+    """Represents a cmd request.
     """
-    if string is not None:
-        if is_text(string):
-            return string
-        else:
-            return "BINARY"
-    else:
-        return ''
+
+    __slots__ = (
+        'tag',
+        'method',
+        'route',
+        'route_kwargs',
+        'response',
+        'log',
+    )
+
+    def __init__(self, method, route):
+        super().__init__()
+        # Response Object for Request
+        self.response = None
+
+        # Set HTTP Request Method - Router uses this.
+        self.method = method
+
+        self.route = route or '/'
+
+        self.log = {}
+
+    @property
+    def stream(self):
+        return sys.stdin
+
+    @property
+    def raw(self):
+        return sys.stdin
+
+    def read(self, size=None):
+        """Read at most size, returned as a str object.
+
+        Keyword Args:
+            size (int): Size to read.
+
+        Returns:
+            str: str within the request payload.
+        """
+        return self.stream.read(size)

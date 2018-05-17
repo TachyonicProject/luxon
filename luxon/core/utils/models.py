@@ -28,13 +28,15 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 
-from luxon import g
+from luxon.core.register import _models
+from luxon.structs.models.sqlmodel import SQLModel
 
 
 def backup_tables(conn):
     """Makes a backup of a database
 
-    Retrieves the models in use and returns the corresponding tables and their entries from the database
+    Retrieves the models in use and returns the corresponding tables and
+    their entries from the database
 
     Args:
         conn (connection object): connection object for the database
@@ -45,11 +47,12 @@ def backup_tables(conn):
         with the key being the table name
     """
     models = {}
-    for Model in reversed(g.models):
-        if conn.has_table(Model.model_name):
-            crsr = conn.execute("SELECT * FROM %s" % Model.model_name)
-            models[Model.model_name] = crsr.fetchall()
-            conn.commit()
+    for Model in reversed(_models):
+        if issubclass(Model, SQLModel):
+            if conn.has_table(Model.model_name):
+                crsr = conn.execute("SELECT * FROM %s" % Model.model_name)
+                models[Model.model_name] = crsr.fetchall()
+                conn.commit()
     return models
 
 
@@ -61,16 +64,18 @@ def drop_tables(conn):
     Args:
         conn (connection object): the database to be deleted
     """
-    for Model in reversed(g.models):
-        if conn.has_table(Model.model_name):
-            conn.execute('DROP TABLE %s' % Model.model_name)
+    for Model in reversed(_models):
+        if issubclass(Model, SQLModel):
+            if conn.has_table(Model.model_name):
+                conn.execute('DROP TABLE %s' % Model.model_name)
 
 
 def create_tables():
     """Creates tables for all models in g.models
     """
-    for Model in g.models:
-        Model.create_table()
+    for Model in _models:
+        if issubclass(Model, SQLModel):
+            Model.create_table()
 
 
 def restore_tables(conn, backup):
@@ -80,8 +85,9 @@ def restore_tables(conn, backup):
         conn (connection object): connection object of the database
         backup (dict): backup dictionary
     """
-    for Model in g.models:
-        if Model.model_name in backup:
-            conn.insert(Model.model_name, backup[Model.model_name])
-        else:
-            conn.insert(Model.model_name, Model.db_default_rows)
+    for Model in _models:
+        if issubclass(Model, SQLModel):
+            if Model.model_name in backup:
+                conn.insert(Model.model_name, backup[Model.model_name])
+            else:
+                conn.insert(Model.model_name, Model.db_default_rows)
