@@ -30,7 +30,6 @@
 
 import sys
 
-from luxon.utils.timer import Timer
 from luxon.core.logger import GetLogger
 
 log = GetLogger(__name__)
@@ -46,14 +45,9 @@ def import_module(module):
         Module in given path.
     """
     if module not in sys.modules:
-        with Timer() as elapsed:
-            log.info('Importing module: %s' % module)
+        log.info('Importing module: %s' % module)
 
-            __import__(module)
-
-            log.info('Importing module: %s (Completed)' %
-                     module,
-                     timer=elapsed())
+        __import__(module)
 
     return sys.modules[module]
 
@@ -103,6 +97,7 @@ def get_class(path):
 
 
 get_func = get_class
+
 
 def get_classes(classes):
     """Initilize Classes.

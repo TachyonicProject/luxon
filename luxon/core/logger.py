@@ -34,7 +34,7 @@ import logging.handlers
 
 from luxon import g
 from luxon.exceptions import NoContextError
-from luxon.core.cls.singleton import NamedSingleton
+from luxon.utils.singleton import NamedSingleton
 from luxon.utils.formatting import format_seconds
 from luxon.utils.files import is_socket
 from luxon.utils.split import list_of_lines, split_by_n
@@ -117,11 +117,11 @@ class _TachyonFilter(logging.Filter):
 
     def filter(self, record):
         try:
-            record.app_name = ' ' + g.config.get('application',
-                                                 'name',
-                                                 fallback='')
+            record.app_name = ' ' + g.app.config.get('application',
+                                                     'name',
+                                                     fallback='')
         except NoContextError:
-            record.app_name = ''
+            pass
 
         return True
 
@@ -144,10 +144,21 @@ def set_level(logger, level):
                                  " '%s'" % logger.name) from None
 
 
-def configure(config_section, logger):
-    if config_section in g.config:
+def configure(config, config_section, logger):
+    if (config_section == 'application' and
+       config_section not in config):
+        # Clean/Remove Handlers
+        for handler in logger.handlers:
+            logger.removeHandler(handler)
+
+        # Set Stdout
+        handler = logging.StreamHandler(stream=sys.stdout)
+        handler.addFilter(_TachyonFilter())
+        logger.addHandler(handler)
+
+    if config_section in config:
         # Config Section
-        section = g.config[config_section]
+        section = config[config_section]
 
         # Clean/Remove Handlers
         for handler in logger.handlers:
@@ -218,15 +229,15 @@ class GetLogger(metaclass=NamedSingleton):
     def level(self, level):
         set_level(self.logger, level)
 
-    def configure(self):
+    def configure(self, config):
         # Configure Root
-        configure('application', logging.getLogger())
+        configure(config, 'application', logging.getLogger())
 
         # Configure Sub-Loggers
         for logger in logging.Logger.manager.loggerDict:
             sub_logger = logging.Logger.manager.loggerDict[logger]
             if isinstance(sub_logger, logging.Logger):
-                configure(logger, sub_logger)
+                configure(config, logger, sub_logger)
 
     def critical(self, msg, prepend=None, append=None, timer=None,
                  log_id=None):

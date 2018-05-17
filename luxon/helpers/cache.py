@@ -27,55 +27,44 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+import pickle
+
+from luxon.utils.objects import object_name
+from luxon.core.cache import Cache
+from luxon.utils.hashing import md5sum
+from luxon.utils.objects import orderdict
 
 
-class MiddlewareWrapper(object):
-    __slots__ = ('_middleware', '_func')
+def cache(expire, func, *args, **kwargs):
+    global _cache_engine
 
-    def __init__(self, middleware, func):
-        self._middleware = middleware
-        self._func = func
+    _cache_engine = Cache()
 
-    @property
-    def __doc__(self):
-        return self._func.__doc__
+    # mem args used to build reference id for cache.
+    mem_args = [object_name(func), ]
 
-    def __call__(self, *args, **kwargs):
-        self._middleware(*args, **kwargs)
-        return self._func(*args, **kwargs)
+    # NOTE(cfrademan): This is important, we dont want object address,
+    # types etc inside of the cache reference. We cannot memoize based
+    # on args, kwargsargs provided to function containing objects other than
+    # str, int, float, bytes,
+    args = list(args) + list(orderdict(kwargs).items())
+    for arg in args:
+        if not isinstance(arg, (str, int, float, bytes,)):
+            mem_args.append(object_name(arg))
+        else:
+            raise ValueError("Cache 'callable' not possible with" +
+                             " args/kwargsargs containing values with types" +
+                             " other than 'str', 'int', 'float', 'bytes'")
 
+    # create the actual key / reference id.
+    key = md5sum(pickle.dumps(mem_args))
 
-def middleware(middleware):
-    """Middleware Decorator
+    cached = _cache_engine.load(key)
 
-    Args:
-        middleware(obj): middleware to be used
+    if cached is not None:
+        return cached
 
-    put @middleware("middleware")
-    before a function to wrap it with the given middleware
+    result = func(*args, **kwargs)
+    _cache_engine.store(key, result, expire)
 
-    Example:
-        .. code:: python
-
-            #middleware to be used
-            def blah():
-                print('doef')
-
-
-            #function to be wrapped
-            @middleware(blah)
-            def test():
-                print('koek')
-
-            test()
-
-            #Output:
-
-            doef
-            koek
-    """
-
-    def func_wrapper(func):
-        return MiddlewareWrapper(middleware, func)
-
-    return func_wrapper
+    return result

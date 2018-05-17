@@ -29,12 +29,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
-
-if not sys.version_info >= (3, 5):
-    print('Requires python version 3.5 or higher')
-    exit()
-
 import os
 import sys
 import argparse
@@ -42,14 +36,12 @@ import site
 from datetime import timedelta
 
 from luxon import metadata
-from luxon import g
 from luxon.core.servers.web import server as web_server
 from luxon import db
 from luxon.utils.rsa import RSAKey
 from luxon.utils.files import mkdir
 from luxon.utils.pkg import Module
-from luxon.utils.db import (backup_tables, drop_tables,
-                            create_tables, restore_tables)
+from luxon.core.utils import models
 from luxon.utils.files import Open, chmod, exists, ls, rm
 from luxon.core.config import Config
 from luxon.utils.timezone import now
@@ -150,16 +142,16 @@ def db_crud(args):
     backups = {}
     with db() as conn:
         # Backup Tables.
-        backups = backup_tables(conn)
+        backups = models.backup_tables(conn)
 
         # Drop Tables.
-        drop_tables(conn)
+        models.drop_tables(conn)
 
         # Create Tables.
-        create_tables()
+        models.create_tables()
 
         # Restore data.
-        restore_tables(conn, backups)
+        models.restore_tables(conn, backups)
 
 
 def main(argv):

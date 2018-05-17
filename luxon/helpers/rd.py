@@ -47,7 +47,7 @@ def strict():
     try:
         return _cached_strict_redis
     except NameError:
-        kwargs = g.config.kwargs('redis')
+        kwargs = g.app.config.kwargs('redis')
         _cached_strict_redis = redis.StrictRedis(**kwargs)
         return _cached_strict_redis
 

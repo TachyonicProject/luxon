@@ -145,8 +145,8 @@ def TimezoneApp():
     global _cached_time_zone_app
 
     if _cached_time_zone_app is None:
-        app_timezone = g.config.get('application',
-                                    'timezone')
+        app_timezone = g.app.config.get('application',
+                                        'timezone')
 
         if app_timezone == 'local' or app_timezone == 'server':
             _cached_time_zone_app = get_localzone()

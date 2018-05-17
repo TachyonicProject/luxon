@@ -29,21 +29,22 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 import traceback
 
-from luxon import g
-from luxon.utils.app import init
+from luxon import g, router
+from luxon.core.app import App
 from luxon.core.handlers.wsgi.request import Request
 from luxon.core.handlers.wsgi.response import Response
 from luxon.exceptions import (Error, NotFoundError,
                               AccessDeniedError, JSONDecodeError,
                               ValidationError, FieldError,
                               HTTPError)
-from luxon.structs.htmldoc import HTMLDoc
+from luxon.utils.html5 import error_page, error_ajax
 from luxon import render_template
-from luxon import GetLogger
-from luxon.constants import TEXT_HTML
+from luxon.core.logger import GetLogger
+from luxon.constants import TEXT_HTML, TEXT_PLAIN
 from luxon.utils.objects import object_name
 from luxon.utils.timer import Timer
 from luxon.utils.http import etagger
+from luxon.core import register
 
 log = GetLogger(__name__)
 
@@ -61,21 +62,19 @@ class Application(object):
         app_root (str): Path to application root. (e.g. The location of
             'settings.ini', 'policy.json' and overiding 'templates')
     """
-    def __init__(self, name, app_root=None, ini=None, content_type=None):
+    def __init__(self, name, path=None, ini=None, content_type=None):
         try:
             # Initilize Application
-            init(name, app_root, ini)
+            App(name, path, ini)
 
             # Set Default Content Type
             if content_type is not None:
                 self._RESPONSE_CLASS._DEFAULT_CONTENT_TYPE = content_type
 
-            self._cached_policy = None
-
             # Started Application
             log.info('Started Application'
                      ' %s' % name +
-                     ' app_root: %s' % app_root)
+                     ' path: %s' % path)
 
         except Exception:
             trace = str(traceback.format_exc())
@@ -106,11 +105,11 @@ class Application(object):
                 request.response = response
 
                 # Process the middleware 'pre' method before routing it
-                for middleware in g.middleware_pre:
+                for middleware in register._middleware_pre:
                     middleware(request, response)
 
                 # Route Object.
-                resource, method, r_kwargs, target, tag, cache = g.router.find(
+                resource, method, r_kwargs, target, tag, cache = router.find(
                     request.method,
                     request.route)
 
@@ -129,7 +128,7 @@ class Application(object):
                 # Execute Routed View.
                 try:
                     # Process the middleware 'resource' after routing it
-                    for middleware in g.middleware_resource:
+                    for middleware in register._middleware_resource:
                         middleware(request, response)
                     # Run View method.
                     if resource is not None:
@@ -144,7 +143,7 @@ class Application(object):
                                             " Route '%s'" % request.route)
                 finally:
                     # Process the middleware 'post' at the end
-                    for middleware in g.middleware_post:
+                    for middleware in register._middleware_post:
                         middleware(request, response)
 
             # Cache GET Response.
@@ -224,11 +223,11 @@ class Application(object):
             log.info('Completed Request',
                      timer=elapsed())
 
-    def handle_error(self, req, resp, exception, traceback):
+    def handle_error(self, req, resp, exception, trace):
         # Parse Exceptions.
         resp.cache_control = "no-store, no-cache, max-age=0"
         if isinstance(exception, HTTPError):
-            log.debug('%s' % (traceback))
+            log.debug('%s' % (trace))
             log.warning('%s: %s' % (object_name(exception),
                                     exception))
             resp.status = exception.status
@@ -238,7 +237,7 @@ class Application(object):
                 resp.set_header(header, exception.headers[header])
 
         elif isinstance(exception, AccessDeniedError):
-            log.debug('%s' % (traceback))
+            log.debug('%s' % (trace))
             log.warning('%s: %s' % (object_name(exception),
                                     exception))
             title = "Access Denied"
@@ -246,7 +245,7 @@ class Application(object):
             resp.status = 403
 
         elif isinstance(exception, NotFoundError):
-            log.debug('%s' % (traceback))
+            log.debug('%s' % (trace))
             log.warning('%s: %s' % (object_name(exception),
                                     exception))
             title = "Not Found"
@@ -254,7 +253,7 @@ class Application(object):
             resp.status = 404
 
         elif isinstance(exception, JSONDecodeError):
-            log.debug('%s' % (traceback))
+            log.debug('%s' % (trace))
             log.warning('%s: %s' % (object_name(exception),
                                     exception))
             title = "Bad Request (JSON)"
@@ -262,7 +261,7 @@ class Application(object):
             resp.status = 400
 
         elif isinstance(exception, FieldError):
-            log.debug('%s' % (traceback))
+            log.debug('%s' % (trace))
             log.warning('%s: %s' % (object_name(exception),
                                     exception))
             title = "Bad Request (Field)"
@@ -270,7 +269,7 @@ class Application(object):
             resp.status = 400
 
         elif isinstance(exception, ValidationError):
-            log.debug('%s' % (traceback))
+            log.debug('%s' % (trace))
             log.warning('%s: %s' % (object_name(exception),
                                     exception))
             title = "Bad Request"
@@ -278,7 +277,7 @@ class Application(object):
             resp.status = 400
 
         elif isinstance(exception, Error):
-            log.debug('%s' % (traceback))
+            log.debug('%s' % (trace))
             log.error('%s: %s' % (object_name(exception),
                                   exception))
             title = "Error"
@@ -286,7 +285,7 @@ class Application(object):
             resp.status = 500
 
         else:
-            log.debug('%s' % (traceback))
+            log.debug('%s' % (trace))
             log.critical('%s: %s' % (object_name(exception),
                                      exception))
             title = exception.__class__.__name__
@@ -294,19 +293,29 @@ class Application(object):
             resp.status = 500
 
         # Generate Error Response
-        if req.is_ajax and 'ajax_error_template' in g:
-            # Check if AJAX Template and AJAX Request.
+        if register._ajax_error_template:
+            # if AJAX Template and AJAX Request.
             resp.content_type = TEXT_HTML
-            resp.body(render_template(g.ajax_error_template,
-                                      error_title=title,
-                                      error_description=description))
+            try:
+                resp.body(render_template(register._ajax_error_template,
+                                          error_title=title,
+                                          error_description=description))
+            except Exception:
+                trace = str(traceback.format_exc())
+                log.error('Unable to render ajax error template\n%s' % trace)
+                resp.body(error_ajax(title, description))
 
-        elif 'error_template' in g:
-            # Check if Error Template.
+        elif register._error_template:
+            # If Error Template.
             resp.content_type = TEXT_HTML
-            resp.body(render_template(g.error_template,
-                                      error_title=title,
-                                      error_description=description))
+            try:
+                resp.body(render_template(register._error_template,
+                                          error_title=title,
+                                          error_description=description))
+            except Exception:
+                trace = str(traceback.format_exc())
+                log.error('Unable to render page error template\n%s' % trace)
+                resp.body(error_page(title, description))
 
         elif resp.content_type is None or 'json' in resp.content_type.lower():
             # Check if JSON Content and provide JSON Error.
@@ -319,18 +328,10 @@ class Application(object):
 
         elif 'html' in resp.content_type.lower():
             # Else if HTML Content Respond with Generic HTML Error
-            dom = HTMLDoc()
-            html = dom.create_element('html')
-            head = html.create_element('head')
-            t = head.create_element('title')
-            t.append(resp.status)
-            body = html.create_element('body')
-            h1 = body.create_element('h1')
-            h1.append(title)
-            h2 = body.create_element('h2')
-            h2.append(description)
-            resp.body(dom.get())
+            resp.content_type = TEXT_HTML
+            resp.body(error_page(title, description))
 
         else:
             # Else Generic TEXT Error.
+            resp.content_type = TEXT_PLAIN
             resp.body(title + ' ' + description)

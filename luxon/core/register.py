@@ -29,67 +29,76 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 import traceback
 
-from luxon import g
+from luxon import router
 from luxon.core.logger import GetLogger
 
 log = GetLogger(__name__)
 
-
-def model(*args, **kwargs):
-    def model_wrapper(cls):
-        cls._sql = True
-        g.models.append(cls)
-        return cls
-
-    return model_wrapper
+_models = []
+_middleware_pre = []
+_middleware_resource = []
+_middleware_post = []
+_error_template = None
+_ajax_error_template = None
 
 
-def resources(*args, name=None, **kwargs):
-    def resource_wrapper(cls):
-        if name is not None:
-            cls._resources_name = name
+class Register(object):
+    __slots__ = ()
 
+    def resource(self, method, route, tag=None, cache=0):
+        def resource_wrapper(func):
+            router.add(method, route, func, tag, cache)
+            return func
+
+        return resource_wrapper
+
+    def resources(self, *args, name=None, **kwargs):
+        def resource_wrapper(cls):
+            if name is not None:
+                cls._resources_name = name
+
+            try:
+                obj = cls(*args, **kwargs)
+            except Exception:
+                trace = str(traceback.format_exc())
+                log.critical("%s" % trace)
+                raise
+
+            return obj
+
+        return resource_wrapper
+
+    def model(self, *args, **kwargs):
+        def model_wrapper(cls):
+            cls._sql = True
+            _models.append(cls)
+            return cls
+
+        return model_wrapper
+
+    def middleware(self, middleware_class, *args, **kwargs):
         try:
-            obj = cls(*args, **kwargs)
+            middleware_obj = middleware_class(*args, **kwargs)
+
+            if hasattr(middleware_obj, 'pre'):
+                _middleware_pre.append(middleware_obj.pre)
+
+            if hasattr(middleware_obj, 'resource'):
+                _middleware_resource.append(middleware_obj.resource)
+
+            if hasattr(middleware_obj, 'post'):
+                _middleware_post.append(middleware_obj.post)
         except Exception:
             trace = str(traceback.format_exc())
             log.critical("%s" % trace)
             raise
 
-        return obj
+    def error_template(self, template):
+        global _error_template
 
-    return resource_wrapper
+        _error_template = template
 
+    def ajax_error_template(self, template):
+        global _ajax_error_template
 
-def resource(method, route, tag=None, cache=0):
-    def resource_wrapper(func):
-        g.router.add(method, route, func, tag, cache)
-        return func
-
-    return resource_wrapper
-
-
-def middleware(middleware_class, *args, **kwargs):
-    try:
-        middleware_obj = middleware_class(*args, **kwargs)
-
-        if hasattr(middleware_obj, 'pre'):
-            g.middleware_pre.append(middleware_obj.pre)
-
-        if hasattr(middleware_obj, 'resource'):
-            g.middleware_resource.append(middleware_obj.resource)
-
-        if hasattr(middleware_obj, 'post'):
-            g.middleware_post.append(middleware_obj.post)
-    except Exception:
-        trace = str(traceback.format_exc())
-        log.critical("%s" % trace)
-        raise
-
-
-def error_template(template):
-    g.error_template = template
-
-
-def ajax_error_template(template):
-    g.ajax_error_template = template
+        _ajax_error_template = template

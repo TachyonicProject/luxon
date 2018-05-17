@@ -28,21 +28,16 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 from luxon import db
-from luxon.structs.models import fields
+
 
 class Mysql(object):
     def __init__(self, model):
-        self._name = model.model_name
-        self._fields = model.fields
-        self._primary_key = model.primary_key
-        self._db_engine = model.db_engine
-        self._db_charset = model.db_charset
-        self._db_default_rows = model.db_default_rows
+        self._model = model
 
     # Backup, Drop, Create, Restore.
     def create(self):
-        name = self._name
-        model_fields = self._fields
+        name = self._model.model_name
+        model_fields = self._model.fields
 
         with db() as conn:
             if conn.has_table(name):
@@ -68,95 +63,95 @@ class Mysql(object):
                     d = None
 
                 max_length = model_fields[field].max_length
-                if isinstance(model_fields[field], fields.Integer):
+                if isinstance(model_fields[field], self._model.Integer):
                     max_length = len(str(max_length))
 
                 enum = list(model_fields[field].enum)
                 null = model_fields[field].null
                 signed = model_fields[field].signed
 
-                if isinstance(model_fields[field], fields.Enum):
+                if isinstance(model_fields[field], self._model.Enum):
                     for no, val in enumerate(enum):
                         enum[no] = "'%s'" % val
                     enum = ','.join(enum)
 
                     sql_field = " %s enum(%s)" % (column, enum)
 
-                elif isinstance(model_fields[field], fields.Double):
+                elif isinstance(model_fields[field], self._model.Double):
                     if m is not None and d is not None:
                         sql_field = " %s double(%s,%s)" % (m, d)
                     else:
                         sql_field = " %s double"
 
-                elif isinstance(model_fields[field], fields.Float):
+                elif isinstance(model_fields[field], self._model.Float):
                     if m is not None and d is not None:
                         sql_field = " %s float(%s,%s)" % (m, d)
                     else:
                         sql_field = " %s float"
 
-                elif isinstance(model_fields[field], fields.Decimal):
+                elif isinstance(model_fields[field], self._model.Decimal):
                     if m is not None and d is not None:
                         sql_field = " %s decimal(%s,%s)" % (m, d)
                     else:
                         sql_field = " %s decimal"
 
-                elif isinstance(model_fields[field], fields.TinyInt):
+                elif isinstance(model_fields[field], self._model.TinyInt):
                     if max_length is None:
                         sql_field = " %s tinyint" % column
                     else:
                         sql_field = " %s tinyint(%s)" % (column, max_length)
 
-                elif isinstance(model_fields[field], fields.SmallInt):
+                elif isinstance(model_fields[field], self._model.SmallInt):
                     if max_length is None:
                         sql_field = " %s smallint" % column
                     else:
                         sql_field = " %s smallint(%s)" % (column, max_length)
 
-                elif isinstance(model_fields[field], fields.MediumInt):
+                elif isinstance(model_fields[field], self._model.MediumInt):
                     if max_length is None:
                         sql_field = " %s mediumint" % column
                     else:
                         sql_field = " %s mediumint(%s)" % (column, max_length)
 
-                elif isinstance(model_fields[field], fields.BigInt):
+                elif isinstance(model_fields[field], self._model.BigInt):
                     if max_length is None:
                         sql_field = " %s bigint" % column
                     else:
                         sql_field = " %s bigint(%s)" % (column, max_length)
 
-                elif isinstance(model_fields[field], fields.DateTime):
+                elif isinstance(model_fields[field], self._model.DateTime):
                     sql_field = " %s datetime" % column
 
-                elif isinstance(model_fields[field], fields.Blob):
+                elif isinstance(model_fields[field], self._model.Blob):
                     sql_field = " %s blob" % column
 
-                elif isinstance(model_fields[field], fields.TinyBlob):
+                elif isinstance(model_fields[field], self._model.TinyBlob):
                     sql_field = " %s TinyBlob" % column
 
-                elif isinstance(model_fields[field], fields.MediumBlob):
+                elif isinstance(model_fields[field], self._model.MediumBlob):
                     sql_field = " %s MediumBlob" % column
 
-                elif isinstance(model_fields[field], fields.LongBlob):
+                elif isinstance(model_fields[field], self._model.LongBlob):
                     sql_field = " %s LongBlob" % column
 
-                elif isinstance(model_fields[field], fields.TinyText):
+                elif isinstance(model_fields[field], self._model.TinyText):
                     sql_field = " %s TinyText " % column
 
-                elif isinstance(model_fields[field], fields.Text):
+                elif isinstance(model_fields[field], self._model.Text):
                     sql_field = " %s Text" % column
 
-                elif isinstance(model_fields[field], fields.MediumText):
+                elif isinstance(model_fields[field], self._model.MediumText):
                     sql_field = " %s MediumText" % column
 
-                elif isinstance(model_fields[field], fields.LongText):
+                elif isinstance(model_fields[field], self._model.LongText):
                     sql_field = " %s LongText" % column
 
-                elif isinstance(model_fields[field], fields.String):
+                elif isinstance(model_fields[field], self._model.String):
                     if max_length is None:
                         max_length = '255'
                     sql_field = " %s varchar(%s)" % (column, max_length)
 
-                elif isinstance(model_fields[field], fields.Integer):
+                elif isinstance(model_fields[field], self._model.Integer):
                     if max_length is None:
                         sql_field = " %s integer" % column
                     else:
@@ -165,7 +160,7 @@ class Mysql(object):
                     if signed is False:
                         sql_field += ' UNSIGNED'
 
-                    if self._primary_key.name == field:
+                    if self._model.primary_key.name == field:
                         sql_field += " auto_increment"
 
                 if null is False:
@@ -177,7 +172,7 @@ class Mysql(object):
             for field in model_fields:
                 sql_field = None
                 column = model_fields[field].name
-                if isinstance(model_fields[field], fields.Index):
+                if isinstance(model_fields[field], self._model.Index):
                     index = 'INDEX'
                     index += ' `%s` (' % column
                     index_fields = []
@@ -187,7 +182,7 @@ class Mysql(object):
                     index += ')'
                     sql_field = index
 
-                elif isinstance(model_fields[field], fields.UniqueIndex):
+                elif isinstance(model_fields[field], self._model.UniqueIndex):
                     index = 'UNIQUE KEY'
                     index += ' `%s` (' % column
                     index_fields = []
@@ -197,7 +192,7 @@ class Mysql(object):
                     index += ')'
                     sql_field = index
 
-                elif isinstance(model_fields[field], fields.ForeignKey):
+                elif isinstance(model_fields[field], self._model.ForeignKey):
                     foreign_keys = []
                     references = []
                     ref_name = model_fields[field]._reference_fields[0]._table
@@ -222,8 +217,8 @@ class Mysql(object):
                     sql_fields.append(sql_field)
 
             create += ",".join(sql_fields)
-            create += ' ,PRIMARY KEY (`%s`)' % self._primary_key.name
+            create += ' ,PRIMARY KEY (`%s`)' % self._model.primary_key.name
             create += ')'
             create += ' ENGINE=%s CHARSET=%s;' \
-                    % (self._db_engine, self._db_charset,)
+                % (self._model.db_engine, self._model.db_charset,)
             conn.execute(create)

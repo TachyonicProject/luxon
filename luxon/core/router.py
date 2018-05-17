@@ -34,14 +34,9 @@ from luxon.utils.cast import to_tuple
 from luxon.utils.objects import object_name
 from luxon.core.logger import GetLogger
 from luxon.ext.falcon.compiled import CompiledRouter
-from luxon.core.cls.singleton import Singleton
 from luxon import exceptions
 
 log = GetLogger(__name__)
-
-_routers = {}
-_routes = {}
-_regex_routes = {}
 
 # NOTE(cfrademan): Discover the type at runtime for RE compiled. When the type
 # of something isn't well specified, there's nothing wrong with using the type
@@ -53,7 +48,7 @@ _regex_routes = {}
 retype = type(re.compile('hello, world'))
 
 
-class Router(metaclass=Singleton):
+class Router(object):
     """ Simple Router Interface.
 
     The router is used to index and return views based on url and method.
@@ -62,13 +57,23 @@ class Router(metaclass=Singleton):
         routes (list): List of tuples containing routes.
             e.g. [ ( 'GET', '/test', 'rule1', resource_view_object), ]
     """
-    __slots__ = ()
+    __slots__ = ('_routers', '_routes', '_regex_routes', '_methods')
+
+    def __init__(self):
+        self._routers = {}
+        self._routes = {}
+        self._regex_routes = {}
+        self._methods = set([])
+
+    @property
+    def methods(self):
+        return self._methods
 
     @property
     def routes(self):
         routes = []
-        for route in _routes:
-            resource, method, kwargs, route, tag, cache = _routes[route]
+        for route in self._routes:
+            resource, method, kwargs, route, tag, cache = self._routes[route]
             if not isinstance(route, retype):
                 uri = route
             else:
@@ -131,16 +136,16 @@ class Router(metaclass=Singleton):
         """
         method = method.upper()
 
-        if method + ':' + route.strip('/') in _routes:
-            return _routes['%s:%s' % (method, route.strip('/'))]
+        if method + ':' + route.strip('/') in self._routes:
+            return self._routes['%s:%s' % (method, route.strip('/'))]
         try:
-            found = _routers[method].find(route)
+            found = self._routers[method].find(route)
             if found[0]:
                 return found
         except KeyError:
             pass
         try:
-            for regex_route in _regex_routes[method]:
+            for regex_route in self._regex_routes[method]:
                 if regex_route[3].match(route):
                     return regex_route
         except KeyError:
@@ -190,29 +195,29 @@ class Router(metaclass=Singleton):
                 method = method.upper()
                 try:
                     route = re.compile(route)
-                    _regex_routes[method].append((resource,
-                                                  method,
-                                                  {},
-                                                  route,
-                                                  tag,
-                                                  cache,))
-                    _routes['%s:%s' % (method, route)] = (resource,
-                                                          method,
-                                                          {},
-                                                          route,
-                                                          tag,
-                                                          cache)
+                    self._regex_routes[method].append((resource,
+                                                      method,
+                                                      {},
+                                                      route,
+                                                      tag,
+                                                      cache,))
+                    self._routes['%s:%s' % (method, route)] = (resource,
+                                                               method,
+                                                               {},
+                                                               route,
+                                                               tag,
+                                                               cache)
                 except KeyError:
-                    _regex_routes[method] = []
+                    self._regex_routes[method] = []
                     route = re.compile(route)
-                    _routes['%s:%s' % (method, route)] = (resource,
-                                                          method,
-                                                          {},
-                                                          route,
-                                                          tag,
-                                                          cache)
-                    _regex_routes[method].append(_routes['%s:%s' % (method,
-                                                                    route)])
+                    self._routes['%s:%s' % (method, route)] = (resource,
+                                                               method,
+                                                               {},
+                                                               route,
+                                                               tag,
+                                                               cache)
+                    self._regex_routes[method].append(
+                        self._routes['%s:%s' % (method, route)])
                 except Exception as e:
                     raise exceptions.Error("Bad RE expression for route '%s'" %
                                            route
@@ -223,34 +228,34 @@ class Router(metaclass=Singleton):
                 method = method.upper()
                 try:
                     if not isinstance(route, retype) and '{' in route:
-                        _routers[method].add_route(route,
-                                                   method,
-                                                   resource,
-                                                   tag,
-                                                   cache)
+                        self._routers[method].add_route(route,
+                                                        method,
+                                                        resource,
+                                                        tag,
+                                                        cache)
 
-                    _routes['%s:%s' % (method, route)] = (resource,
-                                                          method,
-                                                          {},
-                                                          route,
-                                                          tag,
-                                                          cache)
+                    self._routes['%s:%s' % (method, route)] = (resource,
+                                                               method,
+                                                               {},
+                                                               route,
+                                                               tag,
+                                                               cache)
                 except KeyError:
                     if not isinstance(route, retype) and '{' in route:
-                        _routers[method] = CompiledRouter()
-                        _routers[method].add_route(route,
-                                                   method,
-                                                   resource,
-                                                   tag,
-                                                   cache)
+                        self._routers[method] = CompiledRouter()
+                        self._routers[method].add_route(route,
+                                                        method,
+                                                        resource,
+                                                        tag,
+                                                        cache)
 
-                    _routes['%s:%s' % (method, route)] = (resource,
-                                                          method,
-                                                          {},
-                                                          route,
-                                                          tag,
-                                                          cache)
-
+                    self._routes['%s:%s' % (method, route)] = (resource,
+                                                               method,
+                                                               {},
+                                                               route,
+                                                               tag,
+                                                               cache)
+        self._methods.add(method)
         log.info('Added Route: %s' % route +
                  ' Methods: %s' % str(methods) +
                  ' Resource: %s' % object_name(resource) +
