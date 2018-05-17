@@ -19,7 +19,7 @@ Memory Cache
 Redis Cache
 =============
 
-.. autoclass:: luxon.core.cache.redis.Redis
+.. autoclass:: luxon.core.cache.rd.Redis
 	:members:
 
 

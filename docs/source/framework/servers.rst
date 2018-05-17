@@ -14,4 +14,5 @@ Webserver
 Static Server
 ===============
 
-
+..
+	.. autofunction:: luxon.core.servers.web.static.static

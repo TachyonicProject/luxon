@@ -32,6 +32,7 @@ from luxon.structs.models.utils import defined_length_check
 
 
 class BlobFields(object):
+    """Blob Fields outer class"""
     __slots__ = ()
 
     class Blob(BaseFields.BaseField):

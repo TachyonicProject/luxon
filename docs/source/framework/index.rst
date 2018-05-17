@@ -17,10 +17,10 @@ Framework Guide
     models
     sessions
     policy
-    classes
     servers
     cache
     auth
+    app
 
 
 

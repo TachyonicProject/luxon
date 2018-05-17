@@ -1,5 +1,6 @@
 .. _models:
 
+============
 Models - ORM
 ============
 A model is the data structure of information. It contains the fields, types and restrictions of the data you’re storing. A model can map to a single database table.
@@ -176,117 +177,48 @@ Example
 	    db_default_rows = USER_ROLES
 
 
-Model base  Class
-------------------
+Model base Class
+==================
 
 .. autoclass:: luxon.Model
     :members:
 
-Fields
-------
 
-**Conveniantly accessible using 'from luxon import fields'**
+Modal Fields
+=============
 
-.. autoclass:: luxon.String
-    :members:
-    :inherited-members:
+Data types supported by Luxon Modals
 
-.. autoclass:: luxon.Integer
-    :members:
-    :inherited-members:
+**Conveniantly accessible using 'modal_name.field_name'**
 
-.. autoclass:: luxon.Float
-    :members:
-    :inherited-members:
+Base Fields
+------------
 
-.. autoclass:: luxon.Double
-    :members:
-    :inherited-members:
+.. automodule:: luxon.structs.models.fields.basefields
+	:members:
 
-.. autoclass:: luxon.Decimal
-    :members:
-    :inherited-members:
+Blob Fields
+------------
 
-.. autoclass:: luxon.TinyInt
-    :members:
-    :inherited-members:
+.. automodule:: luxon.structs.models.fields.blobfields
+	:members:
 
-.. autoclass:: luxon.SmallInt
-    :members:
-    :inherited-members:
+Int Fields
+------------
 
-.. autoclass:: luxon.MediumInt
-    :members:
-    :inherited-members:
+.. automodule:: luxon.structs.models.fields.intfields
+	:members:
 
-.. autoclass:: luxon.BigInt
-    :members:
-    :inherited-members:
+Sql Fields
+------------
 
-.. autoclass:: luxon.DateTime
-    :members:
-    :inherited-members:
+.. automodule:: luxon.structs.models.fields.sqlfields
+	:members:
 
-.. autoclass:: luxon.PyObject
-    :members:
-    :inherited-members:
+Text Fields
+------------
 
-.. autoclass:: luxon.Blob
-    :members:
-    :inherited-members:
+.. automodule:: luxon.structs.models.fields.textfields
+	:members:
 
-.. autoclass:: luxon.TinyBlob
-    :members:
-    :inherited-members:
 
-.. autoclass:: luxon.MediumBlob
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.LongBlob
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Text
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.TinyText
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.MediumText
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Enum
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Boolean
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Uuid
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Index
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.UniqueIndex
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.ForeignKey
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Email
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Phone
-    :members:
-    :inherited-members:

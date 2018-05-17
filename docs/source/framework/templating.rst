@@ -45,3 +45,7 @@ Tachyonic Loader Class
 
 .. autoclass:: luxon.core.template.TachyonicLoader
 	:members:
+
+
+:ref:`Render Template<temphelp>`
+------------------------------------

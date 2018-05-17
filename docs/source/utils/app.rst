@@ -1,18 +1,7 @@
-=======================
-Application Utilities
-=======================
+.. _app:
 
-Determine App Root
-====================
+=====================
+Determine App Route
+=====================
 
-.. autofunction:: luxon.utils.app.determine_app_root
-
-Load Config
-============
-
-.. autofunction:: luxon.utils.app.load_config
-
-Initialise
-================
-
-.. autofunction:: luxon.utils.app.init
+.. autofunction:: luxon.core.utils.app.determine_app_root

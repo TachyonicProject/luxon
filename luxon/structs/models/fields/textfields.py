@@ -32,6 +32,7 @@ from luxon.structs.models.utils import defined_length_check
 
 
 class TextFields(object):
+    """Text Fields outer class"""
     __slots__ = ()
 
     class Text(BaseFields.String):

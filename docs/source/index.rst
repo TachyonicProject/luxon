@@ -33,8 +33,9 @@ Documentation
    license
    install
    framework/index
-   main/index
-   handlers/index
+   wsgi/index
+   cmd/index
+   minion/index
    resources/index
    structs/index
    helpers/index

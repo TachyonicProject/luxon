@@ -144,7 +144,6 @@ Classes
     :maxdepth: 2
     :titlesonly:
 
-    application
     request
     response
     

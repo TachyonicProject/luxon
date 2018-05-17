@@ -39,22 +39,24 @@ log = GetLogger(__name__)
 
 
 class App(object):
+    """Initialises application
+
+    Loads the app config from the *settings.ini* file or
+    from a given file
+
+    Configures the logger for the app
+
+    Args:
+        name (str): Application name.
+        path (str): Application root path.
+        ini (file obj): Configuration file provided.
+        defaults (bool): Load default configuration
+    """
+
     __slots__ = ('_name', '_path', '_debug', '_config', '_jinja')
 
     def __init__(self, name, path=None, ini=None, defaults=True):
-        """Initialises application
 
-        Loads the app config from the *settings.ini* file or
-        from a given file
-
-        Configures the logger for the app
-
-        Args:
-            name (str): Application name.
-            path (str): Application root path.
-            ini (file obj): Configuration file provided.
-            defaults (bool): Load default configuration
-        """
         # Set Application Name
         self._name = name
 

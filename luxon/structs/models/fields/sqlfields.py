@@ -32,6 +32,7 @@ from luxon.utils.cast import to_tuple
 
 
 class SQLFields(object):
+    """SQL Fields outer class"""
     __slots__ = ()
 
     class UniqueIndex(BaseFields.BaseField):
