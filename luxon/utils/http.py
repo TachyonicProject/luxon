@@ -411,7 +411,15 @@ def parse_cache_control_header(header):
 
 def _debug(method, url, params, payload, request_headers, response_headers,
            response, status_code, elapsed, cached=None):
-    if g.app.debug:
+    try:
+        if g.app.debug:
+            debug = g.app.debug
+        else:
+            debug = False
+    except NoContextError:
+        debug = True
+
+    if debug:
         log_id = string_id(length=6)
         try:
             payload = js.loads(payload)
@@ -534,21 +542,18 @@ class Response(object):
         self._result.close()
 
 
-_cache_engine = None
-
-
 def request(client, method, uri, params={},
             data=None, headers={}, stream=False, **kwargs):
-
-    global _cache_engine
 
     with Timer() as elapsed:
         method = method.upper()
         headers = headers.copy()
         params = params.copy()
 
-        if _cache_engine is None:
+        try:
             _cache_engine = Cache()
+        except NoContextError:
+            _cache_engine = None
 
         if uri.lower().startswith('http'):
             url = uri
@@ -580,7 +585,9 @@ def request(client, method, uri, params={},
         if isinstance(data, bytes):
             headers['Content-Length'] = str(len(data))
 
-        if stream is False and method == 'GET' and data is None:
+        if (_cache_engine and stream is False and
+                method == 'GET' and data is None):
+
             if isinstance(params, dict):
                 cache_params = list(orderdict(params).values())
 
@@ -622,7 +629,9 @@ def request(client, method, uri, params={},
                                                   data=data,
                                                   headers=headers,
                                                   stream=stream))
-            if cached is not None and response.status_code == 304:
+            if (_cache_engine and cached is not None and
+                    response.status_code == 304):
+
                 _debug(method, url, params, data,
                        headers, cached.headers,
                        cached.content,
@@ -632,6 +641,7 @@ def request(client, method, uri, params={},
                 return cached
 
             if response.status_code > 400:
+
                 try:
                     title = None
                     description = None
@@ -647,7 +657,7 @@ def request(client, method, uri, params={},
                 except HTTPClientContentDecodingError:
                     raise HTTPError(response.status_code)
 
-            if stream is False and method == 'GET':
+            if _cache_engine and stream is False and method == 'GET':
                 if response.status_code == 200:
                     cache_control = parse_cache_control_header(
                         response.headers.get('Cache-Control')
