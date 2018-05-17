@@ -45,7 +45,7 @@ def policy(**kwargs):
     global _cached_compiled
 
     if _cached_compiled is None:
-        policy_file = g.app_root + '/policy.json'
+        policy_file = g.app.path + '/policy.json'
         if is_file(policy_file):
             with open(policy_file, 'r') as rule_set:
                 _cached_compiled = compiler(js.loads(rule_set.read()))
