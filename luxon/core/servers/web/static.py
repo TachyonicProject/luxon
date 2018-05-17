@@ -28,56 +28,61 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 import os
+import re
 import mimetypes
 
 from luxon import g
 from luxon import metadata
-from luxon import register_resource
+from luxon import register
 from luxon import constants as const
 from luxon.structs.htmldoc import HTMLDoc
 
 
-@register_resource(['GET', 'POST'],
+@register.resource(['GET', 'POST'],
                    'regex:^/' +
-                   g.config.get('application', 'static').strip('/')
+                   g.app.config.get('application', 'static').strip('/')
                    + '.*$', cache=604800)
 def static(req, resp):
     """Serves files from static directory"""
-    sfile_path = g.app_root.rstrip('/') + '/static' \
-        + '/' + '/'.join(req.relative_resource_uri.strip('/').split('/')[1:])
-    try:
-        if os.path.isfile(sfile_path):
-            sfile = open(sfile_path, 'rb').read()
-            resp.content_type = const.APPLICATION_OCTET_STREAM
-            mime_type = mimetypes.guess_type(sfile_path)
-            if mime_type is not None:
-                resp.content_type = mime_type[0]
-                if mime_type[1] is not None:
-                    resp.content_type += ';charset=%s' % mime_type[1]
-            return sfile
-        elif os.path.isdir(sfile_path):
-            page = HTMLDoc()
-            resp.content_type = const.TEXT_HTML
-            folder = os.listdir(sfile_path)
-            html = page.create_element('HTML')
-            head = html.create_element('HEAD')
-            title = head.create_element('TITLE')
-            title.append(req.relative_resource_uri)
-            body = html.create_element('BODY')
-            h1 = body.create_element('H1')
-            h1.append(req.relative_resource_uri)
-            for item in folder:
-                item = req.relative_resource_uri.rstrip('/') + '/' + item
-                a = body.create_element('A')
-                a.set_attribute('href', item)
-                a.append(item)
-                body.create_element('BR')
-            h3 = body.create_element('H3')
-            h3.append(metadata.identity)
-            return str(page)
-        else:
-            raise FileNotFoundError(
-                "No such file or directory: '%s'" % sfile_path
-            )
-    except Exception as e:
-        return "Error %s" % (e,)
+    resp.content_type = const.TEXT_HTML
+    static = g.app.config.get('application', 'static').strip('/')
+    static_path_re = re.compile("^\/%s\/%s" %
+                                (req.app.strip('/'), static,))
+    sfile_path = '/' + req.app.strip('/') + '/' + req.route.strip('/')
+    sfile_path = static_path_re.sub('', sfile_path)
+    sfile_path = g.app.path.rstrip('/') + '/static' + sfile_path
+    if os.path.isfile(sfile_path):
+        sfile = open(sfile_path, 'rb').read()
+        resp.content_type = const.APPLICATION_OCTET_STREAM
+        mime_type = mimetypes.guess_type(sfile_path)
+        if mime_type is not None:
+            resp.content_type = mime_type[0]
+            if mime_type[1] is not None:
+                resp.content_type += ';charset=%s' % mime_type[1]
+        return sfile
+    elif os.path.isdir(sfile_path):
+        page = HTMLDoc()
+        resp.content_type = const.TEXT_HTML
+        folder = os.listdir(sfile_path)
+        html = page.create_element('HTML')
+        head = html.create_element('HEAD')
+        title = head.create_element('TITLE')
+        title.append(req.route)
+        body = html.create_element('BODY')
+        h1 = body.create_element('H1')
+        h1.append(req.route)
+        for item in folder:
+            item = req.route.rstrip('/') + '/' + item
+            a = body.create_element('A')
+            a.set_attribute('href', item)
+            a.append(item)
+            body.create_element('BR')
+        h3 = body.create_element('H3')
+        h3.append(metadata.identity)
+        return str(page)
+    else:
+        raise FileNotFoundError(
+            "No such file or directory: '%s'" % sfile_path
+        )
+    # except Exception as e:
+    #    return "Error %s" % (e,)
