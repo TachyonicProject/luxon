@@ -5,7 +5,7 @@ Package Layout
 
 This table serves as an exact index of the Luxon source code
 
-Contributions to Luxon
+Contributions
 ------------------------
 
 ========================================= ==============================================
@@ -17,7 +17,6 @@ Luxon Core
 
 ========================================= ==============================================
 luxon/core				                  Core Modules
-========================================= ==============================================
 luxon/core/cache			  Memory caching classes
 luxon/core/cls                            Generic base and meta-classes.
 luxon/core/config                         Luxon Config Parser.
@@ -49,7 +48,6 @@ Helpers
 
 ========================================= ==============================================
 luxon/helpers                             Various helper functions
-========================================= ==============================================
 luxon/helpers/db.py                       Database helper
 luxon/helpers/jinja2.py                   Jinja2 helper
 luxon/helpers/mail.py                     Luxon mail utility
@@ -62,7 +60,6 @@ Resources
 
 ========================================= ==============================================
 luxon/resources                           Resources provided by Luxon
-========================================= ==============================================
 luxon/resources/script/help.py            Command line **help**
 luxon/resources/wsgi/index.py             API index         
 ========================================= ==============================================
@@ -72,7 +69,6 @@ Structures
 
 ========================================= ==============================================
 luxon/structs                             Luxon Data Structures 
-========================================= ==============================================
 luxon/structs/models                      Luxon model classes
 luxon/structs/cidict.py                   Case insensitice dictionary
 luxon/structs/container.py                Property dictionary
