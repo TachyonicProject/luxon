@@ -126,12 +126,17 @@ class Application(object):
 
         args = parser.parse_args()
 
+        if hasattr(args, 'route') and isinstance(args.route, str):
+            args.route = args.route.strip('/')
+        if args.method is not None:
+            args.method = args.method.lower()
+
         if hasattr(args, 'route') and args.route is None:
             parser.print_help()
             print('\nroutes for %s:' % args.method)
             index = router.routes
             for route in index:
-                if route[1] == method.upper():
+                if route[1] == method.lower():
                     print("\t/%s" % route[0])
             exit()
 
