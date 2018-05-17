@@ -104,6 +104,11 @@ class Application(object):
                 # Set Response object for request.
                 request.response = response
 
+                # Debug output
+                if g.app.debug is True:
+                    log.info('Request %s' % request.route +
+                             ' Method %s\n' % request.method)
+
                 # Process the middleware 'pre' method before routing it
                 for middleware in register._middleware_pre:
                     middleware(request, response)
