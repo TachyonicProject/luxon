@@ -29,7 +29,7 @@ Using 'g' by example
 
     from luxon import g
 
-    print(g.app.app_root) # Will Raise NoContextError. 
+    print(g.app_root) # Will Raise NoContextError. 
 
 **The following works as expected**
 
@@ -41,7 +41,7 @@ Using 'g' by example
     app = Wsgi(__name__)
 
     # G App is equal to app.
-    print(g.app.app_root) # Works
+    print(g.app_root) # Works
 
 Using 'g' for your own purpose
 ------------------------------

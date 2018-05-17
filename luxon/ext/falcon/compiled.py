@@ -634,7 +634,7 @@ class ConverterDict(UserDict):
 class CompiledRouterOptions(object):
     """Defines a set of configurable router options.
 
-    An instance of this class is exposed via :any:`API.router_options`
+    An instance of this class is exposed via `API.router_options`
     for configuring certain :py:class:`~.CompiledRouter` behaviors.
 
     Attributes:
@@ -661,7 +661,7 @@ class CompiledRouterOptions(object):
                 to implement custom converters in a thread-safe
                 manner.
 
-            (See also: :ref:`Field Converters <routing_field_converters>`)
+
     """
 
     __slots__ = ('converters',)

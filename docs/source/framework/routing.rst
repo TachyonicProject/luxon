@@ -43,5 +43,29 @@ Router Class
 .. autoclass:: luxon.core.router.Router
    :members:
 
+Luxon uses external code from the Falcon WSGI library for some router operations.
+To view the license please refer to :ref:`f_license`
+
+Compiled Router
+----------------
+.. autoclass:: luxon.ext.falcon.compiled.CompiledRouter
+   :members:
+
+Converter Dictionary
+---------------------
+.. autoclass:: luxon.ext.falcon.compiled.ConverterDict
+   :members:
+
+Options
+--------------
+.. autoclass:: luxon.ext.falcon.compiled.CompiledRouterOptions
+   :members:
+
+
+Converters
+---------------
+.. automodule:: luxon.ext.falcon.converters
+   :members:
+
 
 
