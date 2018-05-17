@@ -29,11 +29,10 @@
 # SUCH DAMAGE.
 from threading import RLock
 
-from luxon import GetLogger
 from luxon import exceptions
+from luxon.core.logger import GetLogger
 from luxon.core.db.base.cursor import Cursor
 from luxon.core.db.base.exceptions import Exceptions as BaseExeptions
-from luxon.utils.timer import Timer
 
 # LOCALIZE Exceptions to Module as pep-0249
 from luxon.core.db.base.exceptions import (Error, Warning,
@@ -49,7 +48,8 @@ from luxon.core.db.base.exceptions import (Error, Warning,
 # Globals as per pep-0249
 #########################
 # String constant stating the supported DB API level.
-# Currently only the strings "1.0" and "2.0" are allowed. If not given, a DB-API 1.0 level interface should be assumed.
+# Currently only the strings "1.0" and "2.0" are allowed.
+# If not given, a DB-API 1.0 level interface should be assumed.
 apilevel = "2.0"
 #
 # threadsafety
@@ -81,12 +81,13 @@ error_map = (
 cast_map = (
 )
 
+
 class Connection(BaseExeptions):
     DB_API = None
     CHARSET = 'utf-8'
-    DEST_FORMAT=None
-    ERROR_MAP=error_map
-    CAST_MAP=cast_map
+    DEST_FORMAT = None
+    ERROR_MAP = error_map
+    CAST_MAP = cast_map
     _crsr_cls_args = []
     THREADSAFETY = threadsafety
     _instances = {}
@@ -126,7 +127,6 @@ class Connection(BaseExeptions):
         crsr = Cursor(self)
         self._cursors.append(crsr)
         return crsr
-
 
     @property
     def _crsr(self):

@@ -27,31 +27,42 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+import sys
+import pickle
 
-import os
-import shutil
+from luxon.helpers.rd import strict
+from luxon.core.logger import GetLogger
 
-def create_env(venv, wipe=False, clear=True, site_packages=False):
-    """Creates a new virtual environment in given path
-
-    Args:
-        venv (str): location of new environment
-        wipe (bool): clean location
-        clear (bool): clear environment
+log = GetLogger(__name__)
 
 
-    If ``site_packages`` is true, then the global ``site-packages/``
-    directory will be on the path.
+class Redis(object):
+    """Caches objects in Redis object store"""
+    def __init__(self, max_objs=None, max_obj_size=50):
+        self._max_obj_size = 1024 * max_obj_size
+        self.redis = strict()
+        log.info('Redis Cache Initialized' +
+                 ' max_obj_size=%sKbytes' % (max_obj_size,))
 
-    """
-    try:
-        import virtualenv
-    except ModuleNotFoundError:
-        raise ModuleNotFoundError("Requires 'virtualenv' python 3 package")
+    def load(self, key):
+        """Loads cached data from key
 
-    if wipe is True and os.path.exists(venv):
-        shutil.rmtree(venv)
+        Args:
+            key (str): key for required data
+        """
+        value = self.redis.get('cache:' + key)
+        if value is not None:
+            return pickle.loads(value)
 
-    virtualenv.create_environment(venv,
-                                  clear=clear,
-                                  site_packages=site_packages)
+    def store(self, key, value, expire):
+        """Stores data
+
+        Args:
+            key (str): key associated with cached data
+            value (obj): data to be cached
+            expire (int): time to expire (s)
+        """
+        if sys.getsizeof(value, 0) <= self._max_obj_size:
+            self.redis.set('cache:' + key,
+                           pickle.dumps(value),
+                           ex=expire)

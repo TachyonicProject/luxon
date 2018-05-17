@@ -29,58 +29,53 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 from collections import OrderedDict
 
-from luxon import g
 from luxon.exceptions import ValidationError
-from luxon import db
 from luxon import js
-from luxon.utils.imports import get_class
 from luxon.utils.classproperty import classproperty
-from luxon.structs.models.fields import (BaseField,
-                                         Integer,
-                                         parse_defaults,
-                                         ForeignKey,
-                                         Index,
-                                         UniqueIndex,
-                                         Confirm,)
+from luxon.structs.models.fields.basefields import BaseFields
+from luxon.structs.models.fields.blobfields import BlobFields
+from luxon.structs.models.fields.intfields import IntFields
+from luxon.structs.models.fields.textfields import TextFields
 from luxon.utils.cast import to_tuple
+from luxon.structs.models.utils import parse_defaults
 
-class Model(object):
+
+class Model(BaseFields, BlobFields, IntFields, TextFields):
     _fields = None
     primary_key = None
-    filter_fields = ( ForeignKey, Index, UniqueIndex, )
+    filter_fields = ()
 
-    __slots__ = ( '_current', '_new', '_updated', '_created', '_hide' )
+    __slots__ = ('_current', '_new', '_updated', '_created', '_hide')
 
-    def __init__(self, model=list, hide=None):
-        if model != list and model != dict:
-            raise ValueError("Invalid model type '%s'" % model)
-
-        self._current = model()
-        self._new = model()
+    def __init__(self, hide=None):
+        self._current = {}
+        self._new = {}
         self._updated = False
         self._created = True
         self._hide = to_tuple(hide)
 
-        if isinstance(self._current, dict):
-            # NOTE(cfrademan): Set default values for model object.
-            for field in self.fields:
-                default = self.fields[field].default
-                if default is not None:
-                    default = parse_defaults(default)
-                    default = self.fields[field]._parse(default)
-                    if (field not in self._transaction or
-                            self._transaction[field] is None):
-                        self._current[field] = default
-                elif field in ('domain', 'tenant_id',):
-                    self._new[field] = getattr(g.current_request.token, field)
-                elif not isinstance(self.fields[field], Model.filter_fields):
-                    self._current[field] = None
+        # NOTE(cfrademan): Set default values for model object.
+        for field in self.fields:
+            default = self.fields[field].default
+            if default is not None:
+                default = parse_defaults(default)
+                default = self.fields[field]._parse(default)
+                if (field not in self._transaction or
+                        self._transaction[field] is None):
+                    self._current[field] = default
+            elif not isinstance(self.fields[field], Model.filter_fields):
+                self._current[field] = None
+
+    def __setattr__(self, attr, value):
+        if attr in Model.__slots__:
+            super().__setattr__(attr, value)
+        else:
+            raise NotImplementedError("Setting attribute on 'Model'")
 
     def __getitem__(self, key):
-        if isinstance(self._current, dict):
-            if key not in self.fields:
-                raise KeyError("Model %s:" % self.model_name +
-                               " No such field '%s'" % key) from None
+        if key not in self.fields:
+            raise KeyError("Model %s:" % self.model_name +
+                           " No such field '%s'" % key) from None
         try:
             return self._transaction[key]
         except KeyError:
@@ -90,39 +85,36 @@ class Model(object):
                              " No such key '%s'" % key) from None
 
     def __setitem__(self, key, value):
-        if isinstance(self._current, dict):
-            try:
-                if (self.fields[key].readonly is True and
-                        self._transaction[key] is not None):
-                    raise ValidationError("Model %s:" % self.model_name +
-                                   " readonly field '%s'" % key) from None
-            except KeyError:
-                raise ValidationError("Model %s:" % self.model_name +
-                               " No such field '%s'" % key) from None
+        try:
+            if (self.fields[key].readonly is True and
+                    self._transaction[key] is not None):
+                raise ValidationError(
+                    "Model %s:" % self.model_name +
+                    " readonly field '%s'" % key) from None
+        except KeyError:
+            raise ValidationError(
+                "Model %s:" % self.model_name +
+                " No such field '%s'" % key) from None
 
-            if key in ('domain_id', 'tenant_id',):
-                raise ValidationError("Model %s:" % self.model_name +
-                               " readonly field '%s'" % key) from None
-            if self.fields[key].internal is True:
-                raise ValidationError("Model %s:" % self.model_name +
-                               " Internal only field '%s'" % key) from None
+        if self.fields[key].internal is True:
+            raise ValidationError(
+                "Model %s:" % self.model_name +
+                " Internal only field '%s'" % key) from None
 
-            if (self.primary_key is not None and
-                        self[key] is not None and
-                        key == self.primary_key.name):
-                    raise ValueError("Model %s:" % self.model_name +
-                                     " Cannot alter primary key '%s'"
-                                     % key) from None
+        if (self.primary_key is not None and
+                self[key] is not None and
+                key == self.primary_key.name):
+            raise ValueError("Model %s:" % self.model_name +
+                             " Cannot alter primary key '%s'"
+                             % key) from None
 
-            if ((value is None and self.fields[key].ignore_null is not True) or
-                    value is not None):
-                self._new[key] = self.fields[key]._parse(value)
-            self._updated = True
-        else:
-            raise NotImplementedError()
+        if ((value is None and self.fields[key].ignore_null is not True) or
+                value is not None):
+            self._new[key] = self.fields[key]._parse(value)
+        self._updated = True
 
     def __delitem__(self, key):
-        raise NotImplementedError()
+        raise NotImplementedError('Model delete object not implemented')
 
     def __iter__(self):
         return iter(self.transaction)
@@ -145,7 +137,7 @@ class Model(object):
         elif isinstance(self._current, dict):
             transaction = {**self._current, **self._new}
             for field in transaction.copy():
-                if isinstance(self.fields[field], Confirm):
+                if isinstance(self.fields[field], Model.Confirm):
                     del transaction[field]
                 if field in self._hide:
                     del transaction[field]
@@ -172,15 +164,16 @@ class Model(object):
 
             for name in dir(cls):
                 if name not in ignore:
-                    # NOTE(cfrademan): Hack, dir() shows '__slots__', so it breaks if
-                    # attribue is not there while doing getattr. once again, its faster
-                    # to ask for forgiveness than permission.
+                    # NOTE(cfrademan): Hack, dir() shows '__slots__', so it
+                    # breaks if attribue is not there while doing getattr.
+                    # once again, its faster to ask for forgiveness
+                    # than permission.
                     try:
                         prop = getattr(cls, name)
                     except AttributeError:
                         prop = None
 
-                    if isinstance(prop, BaseField):
+                    if isinstance(prop, Model.BaseField):
                         current_fields.append((name, prop))
                         prop._table = cls.model_name
                         prop._field_name = name
@@ -234,7 +227,7 @@ class Model(object):
                      self._transaction[field] is None)):
                 self.fields[field].error('required')
 
-            if isinstance(self.fields[field], Confirm):
+            if isinstance(self.fields[field], Model.Confirm):
                 confirm_field = self.fields[field].field.name
                 value1 = self._transaction.get(confirm_field)
                 value2 = self._transaction.get(field)

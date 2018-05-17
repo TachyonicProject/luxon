@@ -39,13 +39,14 @@ from email.mime.multipart import MIMEMultipart
 
 from jinja2 import Environment, BaseLoader
 
-from luxon import GetLogger
+from luxon.core.logger import GetLogger
 from luxon.utils.encoding import if_bytes_to_unicode
-from luxon.utils.html import strip_tags
+from luxon.utils.html5 import strip_tags
 
 log = GetLogger(__name__)
 
 jinja = Environment(loader=BaseLoader)
+
 
 def _render_template(template, **kwargs):
     template = jinja.from_string(template)

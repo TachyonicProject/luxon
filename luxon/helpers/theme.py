@@ -30,13 +30,16 @@ import os
 
 from luxon import g
 
+
 class Theme():
     def __init__(self):
-        self._default_theme = g.config.get('application', 'default_theme',
-                                           fallback='default')
-        self._static_web_path = g.config.get('application', 'static',
-                                             fallback='/static').rstrip('/')
-        self._static_file_path = g.app_root.rstrip('/') + '/static'
+        self._default_theme = g.app.config.get(
+            'application', 'default_theme',
+            fallback='default')
+        self._static_web_path = g.app.config.get(
+            'application', 'static',
+            fallback='/static').rstrip('/')
+        self._static_file_path = g.app.path.rstrip('/') + '/static'
 
         self._static_web_path += '/themes/'
         self._static_file_path += '/themes/'
@@ -64,8 +67,8 @@ class Theme():
             return self._static_web_path + check_file
 
         raise FileNotFoundError("Missing static" +
-                                " content '%s'" % (self._static_web_path +
-                                check_file,))
+                                " content '%s'" %
+                                (self._static_web_path + check_file,))
 
     @property
     def css(self):

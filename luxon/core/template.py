@@ -39,6 +39,7 @@ from luxon.core.logger import GetLogger
 
 log = GetLogger(__name__)
 
+
 def split_template_path(template):
     """Split a path into segments and perform a sanity check. If it detects
     '..' in the path it will raise a `TemplateNotFound` error.
@@ -61,17 +62,13 @@ class TachyonicLoader(BaseLoader):
                  '_fsl',
                  '_pkgloaders')
 
-    def __init__(self):
+    def __init__(self, app_path):
         """Load Templates Jinja2 Templates
 
         Initialize loading for Jinja2 Templates.
         """
-        if isinstance(g.app_root, str):
-            override_path = g.app_root + '/templates'
-            self._fsl = FileSystemLoader(override_path)
-        else:
-            override_path = None
-            self._fsl = None
+        override_path = app_path + '/templates'
+        self._fsl = FileSystemLoader(override_path)
 
         self._pkgloaders = {}
 
@@ -132,13 +129,10 @@ class TachyonicLoader(BaseLoader):
         raise NotImplementedError('list_templates')
 
 
-loader = TachyonicLoader()
-
-
 class Environment(Jinja2Environment):
     """Wraps around the Jinja2 Environment class with
-    TachyonicLoader() specified as the loader for this environment"""
-    def __init__(self, *args, **kwargs):
+        TachyonicLoader() specified as the loader for this environment"""
+    def __init__(self, loader):
         super().__init__(loader=loader,
                          trim_blocks=True,
                          lstrip_blocks=True)

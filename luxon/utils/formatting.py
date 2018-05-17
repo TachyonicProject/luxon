@@ -54,13 +54,11 @@ def format_seconds(secs):
     secs = secs * 1000
     return '%.3fms' % secs
 
-#(Rony) Doesn't seem to work propperly, formats a list to empty string?
+
 def format_obj(obj, dent=0):
     """Formats an object
 
     Takes a list or a dict
-
-
     """
     rows, columns = os.popen('stty size', 'r').read().split()
     string = ""

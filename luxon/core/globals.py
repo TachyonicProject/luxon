@@ -28,31 +28,17 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 
-from luxon.core.cls.nullerror import NullError
 from luxon.exceptions import NoContextError
 from luxon.structs.threaddict import ThreadDict
 
 
 _thread_globals = ThreadDict()
-_thread_items = ('current_request', 'client',)
+_thread_items = ('current_request', )
 
-_context_items = ('client',
-                  'current_request',
-                  'app_root',
-                  'app_name',
-                  )
+_context_items = ('current_request',
+                  'app', )
 
 _globals = {}
-
-_models = []
-_middleware_pre = []
-_middleware_resource = []
-_middleware_post = []
-
-_cached_global_router = None
-_cached_global_config = None
-
-APIClient = None
 
 
 class Globals(object):
@@ -70,70 +56,6 @@ class Globals(object):
     def __init__(self):
         self.__dict__ = _globals
 
-    @property
-    def config(self):
-        global _cached_global_config
-
-        if _cached_global_config is not None:
-            return _cached_global_config
-        else:
-            from luxon.core.config import Config
-            _cached_global_config = Config()
-            return _cached_global_config
-
-    @property
-    def router(self):
-        global _cached_global_router
-
-        if _cached_global_router is not None:
-            return _cached_global_router
-        else:
-            from luxon.core.router import Router
-            _cached_global_router = Router()
-            return _cached_global_router
-
-    @property
-    def debug(self):
-        global _debug
-
-        try:
-            return _debug
-        except NameError:
-            try:
-                _debug = self.config.getboolean('application', 'debug')
-            except Exception:
-                _debug = True
-        return _debug
-
-    @debug.setter
-    def debug(self, value):
-        global _debug
-
-        _debug = value
-
-    @property
-    def models(self):
-        """Returns list of models"""
-        return _models
-
-    @property
-    def middleware_pre(self):
-        return _middleware_pre
-
-    @property
-    def middleware_resource(self):
-        return _middleware_resource
-
-    @property
-    def middleware_post(self):
-        return _middleware_post
-
-    def __setattr__(self, attr, value):
-        if attr in _thread_items:
-            _thread_globals[attr] = value
-        else:
-            super().__setattr__(attr, value)
-
     def __delattr__(self, attr):
         try:
             del _thread_globals[attr]
@@ -150,15 +72,11 @@ class Globals(object):
             try:
                 return _globals[attr]
             except KeyError:
-                try:
-                    return super().__getattr__(attr)
-                except AttributeError:
-                    pass
                 if attr in _context_items:
                     # Place holder for context - Provides nice error.
-                    return NullError(NoContextError,
+                    raise NoContextError(
                                      "Working outside of '%s'" % attr +
-                                     " context")
+                                     " context") from None
                 raise AttributeError("'" + self.__class__.__name__ +
                                      "' object has no attribute '" +
                                      attr + "'") from None

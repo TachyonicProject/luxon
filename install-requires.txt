@@ -27,3 +27,7 @@ redis
 # NOTE(cfrademan):
 # do not remove hiredis - performance
 hiredis
+
+# Python
+# NOTE(cfradema): required by utils.venv
+virtualenv

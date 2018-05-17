@@ -27,6 +27,30 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+from luxon.utils.encoding import is_text
+
+
+def filter_none_text(string):
+    """Parse String and filter Binary
+
+    If Bytes does not contain string then return 'BINARY'
+    else original string will be returned.
+
+    Args:
+        string (bytes): Bytes String
+
+    Returns:
+        "BINARY" if the argument contained binary
+
+    """
+    if string is not None:
+        if is_text(string):
+            return string
+        else:
+            return "BINARY"
+    else:
+        return ''
+
 
 def blank_to_none(value):
     """Converts an empty string or byte object to None
@@ -38,11 +62,11 @@ def blank_to_none(value):
         value(str/bytes): object to be converted
 
     """
-    if ((isinstance(value, str) and value == '') or
-            (isinstance(value, bytes) and
-             value == b'')):
+    if isinstance(value, str) and value == '':
         return None
+
     return value
+
 
 def try_lower(string):
     # Ask for, forgiveness seems faster, perhaps better :-)
@@ -69,17 +93,12 @@ def indent(text, indent):
     Returns:
         text indeneted with given characters
     """
-    if not isinstance(text, str):
-        raise ValueError("indent expecting text type 'str' not '%s'" % type(text))
-    if not isinstance(indent, str):
-        raise ValueError("indent expecting indent type 'str' not '%s'" % type(indent))
-
     if '\n' not in text:
         return "%s%s" % (indent, text)
     else:
         text = text.splitlines(True)
         return indent.join(text)
-    #(Rony): does not indent the first line of a multiline block, peep the unit test
+
 
 def unquote_string(quoted):
     """Unquote an "quoted-string".

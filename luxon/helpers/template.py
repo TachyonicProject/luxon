@@ -30,7 +30,6 @@
 from docutils.core import publish_parts
 
 from luxon import g
-from luxon.utils.timezone import format_datetime, now
 from luxon.exceptions import NoContextError
 
 _cached_env = None
@@ -49,15 +48,6 @@ def render_template(template, *args, rst2html=False, **kwargs):
         jinja2 rendered template with supplied args and kwargs.
 
     """
-    global _cached_env
-
-    if _cached_env is None:
-        from luxon.core.template import Environment
-        _cached_env = Environment()
-        _cached_env.globals['format_datetime'] = format_datetime
-        _cached_env.globals['datetime'] = now
-        _cached_env.globals['G'] = g
-
     try:
         app = g.current_request.app.strip('/').strip()
         if app != '':
@@ -79,7 +69,7 @@ def render_template(template, *args, rst2html=False, **kwargs):
 
     context.update(kwargs)
 
-    template = _cached_env.get_template(template)
+    template = g.app.templating.get_template(template)
     content = template.render(*args, **context)
 
     if rst2html:

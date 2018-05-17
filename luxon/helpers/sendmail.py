@@ -27,53 +27,34 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import pickle
-
-from luxon.utils.decorator import decorator
-from luxon.utils.objects import object_name
-from luxon.core.cache import Cache
-from luxon.utils.hashing import md5sum
-from luxon.utils.objects import orderdict
-
-_cache_engine = None
+from luxon import g
+from luxon.utils.mail import SMTPClient
 
 
-def cache(expiry_time, func, *args, **kw):
-    global _cache_engine
+def sendmail(email, rcpt=None, subject=None, body=None, msg=None,
+             fail_callback=None, success_callback=None):
 
-    if _cache_engine is None:
-        _cache_engine = Cache()
+    server = g.app.config.get('smtp', 'host', fallback='127.0.0.1')
+    port = g.app.config.getint('smtp', 'port', fallback=587)
+    tls = g.app.config.getboolean('smtp', 'tls', fallback=False)
+    username = g.app.config.get('smtp', 'username', fallback=None)
+    password = g.app.config.get('smtp', 'password', fallback=None)
 
-    # mem args used to build reference id for cache.
-    mem_args = [object_name(func), ]
+    if username is not None and password is not None:
+        auth = (username, password)
+    else:
+        auth = None
 
-    # NOTE(cfrademan): This is important, we dont wantobject address,
-    # types etc inside of the cache reference. So using actual names
-    # to build cache. When using redis for cache, the object type,
-    # id/address will not be the same on different threads/
-    # processes/hosts.
-    args = list(args) + list(orderdict(kw).values())
-    for arg in args:
-        if not isinstance(arg, (str, int, float, bytes,)):
-            mem_args.append(object_name(arg))
+    with SMTPClient(email, server, port=port,
+                    tls=tls, auth=auth) as server:
+        if isinstance(rcpt, (list, tuple)):
+            rcpt_list = rcpt
+            for rcpt in rcpt_list:
+                if server.send(rcpt, subject=subject, body=body, msg=msg):
+                    if success_callback is not None:
+                        success_callback(rcpt)
+                else:
+                    if fail_callback is not None:
+                        fail_callback(rcpt)
         else:
-            mem_args.append(arg)
-
-    # create the actual key / reference id.
-    key = md5sum(pickle.dumps(mem_args))
-
-    cached = _cache_engine.load(key)
-
-    if cached is not None:
-        return cached
-
-    result = func(*args, **kw)
-    _cache_engine.store(key, result, expiry_time)
-
-    return result
-
-
-def memoize(expiry_time=3600):
-    def _memoize(func, *args, **kw):
-        return cache(expiry_time, func, *args, **kw)[0]
-    return decorator(_memoize)
+            return server.send(rcpt, subject=subject, body=body, msg=msg)

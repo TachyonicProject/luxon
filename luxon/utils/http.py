@@ -37,7 +37,7 @@ import requests
 from luxon import g
 from luxon import js
 from luxon import __identity__
-from luxon import GetLogger
+from luxon.core.logger import GetLogger
 from luxon.utils.timer import Timer
 from luxon.exceptions import (NoContextError,
                               HTTPClientInvalidHeader,
@@ -55,7 +55,7 @@ from luxon.exceptions import (NoContextError,
 from luxon.constants import HTTP_STATUS_CODES
 from luxon.utils.encoding import if_unicode_to_bytes, if_bytes_to_unicode
 from luxon.exceptions import JSONDecodeError
-from luxon.utils.strings import unquote_string
+from luxon.utils.text import unquote_string
 from luxon.structs.cidict import CiDict
 from luxon.utils.hashing import md5sum
 from luxon.core.cache import Cache
@@ -411,7 +411,7 @@ def parse_cache_control_header(header):
 
 def _debug(method, url, params, payload, request_headers, response_headers,
            response, status_code, elapsed, cached=None):
-    if g.debug:
+    if g.app.debug:
         log_id = string_id(length=6)
         try:
             payload = js.loads(payload)
@@ -754,193 +754,3 @@ class Client(object):
         if self._s is None:
             raise ValueError('Not within context')
         self._s.headers.update({header: value})
-
-
-def http_moved_permanently(url):
-    """ 301 Moved Permanently.
-
-    The HTTP response status code 301 Moved Permanently is used
-    for permanent URL redirection, meaning current links or records
-    using the URL that the response is received for should be updated.
-    The new URL should be provided in the Location field included with
-    the response. The 301 redirect is considered a best practice for
-    upgrading users from HTTP to HTTPS.
-
-    Args:
-        url (str): Redirected to URL.
-    """
-    req = g.current_request
-    resp = g.current_request.response
-
-    if 'http' not in url.lower():
-        url = "%s/%s" % (req.app_uri, url.strip('/'))
-    resp.status = 301
-    resp.set_header('Location', url)
-
-
-def http_found(url):
-    """ 302 Found.
-
-    The HTTP response status code 302 Found is a common way of
-    performing URL redirection.
-
-    An HTTP response with this status code will additionally provide
-    a URL in the header field location. The user agent (e.g. a web browser)
-    is invited by a response with this code to make a second, otherwise
-    identical, request to the new URL specified in the location field.
-    The HTTP/1.0 specification (RFC 1945) initially defined this code,
-    and gives it the description phrase "Moved Temporarily".
-
-    Many web browsers implemented this code in a manner that violated
-    this standard, changing the request type of the new request to GET,
-    regardless of the type employed in the original request (e.g. POST).
-    For this reason, HTTP/1.1 (RFC 2616) added the new status codes 303
-    and 307 to disambiguate between the two behaviours, with 303 mandating
-    the change of request type to GET, and 307 preserving the request
-    type as originally sent. Despite the greater clarity provided by this
-    disambiguation, the 302 code is still employed in web frameworks to
-    preserve compatibility with browsers that do not implement the
-    HTTP/1.1 specification.
-
-    As a consequence, the update of RFC 2616 changes the definition to
-    allow user agents to rewrite POST to GET.
-
-    Args:
-        url (str): Redirected to URL.
-    """
-    req = g.current_request
-    resp = g.current_request.response
-
-    if 'http' not in url.lower():
-        url = "%s/%s" % (req.app_uri, url.strip('/'))
-    resp.status = 302
-    resp.set_header('Location', url)
-
-
-def http_see_other(url):
-    """ 303 See Other.
-
-    The HTTP response status code 303 See Other is a way to redirect
-    web applications to a new URI, particularly after a HTTP POST has
-    been performed, since RFC 2616 (HTTP 1.1).
-
-    According to RFC 7231, which obsoletes RFC 2616, "A 303 response to
-    a GET request indicates that the origin server does not have a
-    representation of the target resource that can be transferred by the
-    server over HTTP. However, the Location field value refers to a resource
-    that is descriptive of the target resource, such that making a retrieval
-    request on that other resource might result in a representation that is
-    useful to recipients without implying that it represents the original
-    target resource."
-
-    This status code should be used with the location header, as described
-    below. If a server responds to a POST or other non-idempotent request
-    with a 303 See Other response and a value for the location header, the
-    client is expected to obtain the resource mentioned in the location
-    header using the GET method; to trigger a request to the target resource
-    using the same method, the server is expected to provide a 307 Temporary
-    Redirect response.
-
-    303 See Other has been proposed as one way of responding to a request for
-    a URI that identifies a real-world object according to Semantic Web theory
-    (the other being the use of hash URIs). For example,
-    if http://www.example.com/id/alice identifies a person, Alice, then it
-    would be inappropriate for a server to respond to a GET request with 200 OK
-    , as the server could not deliver Alice herself. Instead the server would
-    issue a 303 See Other response which redirected to a separate URI providing
-    a description of the person Alice.
-
-    303 See Other can be used for other purposes. For example, when building a
-    RESTful web API that needs to return to the caller immediately but continue
-    executing asynchronously (such as a long-lived image conversion), the web
-    API can provide a status check URI that allows the original client who
-    requested the conversion to check on the conversion's status. This status
-    check web API should return 303 See Other to the caller when the task is
-    complete, along with a URI from which to retrieve the result in the
-    Location HTTP header field.
-
-    Args:
-        url (str): Redirected to URL.
-    """
-    req = g.current_request
-    resp = g.current_request.response
-
-    if 'http' not in url.lower():
-        url = "%s/%s" % (req.app_uri, url.strip('/'))
-    resp.status = 303
-    resp.set_header('Location', url)
-
-
-def http_not_modified():
-    """ 304 Not Modified.
-    """
-    resp = g.current_request.response
-    resp.status = 304
-
-
-def http_temporary_redirect(url):
-    """ 307 Temporary Redirect.
-
-    The target resource resides temporarily under a different URI and the
-    user agent MUST NOT change the request method if it performs an automatic
-    redirection to that URI.
-
-    Since the redirection can change over time, the client ought to continue
-    using the original effective request URI for future requests.
-
-    The server SHOULD generate a Location header field in the response
-    containing a URI reference for the different URI. The user agent MAY use
-    the Location field value for automatic redirection. The server's response
-    payload usually contains a short hypertext note with a hyperlink to the
-    different URI(s).
-
-    Note: This status code is similar to 302 Found, except that it does not
-    allow changing the request method from POST to GET. This specification
-    defines no equivalent counterpart for 301 Moved Permanently (RFC7238,
-    however proposes defining the status code 308 Permanent Redirect for
-    this purpose).
-
-    Args:
-        url (str): Redirected to URL.
-    """
-    req = g.current_request
-    resp = g.current_request.response
-
-    if 'http' not in url.lower():
-        url = "%s/%s" % (req.app_uri, url.strip('/'))
-    resp.status = 307
-    resp.set_header('Location', url)
-
-
-def http_permanent_redirect(url):
-    """ 308 Permanent Redirect.
-
-    The target resource has been assigned a new permanent URI and any future
-    references to this resource ought to use one of the enclosed URIs.
-
-    Clients with link editing capabilities ought to automatically re-link
-    references to the effective request URI1 to one or more of the new
-    references sent by the server, where possible.
-
-    The server SHOULD generate a Location header field in the response
-    containing a preferred URI reference for the new permanent URI. The
-    user agent MAY use the Location field value for automatic redirection.
-    The server's response payload usually contains a short hypertext note
-    with a hyperlink to the new URI(s).
-
-    A 308 response is cacheable by default; i.e., unless otherwise indicated
-    by the method definition or explicit cache controls.
-
-    Note: This status code is similar to 301 Moved Permanently, except that
-    it does not allow changing the request method from POST to GET.
-
-    Args:
-        url (str): Redirected to URL.
-    """
-    req = g.current_request
-    resp = g.current_request.response
-
-    if 'http' not in url.lower():
-        url = "%s/%s" % (req.app_uri, url.strip('/'))
-    resp.status = 308
-    resp.set_header('Location', url)

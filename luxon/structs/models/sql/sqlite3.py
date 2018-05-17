@@ -28,21 +28,16 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 from luxon import db
-from luxon.structs.models import fields
+
 
 class Sqlite3(object):
     def __init__(self, model):
-        self._name = model.model_name
-        self._fields = model.fields
-        self._primary_key = model.primary_key
-        self._db_engine = model.db_engine
-        self._db_charset = model.db_charset
-        self._db_default_rows = model.db_default_rows
+        self._model = model
 
     # Create Tables
     def create(self):
-        name = self._name
-        model_fields = self._fields
+        name = self._model.model_name
+        model_fields = self._model.fields
 
         with db() as conn:
             if conn.has_table(name):
@@ -58,34 +53,34 @@ class Sqlite3(object):
                 column = model_fields[field].name
                 null = model_fields[field].null
 
-                if isinstance(model_fields[field], fields.Text):
+                if isinstance(model_fields[field], self._model.Text):
                     sql_field = " %s TEXT" % column
 
-                elif isinstance(model_fields[field], fields.Float):
+                elif isinstance(model_fields[field], self._model.Float):
                     sql_field = " %s REAL" % column
 
-                elif isinstance(model_fields[field], fields.Decimal):
+                elif isinstance(model_fields[field], self._model.Decimal):
                     sql_field = " %s REAL" % column
 
-                elif isinstance(model_fields[field], fields.Enum):
+                elif isinstance(model_fields[field], self._model.Enum):
                     sql_field = " %s TEXT" % column
 
-                elif isinstance(model_fields[field], fields.String):
+                elif isinstance(model_fields[field], self._model.String):
                     sql_field = " %s TEXT" % column
 
-                elif isinstance(model_fields[field], fields.Integer):
+                elif isinstance(model_fields[field], self._model.Integer):
                     sql_field = " %s INTEGER" % column
 
-                elif isinstance(model_fields[field], fields.DateTime):
+                elif isinstance(model_fields[field], self._model.DateTime):
                     sql_field = " %s INTEGER" % column
 
-                elif isinstance(model_fields[field], fields.Blob):
+                elif isinstance(model_fields[field], self._model.Blob):
                     sql_field = " %s BLOB" % column
 
                 if null is False:
                     sql_field += ' NOT NULL'
 
-                if self._primary_key.name == column:
+                if self._model.primary_key.name == column:
                     sql_field += ' PRIMARY KEY'
 
                 if sql_field is not None:
@@ -96,7 +91,7 @@ class Sqlite3(object):
 
                 column = model_fields[field].name
 
-                if isinstance(model_fields[field], fields.ForeignKey):
+                if isinstance(model_fields[field], self._model.ForeignKey):
                     foreign_keys = []
                     references = []
                     ref_name = model_fields[field]._reference_fields[0]._table
@@ -125,7 +120,7 @@ class Sqlite3(object):
             conn.commit()
 
             for field in model_fields:
-                if isinstance(model_fields[field], fields.UniqueIndex):
+                if isinstance(model_fields[field], self._model.UniqueIndex):
                     index = 'CREATE UNIQUE INDEX'
                     index += ' %s on %s (' % (field, name,)
                     index_fields = []

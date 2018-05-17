@@ -27,9 +27,8 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-from luxon.core.cls.singleton import Singleton
 
-class NoCache(metaclass=Singleton):
+class NoCache(object):
     def __init__(self, max_objs=5000, max_obj_size=50):
         pass
 

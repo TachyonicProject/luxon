@@ -27,11 +27,9 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import pickle
-
 from luxon import g
 from luxon.utils.imports import get_class
-from luxon.core.cls.singleton import Singleton
+from luxon.utils.singleton import Singleton
 
 
 class Cache(metaclass=Singleton):
@@ -42,15 +40,15 @@ class Cache(metaclass=Singleton):
 
     """
     def __init__(self):
-        global _cached_backend, _cached_max_objects, _cached_max_object_size
-
-        max_objects = g.config.getint('cache',
-                                      'max_objects')
-        max_object_size = g.config.getint('cache',
-                                          'max_object_size')
-        _cached_backend = get_class(g.config.get('cache',
-                                                 'backend'))(max_objects,
-                                                             max_object_size)
+        max_objects = g.app.config.getint('cache',
+                                          'max_objects')
+        max_object_size = g.app.config.getint('cache',
+                                              'max_object_size')
+        self._cached_backend = get_class(
+            g.app.config.get('cache',
+                             'backend'))(
+                             max_objects,
+                             max_object_size)
 
     def store(self, reference, obj, expire=60):
         """Store object
@@ -63,8 +61,7 @@ class Cache(metaclass=Singleton):
         if expire > 604800:  # 7 days
             expire = 604800
 
-        _cached_backend.store(reference, obj,
-                              expire)
+        self._cached_backend.store(reference, obj, expire)
 
     def load(self, reference):
         """Returns Cached Object
@@ -75,4 +72,6 @@ class Cache(metaclass=Singleton):
         Returns:
             object from cache
         """
-        return _cached_backend.load(reference)
+        return self._cached_backend.load(reference)
+
+
