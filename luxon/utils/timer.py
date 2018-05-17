@@ -31,6 +31,7 @@ from timeit import default_timer
 
 from luxon import g
 from luxon.core.logger import GetLogger
+from luxon.exceptions import NoContextError
 
 log = GetLogger(__name__)
 
@@ -58,7 +59,12 @@ class Timer():
     # In this case the pattern wins since we use timers in many parts of
     # the framework.
     def __enter__(self):
-        if g.app.debug:
+        try:
+            debug = g.app.debug
+        except NoContextError:
+            debug = True
+
+        if debug:
             start = default_timer()
 
             def timed():
@@ -73,5 +79,10 @@ class Timer():
         return lambda: None
 
     def __exit__(self, type, value, traceback):
-        if g.app.debug:
+        try:
+            debug = g.app.debug
+        except NoContextError:
+            debug = True
+
+        if debug:
             self.end = self.timed()
