@@ -7,7 +7,7 @@ Luxon has a built in logger to provide a conveniant high-level common interface 
 
 The logger wraps around python logging facilities and ensures that formatting and handlers are managed within the context of the python interpreter.
 
-The logger can be configured with the settings.ini file.
+The logger can be configured with the *settings.ini* file.
 
 Example Usage
 -------------

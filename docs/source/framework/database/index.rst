@@ -1,5 +1,6 @@
 .. _database:
 
+============
 Database API
 ============
 
@@ -67,35 +68,22 @@ Example Usage
             crsr.execute('.....')
             res = crsr.fetchall()
 
-Connection Class
-----------------
 
-.. autoclass:: luxon.core.db.base.connection.Connection
-    :members:
 
-Cursor Class
-------------
+Code
+===============
 
-.. autoclass:: luxon.core.db.base.cursor.Cursor
-    :members:
+.. toctree::
+    :maxdepth: 2
 
-Exceptions
-----------
-The exceptions are as per PEP-0249 Standards. They can be caught at object, module and global exceptions level.
 
-.. automodule:: luxon.core.db.base.exceptions
-    :members:
+    connection
+    cursor
+    except
+    args
+    drivers
 
-Arguments Function
--------------------
-Used if arguments need to be converted. List of formats given above; *paramstyles*
 
-.. autofunction:: luxon.core.db.base.args.args_to
 
-Python Drivers
-------------------
-Luxon provides Python Drivers for **Mysqls** and **Sqlite** both have a *connect* function
-
-.. autofunction:: luxon.core.db.mysql.connect
 
 

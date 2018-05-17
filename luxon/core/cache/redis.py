@@ -37,6 +37,7 @@ log = GetLogger(__name__)
 
 
 class Redis(object):
+    """Caches objects in Redis object store"""
     def __init__(self, max_objs=None, max_obj_size=50):
         self._max_obj_size = 1024 * max_obj_size
         self.redis = strict()
@@ -44,11 +45,23 @@ class Redis(object):
                  ' max_obj_size=%sKbytes' % (max_obj_size,))
 
     def load(self, key):
+        """Loads cached data from key
+
+        Args:
+            key (str): key for required data
+        """
         value = self.redis.get('cache:' + key)
         if value is not None:
             return pickle.loads(value)
 
     def store(self, key, value, expire):
+        """Stores data
+
+        Args:
+            key (str): key associated with cached data
+            value (obj): data to be cached
+            expire (int): time to expire (s)
+        """
         if sys.getsizeof(value, 0) <= self._max_obj_size:
             self.redis.set('cache:' + key,
                            pickle.dumps(value),

@@ -140,28 +140,13 @@ Browse to http://127.0.0.1:8000. You should see the 'Welcome to Myapp'
 Classes
 ===========
 
+.. toctree::
+    :maxdepth: 2
+    :titlesonly:
+
+    application
+    request
+    response
+    
 
 
-Application Class
-------------------------
-
-.. autoclass:: luxon.core.handlers.wsgi.application.Application
-	:members:
-
-Request Class
-------------------------
-
-.. autoclass:: luxon.core.handlers.wsgi.request.Request
-	:members:
-
-Response Class
-------------------------
-
-.. autoclass:: luxon.core.handlers.wsgi.response.Response
-	:members:
-
-Response Class
-------------------------
-
-.. autoclass:: luxon.core.handlers.wsgi.response.Response
-	:members:

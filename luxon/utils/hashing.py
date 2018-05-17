@@ -32,5 +32,9 @@ from hashlib import md5
 from luxon.utils.encoding import if_unicode_to_bytes
 
 def md5sum(val):
+    """Returns an md5 hash as a hex digest
+
+    Args:
+        val (binary str): value to be hashed"""
     val = if_unicode_to_bytes(val)
     return md5(val).hexdigest()

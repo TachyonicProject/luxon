@@ -15,7 +15,7 @@ The **Application** class is used to instantiate the handler. The **Request** an
     :maxdepth: 2
     :titlesonly:
 
-    wsgi
+    wsgi/index
 
 
 

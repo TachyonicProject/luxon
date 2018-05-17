@@ -35,6 +35,12 @@ from luxon.core.cls.singleton import Singleton
 
 
 class Cache(metaclass=Singleton):
+    """Caching class
+
+    Used to globally cache objects using the class specified in the
+    *settings.ini* file
+
+    """
     def __init__(self):
         global _cached_backend, _cached_max_objects, _cached_max_object_size
 
@@ -47,6 +53,13 @@ class Cache(metaclass=Singleton):
                                                              max_object_size)
 
     def store(self, reference, obj, expire=60):
+        """Store object
+
+        Args:
+            reference (str): reference to object
+            obj (obj): object to be cached
+            expire (int): time to expire (s)
+        """
         if expire > 604800:  # 7 days
             expire = 604800
 
@@ -54,4 +67,12 @@ class Cache(metaclass=Singleton):
                               expire)
 
     def load(self, reference):
+        """Returns Cached Object
+
+        Args:
+            reference (str): reference to object to be loaded
+
+        Returns:
+            object from cache
+        """
         return _cached_backend.load(reference)

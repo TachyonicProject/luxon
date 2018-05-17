@@ -13,7 +13,7 @@ Framework Guide
     settings
     logging
     templating
-    database
+    database/index
     models
     sessions
     policy
