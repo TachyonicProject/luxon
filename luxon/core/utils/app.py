@@ -31,6 +31,7 @@ import os
 
 from luxon.core.logger import GetLogger
 from luxon.utils import imports
+from luxon.utils.files import abspath, exists
 
 log = GetLogger(__name__)
 
@@ -47,16 +48,16 @@ def determine_app_root(name, app_root=None):
     if app_root is None:
         if name == "__main__" or "_mod_wsgi" in name:
             app_mod = imports.import_module(name)
-            return os.path.abspath(
+            return abspath(
                 os.path.dirname(
                     app_mod.__file__)).rstrip('/')
         else:
             log.error("Unable to determine application root." +
                       " Using current working directory '%s'" % os.getcwd())
-            return os.getcwd().rstrip('/')
+            return abspath(os.getcwd()).rstrip('/')
     else:
-        if os.path.exists(app_root) and not os.path.isfile(app_root):
-            return app_root.rstrip('/')
+        if exists(app_root) and not os.path.isfile(app_root):
+            return abspath(app_root).rstrip('/')
         else:
             raise FileNotFoundError("Invalid path"
                                     + " for root '%s'"

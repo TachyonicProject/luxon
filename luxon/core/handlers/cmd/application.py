@@ -136,7 +136,7 @@ class Application(object):
             print('\nroutes for %s:' % args.method)
             index = router.routes
             for route in index:
-                if route[1] == method.lower():
+                if route[1] == method.upper():
                     print("\t/%s" % route[0])
             exit()
 
