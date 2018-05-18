@@ -1,6 +1,5 @@
-
 =================
-Menu
+Menu Tool
 =================
 
 .. autoclass:: luxon.helpers.menu.Menu

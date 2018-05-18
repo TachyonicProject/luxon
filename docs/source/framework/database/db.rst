@@ -1,11 +1,10 @@
 .. _db:
 
-========
-Database
-========
+Database Helper
+=================
 
 .. autofunction:: luxon.helpers.db.db()
 
-.. _get_conn:
+
 
 

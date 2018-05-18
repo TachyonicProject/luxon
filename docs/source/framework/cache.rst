@@ -28,3 +28,9 @@ No Cache
 
 .. autoclass:: luxon.core.cache.nocache.NoCache
 	:members:
+
+
+Cache Helper
+================
+
+.. autofunction:: luxon.helpers.cache.cache

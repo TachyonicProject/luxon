@@ -6,7 +6,6 @@ Utilities Guide
 
     timer
     pool
-    proxyobject
     cast
     formatting
     password
@@ -36,3 +35,4 @@ Utilities Guide
     singleton
     text
     venv
+    mail

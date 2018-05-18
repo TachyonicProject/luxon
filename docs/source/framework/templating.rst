@@ -47,5 +47,7 @@ Tachyonic Loader Class
 	:members:
 
 
-:ref:`Render Template<temphelp>`
-------------------------------------
+Render Template
+================
+
+.. autofunction:: luxon.helpers.template.render_template

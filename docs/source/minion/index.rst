@@ -5,12 +5,12 @@ Minion Handler
 
 It handles the minions
 
-Classes
-===========
 
 .. toctree::
-    :maxdepth: 2
-    :titlesonly:
+   :maxdepth: 2
 
-    request
-    response
+   tutorial
+   request
+   response
+
+

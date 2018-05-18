@@ -36,9 +36,7 @@ Documentation
    wsgi/index
    cmd/index
    minion/index
-   resources/index
    structs/index
-   helpers/index
    utils/index
    community/index
   

@@ -17,10 +17,11 @@ Framework Guide
     models
     sessions
     policy
-    servers
     cache
     auth
-    app
+    email
+    redis
+    menu
     constants
     exceptions
 

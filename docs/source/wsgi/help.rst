@@ -1,6 +1,4 @@
-.. _indexx:
-
-Index
-=====
+Index Function
+================
 
 .. autofunction:: luxon.resources.wsgi.index.index

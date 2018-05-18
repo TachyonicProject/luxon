@@ -20,4 +20,7 @@ Policy Class
 
 A helper function can be used to create Policy objects
 
-:ref:`policy_helper`
+Policy Helper
+-------------
+
+.. autofunction:: luxon.helpers.policy.policy
