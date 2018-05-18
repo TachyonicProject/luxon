@@ -42,7 +42,7 @@ from luxon.utils.rsa import RSAKey
 from luxon.utils.files import mkdir
 from luxon.utils.pkg import Module
 from luxon.core.utils import models
-from luxon.utils.files import Open, chmod, exists, ls, rm
+from luxon.utils.files import Open, chmod, exists, ls, rm, joinpath
 from luxon.core.config import Config
 from luxon.utils.timezone import now
 
@@ -74,6 +74,7 @@ def setup(args):
                         new_extension=new_extension)
 
     mkdir(path)
+    mkdir(joinpath(path, 'tmp'))
     copy('policy.json', 'default')
     copy('settings.ini', 'default')
     try:
