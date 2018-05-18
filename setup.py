@@ -267,6 +267,7 @@ setup_dict = dict(
     author_email=metadata.email,
     maintainer=metadata.author,
     maintainer_email=metadata.email,
+    license=metadata.license,
     url=metadata.url,
     description=metadata.description,
     long_description=read('README.rst'),
