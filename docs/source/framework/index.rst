@@ -21,6 +21,8 @@ Framework Guide
     cache
     auth
     app
+    constants
+    exceptions
 
 
 

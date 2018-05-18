@@ -40,6 +40,5 @@ Documentation
    structs/index
    helpers/index
    utils/index
-   extras/index
    community/index
   

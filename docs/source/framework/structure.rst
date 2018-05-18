@@ -23,16 +23,18 @@ luxon/core/config                         Luxon Config Parser.
 luxon/core/db                             Luxon Databases
 luxon/core/handlers                       Application Handlers.
 luxon/core/handlers/wsgi                  WSGI Interface handlers.
+luxon/core/handlers/cmd			  Command Line Handler
+luxon/core/handlers/minion		  Minion Handler
 luxon/core/policy                         Policy RBAC Rule-Set Engine.
 luxon/core/servers                        Luxon servers
 
+luxon/core/app.py			  Application Launch
 luxon/core/auth.py                        PKI Authentication
 luxon/core/globals.py                     Global 'g' class.
 luxon/core/logger.py                      Logging service, for debugging etc...
 luxon/core/regex.py                       Regex patterns
 luxon/core/register.py                    Class of views/registration functions     
-luxon/core/router.py                      Router Interface   
-luxon/core/session.py                     Session data handling  
+luxon/core/router.py                      Router Interface    
 luxon/core/template.py                    Luxon wrapper for Jinja2 Template Environment
 ========================================= ==============================================
 
@@ -48,11 +50,16 @@ Helpers
 
 ========================================= ==============================================
 luxon/helpers                             Various helper functions
+luxon/helpers/cache.py			  Caching helper
 luxon/helpers/db.py                       Database helper
-luxon/helpers/jinja2.py                   Jinja2 helper
-luxon/helpers/mail.py                     Luxon mail utility
+luxon/helpers/memoize.py		  Memoize function
+luxon/helper/menu.py			  Menu tool helper
 luxon/helpers/policy.py                   Policy engine helper
 luxon/helpers/rd.py                       Redis helper
+luxon/helpers/sendmail.py                 Send Mail helper
+luxon/helpers/template.py		  Redis template helper
+luxon/helpers/theme.py			  Theme helper
+
 ========================================= ==============================================
 
 Resources
@@ -60,7 +67,6 @@ Resources
 
 ========================================= ==============================================
 luxon/resources                           Resources provided by Luxon
-luxon/resources/script/help.py            Command line **help**
 luxon/resources/wsgi/index.py             API index         
 ========================================= ==============================================
 
@@ -69,9 +75,8 @@ Structures
 
 ========================================= ==============================================
 luxon/structs                             Luxon Data Structures 
-luxon/structs/models                      Luxon model classes
+luxon/structs/models                      Luxon model data structures
 luxon/structs/cidict.py                   Case insensitice dictionary
-luxon/structs/container.py                Property dictionary
 luxon/structs/htmldoc.py                  HTMLDoc Object
 luxon/structs/threaddict.py               Dictionary for threads
 luxon/structs/threadlist.py               List for threads

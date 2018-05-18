@@ -31,3 +31,8 @@ Utilities Guide
     system
     app
     models
+    bootstrap4
+    html5
+    singleton
+    text
+    venv

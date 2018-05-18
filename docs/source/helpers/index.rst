@@ -7,3 +7,7 @@ Helpers Guide
     db
     policy
     template
+    cache
+    menu
+    rd
+    sendmail
