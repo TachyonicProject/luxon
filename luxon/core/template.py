@@ -130,6 +130,8 @@ class TachyonicLoader(BaseLoader):
 
 
 class Environment(Jinja2Environment):
+    """Wraps around the Jinja2 Environment class with
+        TachyonicLoader() specified as the loader for this environment"""
     def __init__(self, loader):
         super().__init__(loader=loader,
                          trim_blocks=True,

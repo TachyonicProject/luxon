@@ -52,6 +52,7 @@ from luxon.structs.models.utils import defined_length_check
 
 
 class BaseFields(object):
+    """Base Fields outer class"""
     __slots__ = ()
 
     class BaseField(object):

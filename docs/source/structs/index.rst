@@ -7,8 +7,7 @@ Luxon Data Structures
     :maxdepth: 2
     
     cidict
-    container
     htmldoc
     threaddict
     threadlist	
-    dbstructs
+

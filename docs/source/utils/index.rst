@@ -6,33 +6,21 @@ Utilities Guide
 
     timer
     pool
-    proxyobject
     cast
-    filter
     formatting
     password
     split
     encoding
     imports
-    strings
     timezone
-    string_id
     uri
     objects
     global_counter
     js
-    middleware
     files
-    db
     http
-    html
     classproperty
-    cache
     daemon
-    python
-    theme
-    uimenu
-    app
     debug
     decorator
     hashing
@@ -40,4 +28,11 @@ Utilities Guide
     rd
     rsa
     system
-    
+    app
+    models
+    bootstrap4
+    html5
+    singleton
+    text
+    venv
+    mail

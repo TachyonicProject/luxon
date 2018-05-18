@@ -1,5 +1,6 @@
 .. _models:
 
+============
 Models - ORM
 ============
 A model is the data structure of information. It contains the fields, types and restrictions of the data you’re storing. A model can map to a single database table.
@@ -16,7 +17,7 @@ The **luxon** command line tool provides an option **luxon -d** to create or upd
 Warning:
 	Please backup your database before updating the schema.
 
-While working with 'models' object you can iterate, update rows and so forth. It behaves a like a list data structure with 'model' objects that behave like a dictionary of columns/fields. The rollback and commit can be used without database. 
+While working with a 'models' object you can iterate, update rows and so forth. It behaves a like a list data structure with 'model' objects that behave like a dictionary of columns/fields. The rollback and commit can be used without database. 
 
 Using models with database require you to define Primary Key using 'primary_key' class attribute. Its a reference to relevant field.
 
@@ -44,44 +45,55 @@ Example
 	from luxon import ForeignKey
 	from luxon import UniqueIndex
 	from luxon.utils.timezone import now
+	
+	-------------------------------------------------
+	# Model for roles
+	-------------------------------------------------
 
 	ROLES = [
-		('00000000-0000-0000-0000-000000000000', 'Root', None, now()),
-		(str(uuid4()), 'Operations', None, '0000-00-00 00:00:00'),
-		(str(uuid4()), 'Administrator', None, '0000-00-00 00:00:00'),
-		(str(uuid4()), 'Account Manager', None, '0000-00-00 00:00:00'),
-		(str(uuid4()), 'Billing', None, '0000-00-00 00:00:00'),
-		(str(uuid4()), 'Customer', None, '0000-00-00 00:00:00'),
-		(str(uuid4()), 'Support', None, '0000-00-00 00:00:00'),
+	    ('00000000-0000-0000-0000-000000000000', 'Root', None, now()),
+	    (str(uuid4()), 'Operations', None, now()),
+	    (str(uuid4()), 'Administrator', None, now()),
+	    (str(uuid4()), 'Account Manager', None, now()),
+	    (str(uuid4()), 'Billing', None, now()),
+	    (str(uuid4()), 'Customer', None, now()),
+	    (str(uuid4()), 'Support', None, now()),
 	]
 
 	@database_model()
-	class role(Models):
-		id = Uuid(default=uuid4)
-		name = String(max_length=64)
-		description = Text()
-		creation_time = DateTime(default=now)
-		primary_key = id
-		unique_role = UniqueIndex(name)
-		db_default_rows = ROLES
-		roles = Index(name)
+	class role(SQLModel):
+	    id = Uuid(default=uuid4, internal=True)
+	    name = String(max_length=64, null=False)
+	    description = Text()
+	    creation_time = DateTime(default=now, readonly=True)
+	    primary_key = id
+	    unique_role = UniqueIndex(name)
+	    db_default_rows = ROLES
+	    roles = Index(name)
 
+	-------------------------------------------------
+	# Model for domains
+	-------------------------------------------------
 
 	DOMAINS = [
-		('00000000-0000-0000-0000-000000000000', 'default', None, 1, now()),
+	    ('00000000-0000-0000-0000-000000000000', 'default', None, 1, now()),
 	]
 
 	@database_model()
-	class domain(Models):
-		id = Uuid(default=uuid4)
-		name = String(max_length=64)
-		description = Text()
-		enabled = Boolean(default=True)
-		creation_time = DateTime(default=now)
-		primary_key = id
-		unique_domain = UniqueIndex(name)
-		db_default_rows = DOMAINS
-		domains = Index(name)
+	class domain(SQLModel):
+	    id = Uuid(default=uuid4, internal=True)
+	    name = Fqdn(null=False)
+	    description = Text()
+	    enabled = Boolean(default=True)
+	    creation_time = DateTime(default=now, readonly=True)
+	    primary_key = id
+	    unique_domain = UniqueIndex(name)
+	    db_default_rows = DOMAINS
+	    domains = Index(name)
+
+	-------------------------------------------------
+	# Model for tennants 
+	-------------------------------------------------
 
 	@database_model()
 	class tenant(Models):
@@ -97,183 +109,116 @@ Example
 		tenants_per_domain = Index(domain_id)
 		primary_key = id
 
+	----------------------------------------------------
+	# Model for users
+	----------------------------------------------------
 
 	USERS = [
-		('00000000-0000-0000-0000-000000000000', 'tachyonic',
-		 '00000000-0000-0000-0000-000000000000', None,
-		 'root', '$2b$12$QaWa.Q3gZuafYXkPo3EJRuSJ1wGuutShb73RuH1gdUVri82CU6V5q',
-		 None, 'Default Root User', None, None, None, '0000-00-00 00:00:00',
-		 1, now()),
+	    ('00000000-0000-0000-0000-000000000000', 'tachyonic',
+	     None, None,
+	     'root', '$2b$12$QaWa.Q3gZuafYXkPo3EJRuSJ1wGuutShb73RuH1gdUVri82CU6V5q',
+	     None, 'Default Root User', None, None, None, None,
+	     1, now()),
 	]
 
 	@database_model()
-	class user(Models):
-		id = Uuid(default=uuid4)
-		tag = String(max_length=30)
-		domain_id = Uuid()
-		tenant_id = Uuid()
-		username = String(max_length=100)
-		password = String(max_length=100)
-		email = Email(max_length=255)
-		name = String(max_length=100)
-		phone_mobile = Phone()
-		phone_office = Phone()
-		designation = Enum('Mr','Mrs','Dr', 'Ms')
-		last_login = DateTime()
-		enabled = Boolean(default=True)
-		creation_time = DateTime(default=now)
-		unique_username = UniqueIndex(domain_id, username)
-		user_tenant_ref = ForeignKey(tenant_id, tenant.id)
-		user_domain_ref = ForeignKey(domain_id, domain.id)
-		users = Index(domain_id, username)
-		users_tenants = Index(domain_id, tenant_id)
-		users_domain = Index(domain_id)
-		primary_key = id
-		db_default_rows = USERS
+	class luxon_user(SQLModel):
+	    id = Uuid(default=uuid4, internal=True)
+	    tag = String(hidden=True, max_length=30, null=False)
+	    domain = Fqdn(internal=True)
+	    tenant_id = Uuid(internal=True)
+	    username = Username(max_length=100, null=False)
+	    password = String(max_length=100, null=True)
+	    email = Email(max_length=255)
+	    name = String(max_length=100)
+	    phone_mobile = Phone()
+	    phone_office = Phone()
+	    designation = Enum('', 'Mr','Mrs','Ms', 'Dr', 'Prof')
+	    last_login = DateTime(readonly=True)
+	    enabled = Boolean(default=True)
+	    creation_time = DateTime(default=now, readonly=True)
+	    unique_username = UniqueIndex(domain, username)
+	    user_tenant_ref = ForeignKey(tenant_id, luxon_tenant.id)
+	    user_domain_ref = ForeignKey(domain, luxon_domain.name)
+	    users = Index(domain, username)
+	    users_tenants = Index(domain, tenant_id)
+	    users_domain = Index(domain)
+	    primary_key = id
+	    db_default_rows = USERS
+
+	----------------------------------------------------
+	# Model for user roles
+	----------------------------------------------------
 
 
 	USER_ROLES = [
-		('00000000-0000-0000-0000-000000000000',
-		 '00000000-0000-0000-0000-000000000000',
-		 '00000000-0000-0000-0000-000000000000',
-		 None,
-		 '00000000-0000-0000-0000-000000000000',
-		 now()),
+	    ('00000000-0000-0000-0000-000000000000',
+	     '00000000-0000-0000-0000-000000000000',
+	     None,
+	     None,
+	     '00000000-0000-0000-0000-000000000000',
+	     now()),
 	]
 
 	@database_model()
-	class user_role(Models):
-		id = Uuid(default=uuid4)
-		role_id = Uuid()
-		domain_id = Uuid()
-		tenant_id = Uuid()
-		user_id = Uuid()
-		creation_time = DateTime(default=now)
-		unique_user_role = UniqueIndex(role_id, tenant_id, user_id)
-		user_role_id_ref = ForeignKey(role_id, role.id)
-		user_role_domain_ref = ForeignKey(domain_id, domain.id)
-		user_role_tenant_id_ref = ForeignKey(tenant_id, tenant.id)
-		user_role_user_id_ref = ForeignKey(user_id, user.id)
-		primary_key = id
-		db_default_rows = USER_ROLES
-..
-	Models Class
-	------------
-	.. autoclass:: luxon.Models
-	    :members:
+	class luxon_user_role(SQLModel):
+	    id = Uuid(default=uuid4, internal=True)
+	    role_id = Uuid()
+	    domain = Fqdn(internal=True)
+	    tenant_id = String()
+	    user_id = Uuid()
+	    creation_time = DateTime(readonly=True, default=now)
+	    unique_user_role = UniqueIndex(role_id, tenant_id, user_id)
+	    user_role_id_ref = ForeignKey(role_id, luxon_role.id)
+	    user_role_domain_ref = ForeignKey(domain, luxon_domain.name)
+	    user_role_tenant_ref = ForeignKey(tenant_id, luxon_tenant.id)
+	    user_roles = Index(domain, tenant_id)
+	    primary_key = id
+	    db_default_rows = USER_ROLES
 
 
-Model Class
------------
+Model base Class
+==================
 
 .. autoclass:: luxon.Model
     :members:
 
-Fields
-------
 
-**Conveniantly accessible using 'from luxon import fields'**
+Modal Fields
+=============
 
-.. autoclass:: luxon.String
-    :members:
-    :inherited-members:
+Data types supported by Luxon Modals
 
-.. autoclass:: luxon.Integer
-    :members:
-    :inherited-members:
+**Conveniantly accessible using 'modal_name.field_name'**
 
-.. autoclass:: luxon.Float
-    :members:
-    :inherited-members:
+Base Fields
+------------
 
-.. autoclass:: luxon.Double
-    :members:
-    :inherited-members:
+.. automodule:: luxon.structs.models.fields.basefields
+	:members:
 
-.. autoclass:: luxon.Decimal
-    :members:
-    :inherited-members:
+Blob Fields
+------------
 
-.. autoclass:: luxon.TinyInt
-    :members:
-    :inherited-members:
+.. automodule:: luxon.structs.models.fields.blobfields
+	:members:
 
-.. autoclass:: luxon.SmallInt
-    :members:
-    :inherited-members:
+Int Fields
+------------
 
-.. autoclass:: luxon.MediumInt
-    :members:
-    :inherited-members:
+.. automodule:: luxon.structs.models.fields.intfields
+	:members:
 
-.. autoclass:: luxon.BigInt
-    :members:
-    :inherited-members:
+Sql Fields
+------------
 
-.. autoclass:: luxon.DateTime
-    :members:
-    :inherited-members:
+.. automodule:: luxon.structs.models.fields.sqlfields
+	:members:
 
-.. autoclass:: luxon.PyObject
-    :members:
-    :inherited-members:
+Text Fields
+------------
 
-.. autoclass:: luxon.Blob
-    :members:
-    :inherited-members:
+.. automodule:: luxon.structs.models.fields.textfields
+	:members:
 
-.. autoclass:: luxon.TinyBlob
-    :members:
-    :inherited-members:
 
-.. autoclass:: luxon.MediumBlob
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.LongBlob
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Text
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.TinyText
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.MediumText
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Enum
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Boolean
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Uuid
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Index
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.UniqueIndex
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.ForeignKey
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Email
-    :members:
-    :inherited-members:
-
-.. autoclass:: luxon.Phone
-    :members:
-    :inherited-members:

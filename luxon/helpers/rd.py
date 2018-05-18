@@ -53,6 +53,7 @@ def strict():
 
 
 class Redis(RedisBase):
+    """Basic redis object"""
     __slots__ = ('_redis', '_expire',)
 
     def __init__(self, expire=None):

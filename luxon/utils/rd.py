@@ -32,6 +32,13 @@ import redis
 
 
 class Redis(object):
+    """Generic StrictRedis object with an expire time
+
+    Args:
+         expire (int): expire time
+         kwargs: kwargs for redis.StrictRedis
+
+    """
     __slots__ = ('_redis', '_expire',)
 
     def __init__(self, *args, expire=None, **kwargs):
