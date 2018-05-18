@@ -61,6 +61,11 @@ class Memory(object):
                  ' max_memory=%sMBytes' % (max_mem,))
 
     def load(self, key):
+        """Loads cached data from key
+
+        Args:
+            key (str): key for required data
+        """
         try:
             value, expire = self._cache.pop(key)
             if expire > now():
@@ -70,6 +75,13 @@ class Memory(object):
             return None
 
     def store(self, key, value, expire):
+        """Stores data
+
+        Args:
+            key (str): key associated with cached data
+            value (obj): data to be cached
+            expire (int): time to expire (s)
+        """
         if sys.getsizeof(value, 0) <= self._max_obj_size:
             try:
                 self._cache.pop(key)

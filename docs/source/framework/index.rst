@@ -13,14 +13,17 @@ Framework Guide
     settings
     logging
     templating
-    database
+    database/index
     models
     sessions
     policy
-    classes
-    servers
     cache
     auth
+    email
+    redis
+    menu
+    constants
+    exceptions
 
 
 

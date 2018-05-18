@@ -71,9 +71,4 @@ Globals Class
 .. autoclass:: luxon.core.globals.Globals
     :members:
 	
-	.. automethod:: models(self)
-        .. automethod:: middleware_pre(self)
-        .. automethod:: middleware_resource(self)
-        .. automethod:: middleware_post(self)
-        .. automethod:: router(self)
     

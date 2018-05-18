@@ -1,5 +1,7 @@
+.. _rd:
+
 ===============
-Redis Utility
+Redis Object
 ===============
 
 .. autoclass:: luxon.utils.rd.Redis

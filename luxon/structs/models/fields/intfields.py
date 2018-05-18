@@ -33,6 +33,7 @@ from luxon.structs.models.utils import defined_length_check
 
 
 class IntFields(object):
+    """Int Fields outer class"""
     __slots__ = ()
 
     class TinyInt(BaseFields.Integer):

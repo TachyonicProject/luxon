@@ -33,12 +33,10 @@ Documentation
    license
    install
    framework/index
-   main/index
-   handlers/index
-   resources/index
+   wsgi/index
+   cmd/index
+   minion/index
    structs/index
-   helpers/index
    utils/index
-   extras/index
    community/index
   
