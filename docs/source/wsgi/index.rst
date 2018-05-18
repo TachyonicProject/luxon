@@ -25,4 +25,4 @@ The WSGI handler provides environment that is fast, flexible, scalable and simpl
    tutorial
    request
    response
-   help
+   index_resource
