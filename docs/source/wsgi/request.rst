@@ -2,4 +2,5 @@ Request Class
 ------------------------
 
 .. autoclass:: luxon.core.handlers.wsgi.request.Request
-	:members:
+    :members:
+    :inherited-members:

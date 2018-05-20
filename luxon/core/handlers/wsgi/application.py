@@ -289,6 +289,13 @@ class Application(object):
             description = str(exception)
             resp.status = 500
 
+        elif isinstance(exception, ValueError):
+            log.debug('%s' % (trace))
+            log.warning('%s: %s' % (object_name(exception),
+                                    exception))
+            title = "Bad Request"
+            description = str(exception)
+            resp.status = 400
         else:
             log.debug('%s' % (trace))
             log.critical('%s: %s' % (object_name(exception),

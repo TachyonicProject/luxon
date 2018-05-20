@@ -86,7 +86,8 @@ class TrackCookie(object):
         self._path = '/' + self._req.app.lstrip('/')
         self._expire = expire
 
-        if self._cookie_name in self._req.cookies:
+        if (self._cookie_name in self._req.cookies and
+                self._req.cookies[self._cookie_name].strip() != ''):
             self._session_id = if_bytes_to_unicode(
                 self._req.cookies[self._cookie_name],
                 'ISO-8859-1'
