@@ -184,9 +184,21 @@ class Connection(BaseExeptions):
 
     def has_table(self, table):
         try:
-            query = 'SELECT * FROM %s limit 1' % table
+            query = 'SELECT * FROM %s limit 0' % table
             self.execute(query)
-            self.commit()
+            return True
+        except exceptions.SQLOperationalError:
+            # THIS ONE MATCHES FOR SQLLITE3? Kinda wrong.
+            return False
+        except exceptions.SQLProgrammingError:
+            # MYSQL USES THIS ONE
+            return False
+
+    def has_field(self, table, field):
+        try:
+            query = 'SELECT %s FROM %s LIMIT 0' % (field,
+                                                   table)
+            self.execute(query)
             return True
         except exceptions.SQLOperationalError:
             # THIS ONE MATCHES FOR SQLLITE3? Kinda wrong.

@@ -71,6 +71,7 @@ class RequestBase(object):
 
     @property
     def credentials(self):
+        """Credentials"""
         if self._cached_auth is None:
             expire = g.app.config.getint('tokens', 'expire', fallback=3600)
             self._cached_auth = Auth(expire=expire)

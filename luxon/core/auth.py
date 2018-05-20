@@ -159,7 +159,7 @@ class Auth(object):
         return self.json
 
     def new(self, user_id, username=None, domain=None,
-            tenant_id=None, roles=None):
+            roles=None):
 
         self.clear()
 
@@ -174,10 +174,7 @@ class Auth(object):
             self._credentials['username'] = username
 
         if domain is not None:
-            self.domain = domain
-
-        if tenant_id is not None:
-            self.tenant_id = tenant_id
+            self._credentials['user_domain'] = domain
 
         if roles is not None:
             self.roles = roles
@@ -213,9 +210,14 @@ class Auth(object):
 
         if ('tenant_id' in self._credentials and
                 self._credentials['tenant_id'] is not None):
-            raise AccessDeniedError("Token already scoped in 'tenant'")
+            if self._credentials['tenant_id'] != value:
+                raise AccessDeniedError("Token already scoped in 'tenant'")
 
         self._credentials['tenant_id'] = value
+
+    @property
+    def user_domain(self):
+        return self._credentials.get('user_domain', None)
 
     @property
     def domain(self):
@@ -227,7 +229,8 @@ class Auth(object):
 
         if ('domain' in self._credentials and
                 self._credentials['domain'] is not None):
-            raise AccessDeniedError("Token already scoped in 'domain'")
+            if self._credentials['domain'] != value:
+                raise AccessDeniedError("Token already scoped in 'domain'")
 
         self._credentials['domain'] = value
 
