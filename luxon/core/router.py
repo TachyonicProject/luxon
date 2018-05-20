@@ -139,7 +139,7 @@ class Router(object):
         if method + ':' + route.strip('/') in self._routes:
             return self._routes['%s:%s' % (method, route.strip('/'))]
         try:
-            found = self._routers[method].find(route)
+            found = self._routers[method].find(route.strip('/'))
             if found[0]:
                 return found
         except KeyError:

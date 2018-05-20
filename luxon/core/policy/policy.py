@@ -31,8 +31,10 @@
 from luxon.utils.timer import Timer
 from luxon.core.logger import GetLogger
 from luxon.core.policy import compiler
+from luxon.exceptions import AccessDeniedError
 
 log = GetLogger(__name__)
+
 
 class Policy(object):
     """Policy Rule Engine interface.
@@ -94,6 +96,8 @@ class Policy(object):
                 val = exec_globals['_validate_result']
             log.info('Rule %s validated to %s.' % (rule, val),
                       timer=elapsed())
+        except AccessDeniedError:
+            raise
         except Exception as e:
             log.error("Failed validating '%s' %s:%s" %
                               (rule, e.__class__.__name__, e))

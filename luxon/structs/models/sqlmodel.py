@@ -76,9 +76,15 @@ class SQLModel(Model, SQLFields):
                                 " WHERE %s" % self.primary_key.name +
                                 " = %s",
                                 primary_id)
-            result = crsr.fetchall()
-            crsr.commit()
-            self._sql_parse(result)
+            result = crsr.fetchone()
+            if result:
+                crsr.commit()
+                self._sql_parse([result])
+            else:
+                raise ValueError('object not found')
+
+    def delete(self):
+        self._deleted = True
 
     def commit(self):
         name = self.model_name
@@ -135,7 +141,15 @@ class SQLModel(Model, SQLFields):
                                 "Model %s:" % name +
                                 " Object referenced.") from None
 
-            if self._created:
+            if self._deleted:
+                delete_id = transaction[key_id]
+                sql = "DELETE FROM %s WHERE %s" % (self.model_name, key_id,)
+                sql += " = %s"
+                conn.execute(sql, delete_id)
+                self._deleted = False
+                self._created = True
+                self._updated = False
+            elif self._created:
                 query = "INSERT INTO %s (" % name
                 query += ','.join(transaction.keys())
                 query += ')'
@@ -150,7 +164,9 @@ class SQLModel(Model, SQLFields):
                 if isinstance(self.primary_key, SQLModel.Integer):
                     self[self.primary_key.name] = conn.last_row_id()
                 conn.commit()
-
+                self._created = False
+                self._updated = False
+                self._deleted = False
             elif self._updated:
                 update_id = transaction[key_id]
                 sets = []
@@ -171,14 +187,15 @@ class SQLModel(Model, SQLFields):
                                  ' WHERE %s' % key_id +
                                  ' = %s',
                                  args + [update_id, ])
+                self._created = False
+                self._updated = False
+                self._deleted = False
         finally:
             conn.commit()
             conn.close()
 
         self._current = self._transaction
         self._new.clear()
-        self._created = False
-        self._updated = False
 
     @classmethod
     def create_table(cls):

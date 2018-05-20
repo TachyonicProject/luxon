@@ -45,13 +45,16 @@ class Model(BaseFields, BlobFields, IntFields, TextFields):
     primary_key = None
     filter_fields = ()
 
-    __slots__ = ('_current', '_new', '_updated', '_created', '_hide')
+    __slots__ = ('_current', '_new', '_updated',
+                 '_created', '_hide', '_deleted')
 
     def __init__(self, hide=None):
         self._current = {}
         self._new = {}
         self._updated = False
         self._created = True
+        # Used by SQL Commit
+        self._deleted = False
         self._hide = to_tuple(hide)
 
         # NOTE(cfrademan): Set default values for model object.
@@ -63,7 +66,7 @@ class Model(BaseFields, BlobFields, IntFields, TextFields):
                 if (field not in self._transaction or
                         self._transaction[field] is None):
                     self._current[field] = default
-            elif not isinstance(self.fields[field], Model.filter_fields):
+            elif not isinstance(self.fields[field], self.filter_fields):
                 self._current[field] = None
 
     def __setattr__(self, attr, value):
@@ -114,7 +117,7 @@ class Model(BaseFields, BlobFields, IntFields, TextFields):
         self._updated = True
 
     def __delitem__(self, key):
-        raise NotImplementedError('Model delete object not implemented')
+        raise NotImplementedError('Model delete field not implemented')
 
     def __iter__(self):
         return iter(self.transaction)

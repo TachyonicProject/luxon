@@ -93,7 +93,10 @@ def get_class(path):
 
     module = import_module(module)
 
-    return getattr(module, cls_name)
+    try:
+        return getattr(module, cls_name)
+    except AttributeError:
+        raise ValueError("'%s' has no '%s'" % (module, cls_name,))
 
 
 get_func = get_class

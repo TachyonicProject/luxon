@@ -162,7 +162,7 @@ class CompiledRouter(object):
             uri(str): The requested path to route.
 
         Keyword Args:
-            req(Request): The Request object that will be passed to
+            req(object): The Request object that will be passed to
                 the routed responder. Currently the value of this
                 argument is ignored by :class:`~.CompiledRouter`.
                 Routing is based solely on the path.
