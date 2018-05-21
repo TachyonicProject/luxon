@@ -44,7 +44,6 @@ from luxon.utils.text import blank_to_none
 from luxon.utils.imports import get_class
 from luxon.exceptions import (HTTPInvalidHeader,
                               HTTPMissingHeader, HTTPMissingFormField)
-from luxon.utils.files import CachedInput
 from luxon.core.session import Session
 from luxon.utils.http import ETags
 from luxon.core.handlers.request import RequestBase
@@ -214,10 +213,6 @@ class Request(RequestBase):
             an 'int' or None if the header is missing.
 
         stream: File-like input object for reading the body of the request.
-            (if any). This object provides direct access to the data stream and
-            is seekable since its wrapped inside of:
-
-                'luxon.utils.file.CachedInput'
 
         json (object): JSON Payload as object.
 
@@ -302,9 +297,7 @@ class Request(RequestBase):
         '_cached_is_bot',
         '_cached_static',
         '_cached_is_ajax',
-        '_cached_raw',
         '_cached_json',
-        '_cached_stream',
         '_cached_session',
         '_cached_log',
         '_cached_cache_control',
@@ -338,8 +331,6 @@ class Request(RequestBase):
 
         # Caching
         self._user_token = None
-        self._cached_raw = None
-        self._cached_stream = None
         self._cached_json = None
         self._cached_session = None
         self._cached_app_uri = None
@@ -392,17 +383,11 @@ class Request(RequestBase):
 
     @property
     def stream(self):
-        if self._cached_stream is not None:
-            return self._cached_stream
-
-        self._cached_stream = CachedInput(self.raw)
-
-        return self._cached_stream
+        return self.env.get('wsgi.input')
 
     @property
     def json(self):
         if self._cached_json is None:
-            self.stream.seek(0)
             self._cached_json = js.loads(self.stream.read())
 
         return self._cached_json
@@ -463,13 +448,6 @@ class Request(RequestBase):
             self._cached_log['REMOTE-HOST'] = self.remote_addr
 
         return self._cached_log
-
-    @property
-    def raw(self):
-        if self._cached_raw is None:
-            self._cached_raw = self.env.get('wsgi.input')
-
-        return self._cached_raw
 
     @property
     def app(self):
@@ -738,7 +716,6 @@ class Request(RequestBase):
         if self._cached_form is not None:
             return self._cached_form
 
-        self.stream.seek(0)
         environ = {'REQUEST_METHOD': 'POST',
                    'CONTENT_LENGTH': self.content_length}
 
