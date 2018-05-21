@@ -34,6 +34,7 @@ from luxon.core.utils.app import determine_app_root
 from luxon.core.config.defaults import defaults as default_config
 from luxon.core.template import TachyonicLoader, Environment
 from luxon.utils.timezone import format_datetime, now
+from luxon.core.utils.theme import Theme
 
 log = GetLogger(__name__)
 
@@ -83,6 +84,7 @@ class App(object):
         self._jinja.globals['G'] = g
         self._jinja.globals['format_datetime'] = format_datetime
         self._jinja.globals['now'] = now
+        self._jinja.globals['theme'] = Theme(self)
 
         # Set APP globally.
         g.app = self

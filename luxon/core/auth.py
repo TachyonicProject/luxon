@@ -123,8 +123,7 @@ class Auth(object):
         try:
             self._rsakey.verify(signature, b64_token)
         except ValueError as e:
-            log.warning('Invalid Auth Token: %s' % e)
-            raise AccessDeniedError('Invalid Auth Token')
+            raise AccessDeniedError('Invalid Auth Token. %s' % e)
 
         decoded = js.loads(base64.b64decode(b64_token))
         utc_expire = utc(decoded['expire'])
