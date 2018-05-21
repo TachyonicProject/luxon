@@ -32,84 +32,11 @@ import os
 import stat
 import fcntl
 import shutil
-from io import BytesIO
-
-from luxon.utils.encoding import (if_bytes_to_unicode,
-                                  if_unicode_to_bytes)
+from luxon.utils.encoding import if_bytes_to_unicode
 from luxon.utils.timezone import to_timezone, TimezoneSystem, TimezoneUTC
 from luxon.utils.singleton import NamedSingleton
 from luxon.utils.system import (get_login_uid, get_group_gid,
                                 get_uid_login, get_gid_group)
-
-
-class CachedInput(object):
-    """Cached Bytes File Object.
-
-    Copies content of io into a cache and then returns it (from the cache)
-
-    If this object is used when the cache is empty, the contents read from
-    io will be copied into it and the cache will be returned.
-
-    If the point in the cache has been shifted back from the end(via seek)
-    and this object is used, it will return the contents of the cache
-    from the point to the end.
-
-    Shifting the point is only possible after io has been cached
-
-    Args:
-        io(bytes): bytes object to cache
-    """
-
-    def __init__(self, io):
-        if io is not None:
-            self._io = io
-        else:
-            self._io = BytesIO()
-
-        self._io_pos = 0
-        self._cached = BytesIO()
-        self._cached_pos = 0
-
-    def read(self, *args, **kwargs):
-        if self._cached_pos >= self._io_pos:
-            io_read = if_unicode_to_bytes(self._io.read(*args, **kwargs))
-            bytes_written = self._cached.write(io_read)
-            self._io_pos += bytes_written
-            self._cached_pos += bytes_written
-            self._cached.seek(self._cached_pos - bytes_written)
-
-            return self._cached.read(*args, **kwargs)
-        else:
-            io_read = self._cached.read(*args, **kwargs)
-            self._cached_pos = len(io_read)
-            return io_read
-
-    def readline(self, *args, **kwargs):
-        if self._cached_pos >= self._io_pos:
-            io_read = if_unicode_to_bytes(self._io.readline(*args, **kwargs))
-            bytes_written = self._cached.write(io_read)
-            self._io_pos += bytes_written
-            self._cached_pos += bytes_written
-            self._cached.seek(self._cached_pos - bytes_written)
-
-            return self._cached.readline(*args, **kwargs)
-        else:
-            io_read = self._cached.readline(*args, **kwargs)
-            self._cached_pos = len(io_read)
-            return io_read
-
-    def seek(self, pos):
-        """Changes the point position in the cache
-
-        Args:
-            pos(int): new position of point
-        """
-        self._cached_pos = pos
-        self._cached.seek(pos)
-
-    @property
-    def getbuffer(self):
-        return self._cached.getbuffer
 
 
 class TrackFile(metaclass=NamedSingleton):
