@@ -59,6 +59,7 @@ def render_template(template, *args, rst2html=False, **kwargs):
             'REQUEST_ID': g.current_request.id,
             'STATIC': g.current_request.static,
             'CONTEXT': g.current_request.context,
+            'policy': g.current_request.policy.validate
         }
 
         if hasattr(g.current_request, 'policy'):

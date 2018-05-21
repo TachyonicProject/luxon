@@ -43,7 +43,7 @@ defaults = {
         'debug': 'False',
     },
     'restapi': {
-        'uri': 'http://127.0.0.1/infinitystone',
+        'url': 'http://127.0.0.1/infinitystone',
         'interface': 'public',
         'region': 'default',
         'connect_timeout': '2',

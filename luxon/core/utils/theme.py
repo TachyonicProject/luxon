@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2017, Christiaan Frans Rademan.
+# Copyright (c) 2017-2018, Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -18,33 +18,35 @@
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+# THE POSSIBILITY OF SUCH DAMAGE.
+
 import os
 
 from luxon import g
 
 
 class Theme():
-    def __init__(self):
-        self._default_theme = g.app.config.get(
+    def __init__(self, app):
+        self._default_theme = app.config.get(
             'application', 'default_theme',
             fallback='default')
-        self._static_web_path = g.app.config.get(
+        self._static_web_path = app.config.get(
             'application', 'static',
             fallback='/static').rstrip('/')
-        self._static_file_path = g.app.path.rstrip('/') + '/static'
+        self._static_file_path = app.path.rstrip('/') + '/static'
 
         self._static_web_path += '/themes/'
         self._static_file_path += '/themes/'
 
-    def _pick_file(self, the_file):
+    def __call__(self, the_file):
         # Remove / on both ends the_file
         the_file = the_file.strip('/')
 
@@ -69,31 +71,3 @@ class Theme():
         raise FileNotFoundError("Missing static" +
                                 " content '%s'" %
                                 (self._static_web_path + check_file,))
-
-    @property
-    def css(self):
-        return self._pick_file('/theme.css')
-
-    @property
-    def icon(self):
-        return self._pick_file('/icon-32x32.png')
-
-    @property
-    def logo(self):
-        return self._pick_file('/logo.png')
-
-    @property
-    def background(self):
-        return self._pick_file('/background.jpg')
-
-    @property
-    def loader(self):
-        return self._pick_file('/loader.gif')
-
-    @property
-    def view_button(self):
-        return self._pick_file('/view.png')
-
-    @property
-    def edit_button(self):
-        return self._pick_file('/edit.png')

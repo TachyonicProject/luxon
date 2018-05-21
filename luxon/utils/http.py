@@ -585,6 +585,7 @@ def request(client, method, uri, params={},
         if isinstance(data, bytes):
             headers['Content-Length'] = str(len(data))
 
+        cached = None
         if (_cache_engine and stream is False and
                 method == 'GET' and data is None):
 
@@ -640,7 +641,7 @@ def request(client, method, uri, params={},
                        'Validated (304)')
                 return cached
 
-            if response.status_code > 400:
+            if response.status_code >= 400:
 
                 try:
                     title = None
@@ -764,3 +765,16 @@ class Client(object):
         if self._s is None:
             raise ValueError('Not within context')
         self._s.headers.update({header: value})
+
+    def __delitem__(self, header):
+        if self._s is None:
+            raise ValueError('Not within context')
+        del self._s.headers[header]
+
+    def __contains__(self, header):
+        if self._s is None:
+            raise ValueError('Not within context')
+        if header in self._s.headers:
+            return True
+        else:
+            return False
