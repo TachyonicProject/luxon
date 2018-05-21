@@ -9,7 +9,6 @@ It handles the minions
 .. toctree::
    :maxdepth: 2
 
-   tutorial
    request
    response
 

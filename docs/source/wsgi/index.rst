@@ -22,7 +22,6 @@ The WSGI handler provides environment that is fast, flexible, scalable and simpl
 .. toctree::
    :maxdepth: 2
 
-   tutorial
    request
    response
    index_resource

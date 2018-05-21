@@ -4,13 +4,6 @@ Files
 
 Some useful File Opperations
 
-.. _cached_input:
-
-Cached Input
-============
-
-.. autoclass:: luxon.utils.files.CachedInput
-    :members:
 
 .. _is_socket:
 
