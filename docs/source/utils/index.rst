@@ -36,3 +36,4 @@ Utilities Guide
     text
     venv
     mail
+    sql

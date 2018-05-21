@@ -39,10 +39,11 @@ def build_where(**kwargs):
        Eg: {"foo": 1, "bar": None}
 
     Returns:
-        Tuple containing:
-            string that can be used after WHERE in SQL statement,
-            along with a list of the values.
+        Tuple containing string that can
+        be used after WHERE in SQL statement,
+        along with a list of the values.
         Eg. ("foo=? AND bar IS NULL", [ 1 ])
+
     """
     vals = []
     query = []
@@ -66,10 +67,11 @@ def build_like(**kwargs):
        Eg: {"foo": 1, "bar": None}
 
     Returns:
-        Tuple containing:
-            string that can be used after WHERE in SQL statement,
-            along with a list of the values.
+        Tuple containing string that can
+        be used after WHERE in SQL statement,
+        along with a list of the values.
         Eg. ("foo=? AND bar IS NULL", [ 1 ])
+
     """
     vals = []
     query = []

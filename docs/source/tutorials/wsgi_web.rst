@@ -1,5 +1,5 @@
-Tutorial
-=========
+Web App Tutorial
+=================
 
 In this tutorial you will walk through building simple web interface. The same principles with different methods and responder code would be used for REST API.
 

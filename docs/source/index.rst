@@ -32,6 +32,7 @@ Documentation
 
    license
    install
+   tutorials/index
    framework/index
    wsgi/index
    cmd/index
