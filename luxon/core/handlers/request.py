@@ -32,6 +32,7 @@ from luxon.core.auth import Auth
 from luxon.exceptions import AccessDeniedError
 from luxon.utils.unique import request_id
 from luxon import policy as policy_engine
+from luxon.structs.container import Container
 
 
 class RequestBase(object):
@@ -49,7 +50,7 @@ class RequestBase(object):
         self._cached_id = None
         self._cached_auth = None
         self._cached_policy = None
-        self._context = {}
+        self._context = Container()
 
     def __repr__(self):
         return '<%s: %s %r>' % (self.__class__.__name__, self.method,

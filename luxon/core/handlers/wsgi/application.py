@@ -69,7 +69,7 @@ class Application(object):
 
             # Set Default Content Type
             if content_type is not None:
-                self._RESPONSE_CLASS._DEFAULT_CONTENT_TYPE = content_type
+                Response._DEFAULT_CONTENT_TYPE = content_type
 
             # Started Application
             log.info('Started Application'
@@ -305,7 +305,7 @@ class Application(object):
             resp.status = 500
 
         # Generate Error Response
-        if register._ajax_error_template:
+        if req.is_ajax and register._ajax_error_template:
             # if AJAX Template and AJAX Request.
             resp.content_type = TEXT_HTML
             try:
