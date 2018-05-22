@@ -535,6 +535,10 @@ class Request(RequestBase):
         return self._cached_relative_uri
 
     @property
+    def relative_resource_uri(self):
+        return self.app + self.route
+
+    @property
     def forwarded(self):
         if self._cached_forwarded is None:
             try:
