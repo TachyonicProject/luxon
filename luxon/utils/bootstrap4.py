@@ -27,12 +27,13 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+from collections import OrderedDict
+
 from luxon.utils.html5 import select
 from luxon.structs.htmldoc import HTMLDoc
 from luxon.structs.models.model import Model
 from luxon.utils.timezone import format_datetime
 from luxon.utils.objects import orderdict
-from collections import OrderedDict
 
 
 class NAVMenu(object):
