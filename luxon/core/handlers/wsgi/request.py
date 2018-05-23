@@ -404,7 +404,9 @@ class Request(RequestBase):
         Raises:
             HTTPUnsupportedMediaType: Expected payload.
         """
-        return self.stream.read(size)
+        if size:
+            return self.stream.read(size)
+        return self.stream.read()
 
     def readline(self, size=None):
         """Read at most size bytes, returned as a bytes object.
@@ -418,7 +420,9 @@ class Request(RequestBase):
         Raises:
             HTTPUnsupportedMediaType: Expected payload.
         """
-        return self.stream.readline(size)
+        if size:
+            return self.stream.readline(size)
+        return self.stream.readline()
 
     @property
     def session(self):
