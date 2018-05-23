@@ -151,6 +151,7 @@ class HMenu(object):
         nav = self._html_object.create_element('nav')
 
         div = nav.create_element('div')
+        div.set_attribute('class', 'navmenu')
 
         ul = div.create_element('ul')
 
@@ -169,9 +170,12 @@ class HMenu(object):
         Returns meny object.
         """
         class Submenu(object):
-            def __init__(self, name, parent):
+            def __init__(self, name, parent, feather='plus-circle'):
+                self.submenus = OrderedDict()
+
                 # Create new menu for submenu.
                 li = parent.create_element('li')
+                li.set_attribute('class', 'dropdown')
 
                 a = li.create_element('a')
                 name_id = 'dropdown_' + name.replace(' ', '').replace('-', '_')
@@ -181,11 +185,14 @@ class HMenu(object):
                 a.set_attribute('aria-haspopup', 'true')
                 a.set_attribute('aria-expanded', 'false')
                 a.set_attribute('href', '#')
+                span = a.create_element('span')
+                span.set_attribute('data-feather', feather)
                 a.append(name)
                 ul = li.create_element('ul')
-                self._html_object = ul
+                self._ul = ul
 
-            def link(self, name, href='#', active=False, **kwargs):
+            def link(self, name, href='#', active=False,
+                     feather='corner-down-right', **kwargs):
                 kwargs = orderdict(kwargs)
                 """Add submenu item.
 
@@ -197,16 +204,25 @@ class HMenu(object):
                     Kwargs are used to additional flexibility.
                     Kwarg key and values are used for properties of <a>.
                 """
-                li = self._html_object.create_element('li')
+                li = self._ul.create_element('li')
 
                 a = li.create_element('a')
                 a.set_attribute('href', href)
                 for kwarg in kwargs:
                     a.set_attribute(kwarg, kwargs[kwarg])
+                span = a.create_element('span')
+                span.set_attribute('data-feather', feather)
                 a.append(name)
 
             def submenu(self, name):
-                return self
+                # Create new menu for submenu.
+                if name in self.submenus:
+                    return self.submenus[name]
+                else:
+                    submenu = Submenu(name, self._ul)
+                    # Add Submenu to submenu cache.
+                    self.submenus[name] = submenu
+                    return submenu
 
         # Create new menu for submenu.
         if name in self.submenus:
@@ -217,7 +233,8 @@ class HMenu(object):
             self.submenus[name] = submenu
             return submenu
 
-    def link(self, name, href='#', active=False, **kwargs):
+    def link(self, name, href='#', active=False,
+             feather='plus-circle', **kwargs):
         """Add submenu item.
 
         Args:
@@ -231,16 +248,12 @@ class HMenu(object):
         kwargs = orderdict(kwargs)
 
         li = self._ul.create_element('li')
-        if active:
-            li.set_attribute('class', 'nav-item active')
-        else:
-            li.set_attribute('class', 'nav-item')
-
         a = li.create_element('a')
-        a.set_attribute('class', 'nav-link')
         a.set_attribute('href', href)
         for kwarg in kwargs:
             a.set_attribute(kwarg, kwargs[kwarg])
+        span = a.create_element('span')
+        span.set_attribute('data-feather', feather)
         a.append(name)
 
     def __str__(self):
