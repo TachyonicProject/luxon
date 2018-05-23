@@ -29,21 +29,11 @@ Example
 -------
 .. code:: python
 
+
 	from uuid import uuid4
 
-	from luxon import database_model
-	from luxon import Models
-	from luxon import Uuid
-	from luxon import String
-	from luxon import Text
-	from luxon import DateTime
-	from luxon import Boolean
-	from luxon import Email
-	from luxon import Phone
-	from luxon import Enum
-	from luxon import Index
-	from luxon import ForeignKey
-	from luxon import UniqueIndex
+	from luxon import register
+	from luxon import SQLModel
 	from luxon.utils.timezone import now
 	
 	-------------------------------------------------
@@ -56,20 +46,22 @@ Example
 	    (str(uuid4()), 'Administrator', None, now()),
 	    (str(uuid4()), 'Account Manager', None, now()),
 	    (str(uuid4()), 'Billing', None, now()),
-	    (str(uuid4()), 'Customer', None, now()),
 	    (str(uuid4()), 'Support', None, now()),
+	    (str(uuid4()), 'Customer', None, now()),
+	    (str(uuid4()), 'Wholesale', None, now()),
+	    (str(uuid4()), 'Minion', None, now()),
 	]
 
-	@database_model()
-	class role(SQLModel):
-	    id = Uuid(default=uuid4, internal=True)
-	    name = String(max_length=64, null=False)
-	    description = Text()
-	    creation_time = DateTime(default=now, readonly=True)
+	@register.model()
+	class luxon_role(SQLModel):
+	    id = SQLModel.Uuid(default=uuid4, internal=True)
+	    name = SQLModel.String(max_length=64, null=False)
+	    description = SQLModel.Text()
+	    creation_time = SQLModel.DateTime(default=now, readonly=True)
 	    primary_key = id
-	    unique_role = UniqueIndex(name)
+	    unique_role = SQLModel.UniqueIndex(name)
 	    db_default_rows = ROLES
-	    roles = Index(name)
+	    roles = SQLModel.Index(name)
 
 	-------------------------------------------------
 	# Model for domains
@@ -79,35 +71,37 @@ Example
 	    ('00000000-0000-0000-0000-000000000000', 'default', None, 1, now()),
 	]
 
-	@database_model()
-	class domain(SQLModel):
-	    id = Uuid(default=uuid4, internal=True)
-	    name = Fqdn(null=False)
-	    description = Text()
-	    enabled = Boolean(default=True)
-	    creation_time = DateTime(default=now, readonly=True)
+	@register.model()
+	class luxon_domain(SQLModel):
+	    id = SQLModel.Uuid(default=uuid4, internal=True)
+	    name = SQLModel.Fqdn(null=False)
+	    description = SQLModel.Text()
+	    enabled = SQLModel.Boolean(default=True)
+	    creation_time = SQLModel.DateTime(default=now, readonly=True)
 	    primary_key = id
-	    unique_domain = UniqueIndex(name)
+	    unique_domain = SQLModel.UniqueIndex(name)
 	    db_default_rows = DOMAINS
-	    domains = Index(name)
+	    domains = SQLModel.Index(name)
 
 	-------------------------------------------------
 	# Model for tennants 
 	-------------------------------------------------
 
-	@database_model()
-	class tenant(Models):
-		id = Uuid(default=uuid4)
-		domain_id = Uuid()
-		tenant_id = Uuid()
-		name = String(max_length=100)
-		enabled = Boolean(default=True)
-		creation_time = DateTime(default=now)
-		unique_tenant = UniqueIndex(domain_id, name)
-		tenants = Index(id, domain_id)
-		tenants_search_name = Index(domain_id, name)
-		tenants_per_domain = Index(domain_id)
-		primary_key = id
+	@register.model()
+	class luxon_tenant(SQLModel):
+	    id = SQLModel.Uuid(default=uuid4, internal=True)
+	    domain = SQLModel.Fqdn(internal=True)
+	    tenant_id = SQLModel.Uuid(internal=True)
+	    name = SQLModel.String(max_length=100, null=False)
+	    enabled = SQLModel.Boolean(default=True)
+	    creation_time = SQLModel.DateTime(default=now, readonly=True)
+	    unique_tenant = SQLModel.UniqueIndex(domain, name)
+	    tenants = SQLModel.Index(id, domain)
+	    tenants_search_name = SQLModel.Index(domain, name)
+	    tenants_per_domain = SQLModel.Index(domain)
+	    primary_key = id
+	    tenant_domain_ref = SQLModel.ForeignKey(domain, luxon_domain.name)
+	    tenant_parent_ref = SQLModel.ForeignKey(tenant_id, id)
 
 	----------------------------------------------------
 	# Model for users
@@ -121,28 +115,29 @@ Example
 	     1, now()),
 	]
 
-	@database_model()
+
+	@register.model()
 	class luxon_user(SQLModel):
-	    id = Uuid(default=uuid4, internal=True)
-	    tag = String(hidden=True, max_length=30, null=False)
-	    domain = Fqdn(internal=True)
-	    tenant_id = Uuid(internal=True)
-	    username = Username(max_length=100, null=False)
-	    password = String(max_length=100, null=True)
-	    email = Email(max_length=255)
-	    name = String(max_length=100)
-	    phone_mobile = Phone()
-	    phone_office = Phone()
-	    designation = Enum('', 'Mr','Mrs','Ms', 'Dr', 'Prof')
-	    last_login = DateTime(readonly=True)
-	    enabled = Boolean(default=True)
-	    creation_time = DateTime(default=now, readonly=True)
-	    unique_username = UniqueIndex(domain, username)
-	    user_tenant_ref = ForeignKey(tenant_id, luxon_tenant.id)
-	    user_domain_ref = ForeignKey(domain, luxon_domain.name)
-	    users = Index(domain, username)
-	    users_tenants = Index(domain, tenant_id)
-	    users_domain = Index(domain)
+	    id = SQLModel.Uuid(default=uuid4, internal=True)
+	    tag = SQLModel.String(hidden=True, max_length=30, null=False)
+	    domain = SQLModel.Fqdn(internal=True)
+	    tenant_id = SQLModel.Uuid(internal=True)
+	    username = SQLModel.Username(max_length=100, null=False)
+	    password = SQLModel.String(max_length=100, null=True)
+	    email = SQLModel.Email(max_length=255)
+	    name = SQLModel.String(max_length=100)
+	    phone_mobile = SQLModel.Phone()
+	    phone_office = SQLModel.Phone()
+	    designation = SQLModel.Enum('', 'Mr', 'Mrs', 'Ms', 'Dr', 'Prof')
+	    last_login = SQLModel.DateTime(readonly=True)
+	    enabled = SQLModel.Boolean(default=True)
+	    creation_time = SQLModel.DateTime(default=now, readonly=True)
+	    unique_username = SQLModel.UniqueIndex(domain, username)
+	    user_tenant_ref = SQLModel.ForeignKey(tenant_id, luxon_tenant.id)
+	    user_domain_ref = SQLModel.ForeignKey(domain, luxon_domain.name)
+	    users = SQLModel.Index(domain, username)
+	    users_tenants = SQLModel.Index(domain, tenant_id)
+	    users_domain = SQLModel.Index(domain)
 	    primary_key = id
 	    db_default_rows = USERS
 
@@ -160,19 +155,19 @@ Example
 	     now()),
 	]
 
-	@database_model()
+	@register.model()
 	class luxon_user_role(SQLModel):
-	    id = Uuid(default=uuid4, internal=True)
-	    role_id = Uuid()
-	    domain = Fqdn(internal=True)
-	    tenant_id = String()
-	    user_id = Uuid()
-	    creation_time = DateTime(readonly=True, default=now)
-	    unique_user_role = UniqueIndex(role_id, tenant_id, user_id)
-	    user_role_id_ref = ForeignKey(role_id, luxon_role.id)
-	    user_role_domain_ref = ForeignKey(domain, luxon_domain.name)
-	    user_role_tenant_ref = ForeignKey(tenant_id, luxon_tenant.id)
-	    user_roles = Index(domain, tenant_id)
+	    id = SQLModel.Uuid(default=uuid4, internal=True)
+	    role_id = SQLModel.Uuid()
+	    domain = SQLModel.Fqdn(internal=True)
+	    tenant_id = SQLModel.String()
+	    user_id = SQLModel.Uuid()
+	    creation_time = SQLModel.DateTime(readonly=True, default=now)
+	    unique_user_role = SQLModel.UniqueIndex(role_id, tenant_id, user_id)
+	    user_role_id_ref = SQLModel.ForeignKey(role_id, luxon_role.id)
+	    user_role_domain_ref = SQLModel.ForeignKey(domain, luxon_domain.name)
+	    user_role_tenant_ref = SQLModel.ForeignKey(tenant_id, luxon_tenant.id)
+	    user_roles = SQLModel.Index(domain, tenant_id)
 	    primary_key = id
 	    db_default_rows = USER_ROLES
 
