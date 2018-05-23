@@ -100,6 +100,9 @@ class NAVMenu(object):
         class Submenu(object):
             def __init__(self, name, parent):
                 # Create new menu for submenu.
+                self._column_count = 0
+                self._row = None
+
                 li = parent.create_element('li')
                 li.set_attribute('class', 'nav-item dropdown')
 
@@ -116,7 +119,8 @@ class NAVMenu(object):
                 div = li.create_element('div')
                 div.set_attribute('class', 'dropdown-menu')
                 div.set_attribute('aria-labelledby', name_id)
-                self._html_object = div
+                table = div.create_element('table')
+                self._html_object = table
 
             def link(self, name, href='#', active=False, **kwargs):
                 kwargs = orderdict(kwargs)
@@ -130,12 +134,20 @@ class NAVMenu(object):
                     Kwargs are used to additional flexibility.
                     Kwarg key and values are used for properties of <a>.
                 """
-                a = self._html_object.create_element('a')
+                if self._row is None or self._column_count > 1:
+                    self._column_count = 0
+                    self._row = self._html_object.create_element('tr')
+
+                column = self._row.create_element('td')
+
+                a = column.create_element('a')
                 a.set_attribute('class', 'dropdown-item')
                 a.set_attribute('href', href)
                 for kwarg in kwargs:
                     a.set_attribute(kwarg, kwargs[kwarg])
                 a.append(name)
+
+                self._column_count += 1
 
             def submenu(self, name):
                 return self
