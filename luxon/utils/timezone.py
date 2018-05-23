@@ -276,3 +276,22 @@ def format_http_datetime(datetime, src=TimezoneUTC()):
     datetime = to_timezone(datetime, dst=TimezoneGMT(), src=src)
 
     return(datetime.strftime('%a, %d %b %Y %H:%M:%S %Z'))
+
+
+def format_iso8601(datetime, src=TimezoneUTC()):
+    """String Formatted Date & Time.
+
+    An ISO 8601 date string.
+    e.g. 2011-04-14T16:00:49Z
+
+    Args:
+        datetime (datetime): Datetime object. (Optional)
+        destination_tz (str): Destination Timezone.
+            List of valid entries in timezones attribute.
+
+    Returns string formatted date.
+    """
+    datetime = to_timezone(datetime, dst=TimezoneGMT(), src=src)
+
+    return(datetime.strftime('%Y-%m-%dT%H:%M:%SZ') + "(" +
+           datetime.tzname() + ")")
