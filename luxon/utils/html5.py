@@ -29,7 +29,9 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 import re
 from html.parser import HTMLParser
+from collections import OrderedDict
 
+from luxon.utils.objects import orderdict
 from luxon.structs.htmldoc import HTMLDoc
 
 
@@ -136,3 +138,110 @@ def error_ajax(title, description):
         dom.create_element('<BR>')
         dom.append(description)
     return dom.get()
+
+
+class HMenu(object):
+    """CSS HTML Menu.
+    """
+    def __init__(self, name='Site', logo=None, url='#',
+                 style=None,
+                 css="navbar-expand-lg navbar-light bg-light"):
+
+        self._html_object = HTMLDoc()
+        nav = self._html_object.create_element('nav')
+
+        div = nav.create_element('div')
+
+        ul = div.create_element('ul')
+
+        self._ul = ul
+
+        self.submenus = OrderedDict()
+
+    def submenu(self, name):
+        """Create new submenu item.
+
+        Add submenu on menu and returns submenu for adding more items.
+
+        Args:
+            name (str): Name of submenu item.
+
+        Returns meny object.
+        """
+        class Submenu(object):
+            def __init__(self, name, parent):
+                # Create new menu for submenu.
+                li = parent.create_element('li')
+
+                a = li.create_element('a')
+                name_id = 'dropdown_' + name.replace(' ', '').replace('-', '_')
+                a.set_attribute('id', name_id)
+                a.set_attribute('role', 'button')
+                a.set_attribute('data-toggle', 'dropdown')
+                a.set_attribute('aria-haspopup', 'true')
+                a.set_attribute('aria-expanded', 'false')
+                a.set_attribute('href', '#')
+                a.append(name)
+                ul = li.create_element('ul')
+                self._html_object = ul
+
+            def link(self, name, href='#', active=False, **kwargs):
+                kwargs = orderdict(kwargs)
+                """Add submenu item.
+
+                Args:
+                    name (str): Menu item name.
+                    href (str): Url for link. (default '#')
+
+                Kwargs:
+                    Kwargs are used to additional flexibility.
+                    Kwarg key and values are used for properties of <a>.
+                """
+                li = self._html_object.create_element('li')
+
+                a = li.create_element('a')
+                a.set_attribute('href', href)
+                for kwarg in kwargs:
+                    a.set_attribute(kwarg, kwargs[kwarg])
+                a.append(name)
+
+            def submenu(self, name):
+                return self
+
+        # Create new menu for submenu.
+        if name in self.submenus:
+            return self.submenus[name]
+        else:
+            submenu = Submenu(name, self._ul)
+            # Add Submenu to submenu cache.
+            self.submenus[name] = submenu
+            return submenu
+
+    def link(self, name, href='#', active=False, **kwargs):
+        """Add submenu item.
+
+        Args:
+            name (str): Menu item name.
+            href (str): Url for link. (default '#')
+
+        Kwargs:
+            Kwargs are used to additional flexibility.
+            Kwarg key and values are used for properties of <a> attribute.
+        """
+        kwargs = orderdict(kwargs)
+
+        li = self._ul.create_element('li')
+        if active:
+            li.set_attribute('class', 'nav-item active')
+        else:
+            li.set_attribute('class', 'nav-item')
+
+        a = li.create_element('a')
+        a.set_attribute('class', 'nav-link')
+        a.set_attribute('href', href)
+        for kwarg in kwargs:
+            a.set_attribute(kwarg, kwargs[kwarg])
+        a.append(name)
+
+    def __str__(self):
+        return str(self._html_object)
