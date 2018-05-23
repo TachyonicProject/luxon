@@ -953,7 +953,7 @@ class Request(RequestBase):
 
         try:
             if field in form:
-                return blank_to_none(form.getfirst(field))
+                return blank_to_none(form.getfirst(field), default)
             else:
                 return default
         except TypeError:

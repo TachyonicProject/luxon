@@ -52,7 +52,7 @@ def filter_none_text(string):
         return ''
 
 
-def blank_to_none(value):
+def blank_to_none(value, default=None):
     """Converts an empty string or byte object to None
 
     If value is an empty string or an empty byte array None is returned
@@ -63,7 +63,7 @@ def blank_to_none(value):
 
     """
     if isinstance(value, str) and value == '':
-        return None
+        return default
 
     return value
 
