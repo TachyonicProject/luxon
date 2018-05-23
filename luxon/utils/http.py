@@ -542,7 +542,7 @@ class Response(object):
         self._result.close()
 
 
-def request(client, method, uri, params={},
+def request(client, method, url, params={},
             data=None, headers={}, stream=False, **kwargs):
 
     with Timer() as elapsed:
@@ -554,13 +554,6 @@ def request(client, method, uri, params={},
             _cache_engine = Cache()
         except NoContextError:
             _cache_engine = None
-
-        if uri.lower().startswith('http'):
-            url = uri
-        elif client._url is not None:
-            url = client._url.rstrip('/') + '/' + uri.lstrip('/')
-        else:
-            raise ValueError('Require valid url')
 
         try:
             if g.current_request.user_token:
@@ -739,22 +732,41 @@ class Client(object):
         self._s.verify = verify
         self._s.cert = cert
         self._s.timeout = timeout
+        self._endpoints = {}
+
+    def endpoints(self):
+        return self._endpoints
+
+    def _build_url(self, uri, endpoint=None):
+        if uri.lower().startswith('http'):
+            url = uri
+        elif endpoint:
+            try:
+                url = (self.endpoint[endpoint].rstrip('/') + '/' +
+                       uri.lstrip('/'))
+            except KeyError:
+                raise ValueError('Endpoint not found')
+
+        elif self._url is not None:
+            url = self._url.rstrip('/') + '/' + uri.lstrip('/')
+        else:
+            raise ValueError('Require valid url')
+
+        return url
 
     def stream(self, method, uri, params={},
-               data=None, headers={}, **kwargs):
+               data=None, headers={}, endpoint=None, **kwargs):
 
-        return Stream(self,
-                      method,
-                      uri,
+        return Stream(self, method, self._build_url(uri, endpoint),
                       params,
                       data,
                       headers,
                       **kwargs)
 
     def execute(self, method, uri, params={},
-                data=None, headers={}, **kwargs):
+                data=None, headers={}, endpoint=None, **kwargs):
 
-        return request(self, method, uri,
+        return request(self, method, self._build_url(uri, endpoint),
                        params=params,
                        data=data,
                        headers=headers,
