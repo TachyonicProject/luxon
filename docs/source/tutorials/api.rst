@@ -1,7 +1,7 @@
 API Tutorial
 =============
 
-In this tutorial we will build a simple API with the Luxon framework, we will be able to use it to upload and download files. Our API will eventually communicate with a Web Aplication that we will also develope with Luxon.
+In this tutorial we will build a simple API with the Luxon framework. We will be able to create, read, update and delete users in a database as well as upload and download files with it. Our API will eventually communicate with a Web Aplication that we will also develope with Luxon.
 If you have not already installed Luxon you will need to do so: :ref:`Installation<install>`
 
 Through API calls we will be able to:
@@ -262,5 +262,119 @@ Hit send. We should see a returned JSON object with the information we specified
 	    "name": "Ricky T Dunigan",
 	    "age": 40
 	}
+
+Step 7: Fleshing out the API
+------------------------------
+
+We have already created the "create" view. The rest of the views are created in a similar way. The *users* view, which returns all the users in the database, is slightly more complicated. It requeres a connection object wich will execute a SQL query. Remember to import *db* from Luxon wich will allow us to easily create a connection objec. The rest of the views are fairly trivial, here is the complete code for **views.py**:
+
+.. code:: python
+
+	from luxon import register , router , db
+	from models import User 
+
+	@register.resource('GET','/')
+	def homepage(req,resp):
+		return "HELLLLOOOOO"
+
+	@register.resources()
+	class Users(object):
+		def __init__(self):
+			# attach user view to /create route with a POST method
+			router.add('POST','/create', self.create)
+			router.add('GET','/users', self.users)
+			router.add('GET','/user/{id}', self.user)
+			router.add(['PUT','PATCH'],'/user/{id}', self.update)
+			router.add('DELETE','/user/{id}', self.delete)
+
+		#view to create user
+		def create(self,req,resp):
+			# create user object from User model
+			user = User()
+			# get body of api request from req object
+			create = req.json.copy()
+			# update User object with request information
+			user.update(create)
+			# save new user in database
+			user.commit()
+			# return user object 
+			return user
+
+	
+		#view to return all users
+		def users(self, req, resp):
+
+			# hardcode sql query
+			sql = "SELECT * FROM user"
+
+			# connection to database
+			with db() as conn:
+				# execute sql command to get a cursor obj
+				result = conn.execute(sql)
+				# fetch information from cursor obj
+				result = result.fetchall()
+
+			return result
+
+
+		#view to retrun a user
+		def user(self,req,resp,id):
+			user = User()
+			# pass id from url to user object
+			user.sql_id(id)
+			return user
+
+
+		#view to update a user
+		def update(self,req,resp,id):
+			# find user
+			user = User()
+			user.sql_id(id)
+
+			# fetch update information from request
+			create = req.json.copy()
+
+			#update specific user
+			user.update(create)
+			user.commit()
+
+			return user
+
+		#view to delete a user
+		def delete(self,req,resp,id):
+
+			user = User()
+			user.sql_id(id)
+
+			# fetch update information from request
+			create = req.json.copy()
+
+			#delete specific user
+			user.delete()
+			user.commit()
+
+			return user
+
+
+One thing to note is the *id* argument in the views that perform an opperation on a specific user. This argument is taken directly from the url. To test these views, simply copy the *id* string of the specific user and paste it after the route in the url. For example:
+
+.. code:: text
+
+	http://127.0.0.1:8000/user/0633ccbb-2fbf-4768-82a7-bc1ee1eea529
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
