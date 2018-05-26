@@ -175,23 +175,17 @@ class HMenu(object):
 
                 # Create new menu for submenu.
                 li = parent.create_element('li')
-                li.set_attribute('class', 'dropdown')
-
                 a = li.create_element('a')
-                name_id = 'dropdown_' + name.replace(' ', '').replace('-', '_')
-                a.set_attribute('id', name_id)
                 a.set_attribute('role', 'button')
-                a.set_attribute('data-toggle', 'dropdown')
-                a.set_attribute('aria-haspopup', 'true')
-                a.set_attribute('aria-expanded', 'false')
                 a.set_attribute('href', '#')
+                a.set_attribute('data-event', 'dropdown')
                 span = a.create_element('span')
                 span.set_attribute('data-feather', feather)
                 a.append(name)
                 ul = li.create_element('ul')
                 self._ul = ul
 
-            def link(self, name, href='#', active=False,
+            def link(self, name, href='#',
                      feather='corner-down-right', **kwargs):
                 kwargs = orderdict(kwargs)
                 """Add submenu item.
@@ -233,8 +227,8 @@ class HMenu(object):
             self.submenus[name] = submenu
             return submenu
 
-    def link(self, name, href='#', active=False,
-             feather='plus-circle', **kwargs):
+    def link(self, name, href='#',
+             feather='arrow-right-circle', **kwargs):
         """Add submenu item.
 
         Args:
