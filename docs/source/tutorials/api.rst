@@ -117,14 +117,6 @@ We almost have everything we need to launch a webserver that can serve dynamic P
 
     $ pip3 install gunicorn 
 
-The final step of deploying our package is to set up the database. Again Luxon has us covered:
-
-.. code:: bash
-
-	$ luxon -d myapi
-
-You will notice that this has created a **sqlite3.db** file in *myapi*.
-
 We can't yet test if our project was successufly deployed however because we still need to create the *views* module which the **wsgi.py** file imports. Just hang on, by the end of the next step we will be able to launch a webserver that responds to a call on the homepage. 
 
 We are finally ready to start working on the API! Leave this terminal open to launch the webserver in future and open a new one in the package directory.
@@ -170,6 +162,235 @@ We can now finally use Luxon to start the webserver on our local host, with port
 	$ luxon -s --ip 127.0.0.1 --port 8000 myapi
 
 When we browse over to http://127.0.0.1:8000 we should be met by our Hello message  
+
+Part 4: Creating a Model
+-------------------------
+
+A model is a useful data structure that Luxon can use to automatically create/update databases. You can read more about models :ref:`Here<models>`.
+
+The models we create will live in their own module, same as the views. In this module we will create a **user.py** file to house our *user* model.
+
+.. code:: bash
+
+	mkdir models
+	touch models/__init__.py
+	touch models/user.py
+
+
+The model can have any number of members with highly specific fields provided by Luxon. In this case we will keep it simple. We'll give our users a name, age and a universally unique identifier that will double as the primary key. Let's implement it in our **user.py** file:
+
+.. code:: python
+
+	from uuid import uuid4
+	from luxon import register
+	from luxon import SQLModel
+
+
+	@register.model()
+	class User(SQLModel):
+
+	    id = SQLModel.Uuid(default = uuid4)
+	    name = SQLModel.Text()
+	    age = SQLModel.Integer()
+	    primary_key = id
+
+
+Again we use Luxon's *register* module to register the Model and allow it to be used by our API. We use Luxon's SQLModel to define the class and get the valid fields. Very convenient.
+
+Remember to import our new user model in **models/__init__.py**:
+
+.. code:: python
+
+	from myapi.models.user import User
+
+
+At this point we need to set up the database in our project so that our API can make use of models. Luckily Luxon has us covered. Go back to the *app* directory and run:
+
+.. code:: bash
+
+	$ luxon -d myapi
+
+You will notice that this has created a **sqlite3** file.
+
+Part5: Getting serious with the API
+---------------------------------------
+
+Now that we have a model we can write more sophisticated views to make use of it. Since we will end up having a number of views to perform different actions with users (Create/Read/Update/Delete) we will group them toghether in a class. This will work slightly differently in that we will use the **register.resources** method to register the view and we will specify all the routes in the constructor. To specify the routes we will use Luxon's **router** module.
+
+We need to create another file in our package directory under **views** to house the *users* views:
+
+.. code:: bash
+
+	$ touch views/users 
+
+And remember to import the new view in **views/__init__.py**:
+
+.. code:: python
+
+	import myapi.views.homepage
+	import myapi.views.users
+
+
+Let's impliment the first user view in a class called **Users** in our **views/users.py** file:
+
+.. code:: python
+	
+	from luxon import register
+	from luxon import router
+	from myapi.models.user import User
+
+	@register.resources()
+	class Users(object):
+		def __init__(self):
+			# attach user view to /create route with a POST method
+			router.add('POST','/create', self.create)
+
+		#view to create user
+		def create(self,req,resp):
+			# create user object from User model
+			user = User()
+			# get body of api request from req object
+			create = req.json.copy()
+			# update User object with request information
+			user.update(create)
+			# save new user in database
+			user.commit()
+			# return user object 
+			return user
+
+Now we can finally test our API. Launch the server again in the *app* directory with:
+
+.. code:: bash
+
+	$ luxon -s --ip 127.0.0.1 --port 8000 myapi
+
+Part 6: Testing the API
+-------------------------
+
+Default browsers are great for sending GET requests to our API, but we want to be able to send other kinds of requests too. Let's use Postman_, a useful tool to test APIs. 
+
+.. _Postman: https://www.getpostman.com
+
+Fire up Postman so we can create a user.
+
+Create a POST request with "http://127.0.0.1:8000/create" in the *request URL* bar. Next we write the body of the request which will contain all the information that we will send to create the new user as a JSON object:
+
+.. code:: json
+
+	{
+		"name":"Ricky T Dunigan",
+		"age": 40
+	}
+
+Hit send. We should see a returned JSON object with the information we specified as well as an *id*
+
+.. code:: json
+
+	{
+	    "id": "579276f9-b1ae-4455-a503-ec50c46e6c16",
+	    "name": "Ricky T Dunigan",
+	    "age": 40
+	}
+
+Part 7: Fleshing out the API
+------------------------------
+
+We have already created the "create" view. The rest of the views are created in a similar way. The *users* view, which returns all the users in the database, is slightly more complicated. It requeres a connection object wich will execute a SQL query. Remember to import *db* from Luxon wich will allow us to easily create a connection object. The rest of the views are fairly trivial, here is the complete code for **views/users.py**, note the new imports:
+
+.. code:: python
+
+	from luxon import register , router , db
+	from myapi.models.user import User 
+
+	@register.resources()
+	class Users(object):
+		def __init__(self):
+			# attach user view to /create route with a POST method
+			router.add('POST','/create', self.create)
+			router.add('GET','/users', self.users)
+			router.add('GET','/user/{id}', self.user)
+			router.add(['PUT','PATCH'],'/user/{id}', self.update)
+			router.add('DELETE','/user/{id}', self.delete)
+
+		#view to create user
+		def create(self,req,resp):
+			# create user object from User model
+			user = User()
+			# get body of api request from req object
+			create = req.json.copy()
+			# update User object with request information
+			user.update(create)
+			# save new user in database
+			user.commit()
+			# return user object 
+			return user
+
+	
+		#view to return all users
+		def users(self, req, resp):
+
+			# hardcode sql query
+			sql = "SELECT * FROM user"
+
+			# connection to database
+			with db() as conn:
+				# execute sql command to get a cursor obj
+				result = conn.execute(sql)
+				# fetch information from cursor obj
+				result = result.fetchall()
+
+			return result
+
+
+		#view to retrun a user
+		def user(self,req,resp,id):
+			user = User()
+			# pass id from url to user object
+			user.sql_id(id)
+			return user
+
+
+		#view to update a user
+		def update(self,req,resp,id):
+			# find user
+			user = User()
+			user.sql_id(id)
+
+			# fetch update information from request
+			create = req.json.copy()
+
+			#update specific user
+			user.update(create)
+			user.commit()
+
+			return user
+
+		#view to delete a user
+		def delete(self,req,resp,id):
+
+			user = User()
+			user.sql_id(id)
+
+			# fetch update information from request
+			create = req.json.copy()
+
+			#delete specific user
+			user.delete()
+			user.commit()
+
+			return user
+
+
+One thing to note is the *id* argument in the views that perform an opperation on a specific user. This argument is taken directly from the url. To test these views, simply copy the *id* string of the specific user and paste it after the route in the url. For example:
+
+.. code:: text
+
+	http://127.0.0.1:8000/user/0633ccbb-2fbf-4768-82a7-bc1ee1eea529
+
+
+
+
+
 
 
 
