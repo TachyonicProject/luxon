@@ -536,7 +536,7 @@ class Response(object):
         except KeyError:
             pass
 
-        return self._result.encoding.upper()
+        return None
 
     def close(self):
         self._result.close()

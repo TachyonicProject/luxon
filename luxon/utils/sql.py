@@ -57,7 +57,7 @@ def build_where(**kwargs):
     return (" AND ".join(query), vals)
 
 
-def build_like(**kwargs):
+def build_like(operator="AND", **kwargs):
     """Generates an SQL WHERE string.
 
     Will replace None's with IS NULL's.
@@ -82,4 +82,4 @@ def build_like(**kwargs):
             query.append(k + " LIKE ?")
             vals.append(kwargs[k] + '%')
 
-    return (" AND ".join(query), vals)
+    return ((" %s " % operator).join(query), vals)
