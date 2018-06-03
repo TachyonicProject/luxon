@@ -4,14 +4,26 @@
 API Tutorial
 ==============
 
-In this tutorial we will build a simple API with the Luxon framework. We will slowly add functionality including authentication an policies and eventually our API will be able to  communicate with a Web Aplication that we will also develop with Luxon.
+In this tutorial we will build a simple REST API with the Luxon framework. We will start small and slowly add functionality including authentication. Luxon provides many powerful tools that will make every step of the process more convenient.
 If you have not already installed Luxon you will need to do so: :ref:`Installation<install>`
 
+The completed project will consist of:
+
+	- A database and webserver made with Luxon
+	- A model with witch to interface the database
+	- A number of views to respond to API calls
+
+The project will also have Authentication features:
+
+	- The ability to assign roles to users
+	- The ability to tag responders with roles
+	- A plicy to dictate which roles can access wich tags
+	
 Through API calls we will be able to:
 
 	- Create, Read, Update and Delete Users
 	- Assign Roles to Users
-	- Upload and Download Files
+	
 
 Let's get started with the basics.
 
@@ -99,7 +111,7 @@ Now we can finally isntall our package! We will use pip's *-e* switch which will
 	
 	$ pip3 install -e .
 
-Part 2: Deploying a python package with Luxon
+Part 2: Deploying a Python package with Luxon
 -------------------------------------------------
 
 Now that we have our package installed as python library and we can deploy it as we would on server.
@@ -131,12 +143,32 @@ We almost have everything we need to launch a webserver that can serve dynamic P
 
 We can't yet test if our project was successufly deployed however because we still need to create the *views* module which the **wsgi.py** file imports. Just hang on, by the end of the next step we will be able to launch a webserver that responds to a call on the homepage. 
 
+We are simultaneously using two directories, the package and the project. We will mostly be working in the package directory to write code but we will be going back to the project directory to start the server, set up the database etc. Make sure not to get confused between the two. Before we move on let's clarify what the directory structure looks like at this point:
+
+.. code:: text
+
+	myapi/
+	  setup.py
+	  myapi/
+	    __init__.py
+	    setting.ini
+	    policy.json
+	    wsgi.py
+
+	app/
+	  myapi/
+	    tmp/
+	    templates/
+	    settings.ini
+	    policy.json
+	    wsgi.py
+	 
 We are finally ready to start working on the API! Leave this terminal open to launch the webserver in future and open a new one in the package directory.
 
 Part 3: Creating a view with Luxon
 ------------------------------------
 	 
-Now we can start building our API by creating views/resources. The views will exist as their own module in the package. The views module will consume and respond to every call made to our API. The views will import all the code they need from the rest of *myapi* as they need them. Let's create the module in our package directory at: **myapi/myapi**
+Now we can start building our API by creating views/resources. The views will exist as their own module in the package. The views module will consume and respond to every call made to our API. The views will import all the code they need from the rest of the *myapi* modules as needed. Let's create the module in our package directory at: **myapi/myapi**
 
 .. code:: bash
 
@@ -510,7 +542,7 @@ Part 9: Securing views with RBAC
 --------------------------------------
 Role Based Access Control
 
-As we have already seen, views can be assigned roles. Every view can also be tagged with a role. Only users with the tagged role assigned to them can access that view. The roles are specified in the **myapi/policy.json** file. Which we already implemented when we set up the package:
+As we have already seen, users can be assigned roles. Every view can also be tagged with a role. Only users with the tagged role assigned to them can access that view. The roles are specified in the **myapi/policy.json** file. Which we already implemented when we set up the package:
 
 .. code:: json
 
@@ -530,19 +562,18 @@ Then we can simply add a tag to the root definition of every User view in **view
 		
 	def __init__(self):
 		# attach user view to /create route with a POST method
-		router.add('POST','/create', self.create, tag = 'role:admin')
-		router.add('GET','/users', self.users,tag = 'role:user')
-		router.add('GET','/user/{id}', self.user,tag = 'role:user')
-		router.add(['PUT','PATCH'],'/user/{id}', self.update,tag = 'role:admin')
-		router.add('DELETE','/user/{id}', self.delete,tag = 'role:admin')
+		router.add('POST','/create', self.create, tag = 'admin_view')
+		router.add('GET','/users', self.users,tag = 'user_view')
+		router.add('GET','/user/{id}', self.user,tag = 'user_view')
+		router.add(['PUT','PATCH'],'/user/{id}', self.update,tag = 'admin_view')
+		router.add('DELETE','/user/{id}', self.delete,tag = 'admin_view')
 
 Now only users with the *admin* role assigned to them can make calls to the *create*, *update* and *delete* views, that's to say all the views that write to the database. A user with the *user* role can access the views which only read from the database. A user with the *admin* role can also access views with the *user* tag.
 
 Right, now our API is secure, this will make it a bit more complicated to test however, remember to restart the server so these changes take effect.
 We already have a user "Ricky T Dunigan", with the admin role, that we can log in as. Once we logged in with him and received a Token we can use it to access the *create* view. Create a POST request with "http://127.0.0.1:8000/create" in the *request URL* bar same as before. All we need to do is add a header. Put "X-Auth-Token" in the *key* field and paste the Token into the *value* field.
 
-Create another user with a *user* role instead of admin and repeat the same process of adding a header to the request. This user will not be able to access the *create* view etc..
-
+Create another user with a *user* role instead of *admin* and repeat the same process of adding a header to the request. This user will not be able to access the *create* view etc..
 
 
 
