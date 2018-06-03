@@ -138,9 +138,8 @@ class HTMLDoc(object):
 
             for attribute in self.attributes:
                 value = self.attributes[attribute]
-                to_return += ' ' + attribute
+                to_return += ' ' + attribute.replace('_', '-')
                 if value is not None and value.strip() != '':
-                    value = value.replace("\"", "\\\"")
                     to_return += "=\"%s\"" % value
 
             to_return += '>'
