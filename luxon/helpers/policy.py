@@ -32,6 +32,7 @@ from luxon.core.policy.compiler import compiler
 from luxon.core.policy.policy import Policy
 from luxon.utils.files import is_file
 from luxon.utils import js
+from luxon.exceptions import JSONDecodeError
 
 _cached_compiled = None
 
@@ -48,7 +49,10 @@ def policy(**kwargs):
         policy_file = g.app.path + '/policy.json'
         if is_file(policy_file):
             with open(policy_file, 'r') as rule_set:
-                _cached_compiled = compiler(js.loads(rule_set.read()))
+                try:
+                    _cached_compiled = compiler(js.loads(rule_set.read()))
+                except JSONDecodeError:
+                    raise JSONDecodeError("Invalid json in 'policy.json'")
         else:
             raise FileNotFoundError(policy_file)
 
