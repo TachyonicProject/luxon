@@ -51,8 +51,9 @@ def policy(**kwargs):
             with open(policy_file, 'r') as rule_set:
                 try:
                     _cached_compiled = compiler(js.loads(rule_set.read()))
-                except JSONDecodeError:
-                    raise JSONDecodeError("Invalid json in 'policy.json'")
+                except JSONDecodeError as exception:
+                    raise JSONDecodeError("Invalid 'policy.json' %s" %
+                                          exception)
         else:
             raise FileNotFoundError(policy_file)
 
