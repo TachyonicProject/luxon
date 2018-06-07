@@ -30,7 +30,8 @@ Let's get started with the basics.
 Part 1: Setting up a Python Package
 --------------------------------------------------------------
 
-In order to have a fully functioning project with a webserver and a database we need to create a python package that we can install as a pip library. Then we will be able to deploy the package as a project, set up the database and launch the webserver. Luxon makes this process very conveneniet. 
+In order to have a fully functioning project with a webserver and a database we need to create a python package that we can install as a pip library. Then we will be able to deploy the package as a project, set up the database and launch the webserver. Luxon makes this process very convenient. 
+
 We will create the package in a development directory and then we will deploy the project in an *app* directory. All the source code will live in the development directory and the application will be launched from the *app* directory. We will first create a basic python package and then deploy it as soon as it's done. We will install the package in such a way that we can keep working on the source code and see those changes when we launch the webserver in the project. Then we can build the package piece by piece and test it along the way.
 
 So on to the package, let's call it *myapi*:
@@ -105,7 +106,7 @@ You can read more about Luxon's Wsgi handler :ref:`Here<wsgi_hand>`
 
 The **from myapi import views** line imports a module that does not yet exist, this will cause an error if we try to start the a webserver after we have installed our package. Fear not, we will write the module which is imported here in the next step. The reason we put that line in now already is because when we deploy our package with Luxon, Luxon will copy the **wsgi.py** file from the package into the project and we don't want to edit any of the project code after deployment, only the package code. So we make sure the package has everything that we will eventually need. 
 
-Now we can finally isntall our package! We will use pip's *-e* switch which will install it with an egg link, this will allow us to edit the source code after the installation. 
+Now we can finally install our package! We will use pip's *-e* switch which will install it with an egg link, this will allow us to edit the source code after the installation. 
 
 .. code:: bash
 	
@@ -131,7 +132,7 @@ Everything is now set up for us to deploy our package with Luxon:
 
 	$ luxon -i myapi myapi 
 
-This does a number of things, it copies over the **policy.json**, **settings.ini**, and **wsgi.py** files from the package directory as well as creating **templates** and **tmp** directories inside **myapi**. The **tmp** directory is where all the session data will live, we will get to that later. The **templates** directory is where servable *html* templates will live when we make a Web App, we will get to that in the next tutorial. We won't actully write any code in the project directory, all of that will still happen in the package directory. We will however launch the webserver from the deployment directory, so I suggest keeping a separate terminal open here while we work. 
+This does a number of things, it copies over the **policy.json**, **settings.ini**, and **wsgi.py** files from the package directory as well as creating **templates** and **tmp** directories inside **myapi**. The **tmp** directory is where all the session data will live. The **templates** directory is where servable *html* templates will live. Neither of these directories will be relevant in this tutorial. We won't actually write any code in the project directory, all of that will still happen in the package directory. We will however launch the webserver from the deployment directory, so I suggest keeping a separate terminal open here while we work. 
 
 We almost have everything we need to launch a webserver that can serve dynamic Python content. Except of course the webserver itself. We will use Gunicorn_
 
@@ -141,7 +142,7 @@ We almost have everything we need to launch a webserver that can serve dynamic P
 
     $ pip3 install gunicorn 
 
-We can't yet test if our project was successufly deployed however because we still need to create the *views* module which the **wsgi.py** file imports. Just hang on, by the end of the next step we will be able to launch a webserver that responds to a call on the homepage. 
+We can't yet test if our project was successfully deployed however because we still need to create the *views* module which the **wsgi.py** file imports. Just hang on, by the end of the next step we will be able to launch a webserver that responds to a call on the homepage. 
 
 We are simultaneously using two directories, the package and the project. We will mostly be working in the package directory to write code but we will be going back to the project directory to start the server, set up the database etc. Make sure not to get confused between the two. Before we move on let's clarify what the directory structure looks like at this point:
 
@@ -260,7 +261,7 @@ You will notice that this has created a **sqlite3** file.
 Part 5: Getting serious with the API
 ---------------------------------------
 
-Now that we have a model we can write more sophisticated views to make use of it. Since we will end up having a number of views to perform different actions with users (Create/Read/Update/Delete) we will group them toghether in a class. This will work slightly differently in that we will use the **register.resources** method to register the view and we will specify all the routes in the constructor. To specify the routes we will use Luxon's **router** module.
+Now that we have a model we can write more sophisticated views to make use of it. Since we will end up having a number of views to perform different actions with users (Create/Read/Update/Delete) we will group them together in a class. This will work slightly differently in that we will use the **register.resources** method to register the view and we will specify all the routes in the constructor. To specify the routes we will use Luxon's **router** module.
 
 We need to create another file in our package directory under **views** to house the *users* views:
 
@@ -342,12 +343,12 @@ Hit send. We should see a returned JSON object with the information we specified
 	    "username": "Ricky T Dunigan"
 	}
 
-Note that the password has been hashed. We hash the clear text password we recieve from the user before we send it to the database so that even if someone examens the user table in the database all they will see is a useselss hash, the actual password will be safe. More about password hashing in the authentication part of the tutorial.
+Note that the password has been hashed. We hash the clear text password we receive from the user before we send it to the database so that even if someone examens the user table in the database all they will see is a useless hash, the actual password will be safe. More about password hashing in the authentication part of the tutorial.
 
 Part 7: Fleshing out the API
 ------------------------------
 
-We have already created the "create" view. The rest of the views are created in a similar way. The *users* view, which returns all the users in the database, is slightly more complicated. It requeres a connection object wich will execute a SQL query. Remember to import *db* from Luxon wich will allow us to easily create a connection object. The rest of the views are fairly trivial, here is the complete code for **views/users.py**, note the new imports:
+We have already created the "create" view. The rest of the views are created in a similar way. The *users* view, which returns all the users in the database, is slightly more complicated. It requires a connection object which will execute a SQL query. Remember to import *db* from Luxon which will allow us to easily create a connection object. The rest of the views are fairly trivial, here is the complete code for **views/users.py**, note the new imports:
 
 .. code:: python
 
@@ -433,7 +434,7 @@ We have already created the "create" view. The rest of the views are created in 
 
 
 
-One thing to note is the *id* argument in the views that perform an opperation on a specific user. This argument is taken directly from the url. To test these views, simply copy the *id* string of the specific user and paste it after the route in the url. For example:
+One thing to note is the *id* argument in the views that perform an operation on a specific user. This argument is taken directly from the url. To test these views, simply copy the *id* string of the specific user and paste it after the route in the url. For example:
 
 .. code:: text
 
@@ -443,9 +444,9 @@ One thing to note is the *id* argument in the views that perform an opperation o
 Part 8: Authentication with a Login view
 -------------------------------------------
 
-Now that we have a simple API up we can start implimenting some kind of authentication. Every User has a *username* and *password* which are specified upon creation. Let's create a *login* view that will recieve a *username/password* and validate it against the users in the database. Upon validation the view will return a *token* which can then be sent with future API calls to verify the authenticity of the user sending the calls.
+Now that we have a simple API up we can start implementing some kind of authentication. Every User has a *username* and *password* which are specified upon creation. Let's create a *login* view that will receive a *username/password* and validate it against the users in the database. Upon validation the view will return a *token* which can then be sent with future API calls to verify the authenticity of the user sending the calls.
 
-Before we do anythin else we have to generate RSA keys for our project, Luxon needs them for authentication. We can use Luxon to generate them in our *app* directory:
+Before we do anything else we have to generate RSA keys for our project, Luxon needs them for authentication. We can use Luxon to generate them in our *app* directory:
 
 .. code:: bash 
 
