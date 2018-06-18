@@ -8,6 +8,7 @@ Framework Guide
     command
     globals
     routing
+    request
     responders
     middleware
     settings

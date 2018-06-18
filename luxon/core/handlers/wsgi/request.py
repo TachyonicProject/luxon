@@ -59,24 +59,27 @@ class Request(RequestBase):
             which takes the HTTP status and headers as arguments.
 
     Attributes:
-        id (str): Unique request identifier.
+        access_hops(list): IP address of the original client, as well
+            as any addresses of proxies fronting the WSGI server.
 
-        env (str): Reference to the WSGI environ from the server.
+            The following request headers are checked, in order of
+            preference, to determine the addresses:
 
-        context: Dictionary/Property object to hold any data about the
-            request which is specific to your app. (e.g. auth object)
-        log: Dictionary/Property object to hold any data about the
-            request which is specific to your app for appending to logs.
-            (e.g. USERNAME)
-        method (str): HTTP method requested (e.g., 'GET', 'POST', etc.)
-            May be set to new value by  'process' middleware method in order
-            to influence routing.
+                * Forwarded
+                * X-Forwarded-For
+                * X-Real-IP
 
-        route (str): Path portion of the request URI. May be set to a new value
-            by a 'process' middleware method in order to influence routing.
-            Does not include the query string.
+            If none of these headers are available, the value of
+            remote_addr attribute is returned.
 
-        tag (str): Route tag, used by policies to apply rules.
+            In RFC 7239, the access route may contain "unknown"
+            and obfuscated identifiers, in addition to IPv4 and
+            IPv6 addresses
+
+            Headers can be forged by any client or proxy. Use this
+            property with caution and validate all values before
+            using them. Do not rely on the access route to authorize
+            requests.
 
         app (str): The initial portion of the request URI's path that
             corresponds to the applicationm so that the
@@ -88,6 +91,41 @@ class Request(RequestBase):
             by PEP-3333.
 
         app_uri (str): Absolute URI to WSGI Application.
+
+        id (str): Unique request identifier.
+
+        env (str): Reference to the WSGI environ from the server.
+
+        cache_control(obj): A luxon.utils.http.CacheControl obj populated from
+                            the Request Headers.
+
+        context_domain (str): The domain in which the request is currently
+                              scoped.
+
+        context_interface (str): The interface in which the request is
+                                 currently scoped.
+
+        context_region (str): The region in which the request is currently
+                              scoped.
+
+        context_tenant_id (str): The uuid of the Tenant in which the request is
+                                 currently scoped.
+
+        log: Dictionary/Property object to hold any data about the
+            request which is specific to your app for appending to logs.
+            (e.g. USERNAME)
+
+        max_age (int): Maximum age, as specified for Cache control.
+
+        method (str): HTTP method requested (e.g., 'GET', 'POST', etc.)
+            May be set to new value by  'process' middleware method in order
+            to influence routing.
+
+        route (str): Path portion of the request URI. May be set to a new value
+            by a 'process' middleware method in order to influence routing.
+            Does not include the query string.
+
+        tag (str): Route tag, used by policies to apply rules.
 
         forwarded_app_uri (str): Absolute original URI to WSGI Application.
         uri (str): The fully-qualified absolute URI for the request.
@@ -176,28 +214,6 @@ class Request(RequestBase):
             you can use 'access_hops' attribute to retrieve the real
             IP address of the client.
 
-        access_hops(list): IP address of the original client, as well
-            as any addresses of proxies fronting the WSGI server.
-
-            The following request headers are checked, in order of
-            preference, to determine the addresses:
-
-                * Forwarded
-                * X-Forwarded-For
-                * X-Real-IP
-
-            If none of these headers are available, the value of
-            remote_addr attribute is returned.
-
-            In RFC 7239, the access route may contain "unknown"
-            and obfuscated identifiers, in addition to IPv4 and
-            IPv6 addresses
-
-            Headers can be forged by any client or proxy. Use this
-            property with caution and validate all values before
-            using them. Do not rely on the access route to authorize
-            requests.
-
         query_string (str): Query string portion of the request URI, without
             the preceding '?' character.
 
@@ -205,6 +221,9 @@ class Request(RequestBase):
             their values.  Where the parameter appears multiple times in the
             query string, the value mapped to that parameter key will be a list
             of all the values in the order seen.
+
+        relative_resource_uri (str): Portion of the URI that comprising of the
+                                     app and route.
 
         content_type (str): Value of the Content-Type header, or None if the
             header is missing.
@@ -250,6 +269,8 @@ class Request(RequestBase):
 
         if_range (str): Value of the If-Range header, or None.
 
+        is_ajax (bool): Whether or not Request is an AJAX request.
+
         range (tuple of int): A 2-member 'tuple' parsed from the value
             of the Range header.
 
@@ -265,6 +286,15 @@ class Request(RequestBase):
 
         range_unit (str): Unit of the range parsed from the value of the
             Range header, or None if the header is missing.
+
+        static (str): Cached value of the Applications static path.
+
+        session (obj): Cached luxon.core.session.Session obj initialized
+                       with session backend class specified in the settings.ini
+                       file.
+
+        user_token (str): The value of the token for the user's current
+                          request.
 
         cookies (dict): A dict of name/value cookie pairs.
         is_bot (bool): If user-agent is detected as 'Bot' e.g Google Bot
