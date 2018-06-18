@@ -36,7 +36,22 @@ from luxon.structs.container import Container
 
 
 class RequestBase(object):
-    """Request Base class representing a request.
+    """Request Base class representing a request received from a Client.
+
+    Attributes:
+        id (str): The request ID.
+        context (obj): Dictionary/Property object to hold any data about the
+            request which is specific to your app. (e.g. auth object)
+        credentials (obj): Cached luxon.core.auth.Auth object
+        user_token (str): To be overwritten by specific handlers, if used.
+                          Objects from the RequestBase Class returns None.
+        context_domain (str): To be overwritten by specific handlers, if used.
+                              Objects from the RequestBase Class returns None.
+        context_tenant_id(str): To be overwritten by specific handlers, if
+                                used. Objects from the RequestBase Class
+                                returns None.
+        policy(obj): Returns a cached luxon.core.policy.policy.Policy object
+                     from a pool.
     """
 
     __slots__ = (
