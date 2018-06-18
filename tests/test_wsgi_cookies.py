@@ -29,7 +29,7 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 import pytest
 
-from luxon import register_resource
+from luxon import register
 
 @pytest.fixture(scope="module")
 def client():
@@ -37,11 +37,11 @@ def client():
     return Client(__file__)
 
 def test_wsgi_cookies(client):
-    @register_resource('GET', '/set_cookie')
+    @register.resource('GET', '/set_cookie')
     def set_cookie(req, resp):
         resp.set_cookie('test','123')
 
-    @register_resource('GET', '/get_cookie')
+    @register.resource('GET', '/get_cookie')
     def get_cookie(req, resp):
         return req.cookies['test']
 
