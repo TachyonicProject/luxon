@@ -30,69 +30,53 @@
 import os
 from decimal import Decimal as PyDecimal
 
-import pytest
-
-from luxon import register_resource
-from luxon import database_model
+from luxon import register
 from luxon import SQLModel
-from luxon import String
-from luxon import Integer
-from luxon import Float
-from luxon import Double
-from luxon import Decimal
-from luxon import DateTime
-from luxon import PyObject
-from luxon import Blob
-from luxon import Text
-from luxon import Enum
-from luxon import Boolean
-from luxon import UniqueIndex
-from luxon import ForeignKey
 from luxon import g
-from luxon import Config
 from luxon.core.config.defaults import defaults
 from luxon import db
+from luxon.core.app import App
 
-
-g.config.read_dict(defaults)
-g.config['database'] = {}
-g.config['database']['type'] = 'sqlite3'
-g.config['database']['database'] = 'test.db'
 g.app_root = os.getcwd()
+g.app = App("UnitTest", ini='/dev/null')
+g.app.config.read_dict(defaults)
+g.app.config['database'] = {}
+g.app.config['database']['type'] = 'sqlite3'
+g.app.config['database']['database'] = 'test.db'
 
 
-@database_model()
+@register.model()
 class Model_Test2(SQLModel):
-    id = Integer(length=11, null=True)
+    id = SQLModel.Integer(length=11, null=True)
     primary_key = id
-    stringcol = String(length=128)
-    floatcol = Float(4,4)
-    doublecol = Double(4,4)
-    decimalcol = Decimal(4,4)
-    datetimecol = DateTime(4,4)
-    pyobject = PyObject()
-    blob = Blob()
-    text = Text()
-    enum = Enum('option1', 'option2')
-    boolean = Boolean()
-    unique_index2 = UniqueIndex(stringcol)
+    stringcol = SQLModel.String(length=128)
+    floatcol = SQLModel.Float(4,4)
+    doublecol = SQLModel.Double(4,4)
+    decimalcol = SQLModel.Decimal(4,4)
+    datetimecol = SQLModel.DateTime(4,4)
+    pyobject = SQLModel.PyObject()
+    blob = SQLModel.Blob()
+    text = SQLModel.Text()
+    enum = SQLModel.Enum('option1', 'option2')
+    boolean = SQLModel.Boolean()
+    unique_index2 = SQLModel.UniqueIndex(stringcol)
 
-@database_model()
+@register.model()
 class Model_Test1(SQLModel):
-    id = Integer(length=11, null=True)
+    id = SQLModel.Integer(length=11, null=True)
     primary_key = id
-    stringcol = String(length=128)
-    floatcol = Float(4,4)
-    doublecol = Double(4,4)
-    decimalcol = Decimal(4,4)
-    datetimecol = DateTime(4,4)
-    pyobject = PyObject()
-    blob = Blob()
-    text = Text()
-    enum = Enum('option1', 'option2')
-    boolean = Boolean()
-    unique_index1 = UniqueIndex(stringcol)
-    fk = ForeignKey((stringcol), (Model_Test2.stringcol))
+    stringcol = SQLModel.String(length=128)
+    floatcol = SQLModel.Float(4,4)
+    doublecol = SQLModel.Double(4,4)
+    decimalcol = SQLModel.Decimal(4,4)
+    datetimecol = SQLModel.DateTime(4,4)
+    pyobject = SQLModel.PyObject()
+    blob = SQLModel.Blob()
+    text = SQLModel.Text()
+    enum = SQLModel.Enum('option1', 'option2')
+    boolean = SQLModel.Boolean()
+    unique_index1 = SQLModel.UniqueIndex(stringcol)
+    fk = SQLModel.ForeignKey((stringcol), (Model_Test2.stringcol))
 
 
 def test_model():
@@ -109,7 +93,7 @@ def test_model():
     test2 = Model_Test2()
     test2.create_table()
     test1.create_table()
-    new = test2.new()
+    new = {}
     new['stringcol'] = 'String Col'
     new['floatcol'] = 123.22
     new['doublecol'] = 123.22
@@ -120,8 +104,9 @@ def test_model():
     new['text'] = "string of text"
     new['enum'] = 'option1'
     new['boolean'] = True
+    test2.update(new)
     test2.commit()
-    new = test1.new()
+    new = {}
     new['stringcol'] = 'String Col'
     new['floatcol'] = 123.22
     new['doublecol'] = 123.22
@@ -132,25 +117,16 @@ def test_model():
     new['text'] = "string of text"
     new['enum'] = 'option1'
     new['boolean'] = True
+    test1.update(new)
     test1.commit()
-    assert isinstance(test1[0]['pyobject'], dict)
+    assert isinstance(test1['pyobject'], dict)
     test1 = Model_Test1()
     test1.sql_query("SELECT * FROM Model_Test1")
-    assert isinstance(test1[0]['id'], int)
-    assert isinstance(test1[0]['floatcol'], float)
-    assert isinstance(test1[0]['doublecol'], float)
-    assert isinstance(test1[0]['decimalcol'], PyDecimal)
-    assert isinstance(test1[0]['blob'], bytes)
-    assert isinstance(test1[0]['text'], str)
-    assert isinstance(test1[0]['enum'], str)
-    assert isinstance(test1[0]['boolean'], bool)
-
-
-
-
-
-
-
-
-
-
+    assert isinstance(test1['id'], int)
+    assert isinstance(test1['floatcol'], float)
+    assert isinstance(test1['doublecol'], float)
+    assert isinstance(test1['decimalcol'], PyDecimal)
+    assert isinstance(test1['blob'], bytes)
+    assert isinstance(test1['text'], str)
+    assert isinstance(test1['enum'], str)
+    assert isinstance(test1['boolean'], bool)

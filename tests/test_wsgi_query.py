@@ -29,16 +29,16 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 import pytest
 
-from luxon import register_resource
+from luxon import register
 
-"""
+
 @pytest.fixture(scope="module")
 def client():
     from luxon.testing.wsgi.client import Client
     return Client(__file__)
 
 def test_wsgi_query(client):
-    @register_resource('GET', '/query')
+    @register.resource('GET', '/query')
     def query_sring(req, resp):
         param1 = req.query_params['test1']
         param2 = req.query_params['test2']
@@ -47,5 +47,3 @@ def test_wsgi_query(client):
     result = client.get(path='/query', query_string='test1=test1&test2=test2')
     assert result.status_code == 200
     assert result.text == 'test1:test2'
-
-"""
