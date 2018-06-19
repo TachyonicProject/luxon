@@ -45,7 +45,7 @@ defaults = {
     'restapi': {
         'url': 'http://127.0.0.1/infinitystone',
         'interface': 'public',
-        'region': 'default',
+        'region': 'Region1',
         'connect_timeout': '2',
         'read_timeout': '8',
         'verify': 'True',

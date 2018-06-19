@@ -369,6 +369,9 @@ CACHE_CONTROL_OPTION_RE = re.compile(r"[a-z_\-] +", re.IGNORECASE)
 
 
 class CacheControl(object):
+    """Object to store options to be used to control caching.
+
+    """
     __slots__ = ('max_age',
                  'max_stale',
                  'min_fresh',
@@ -392,6 +395,15 @@ class CacheControl(object):
 
 
 def parse_cache_control_header(header):
+    """Extracts Cache Control entries from Request Headers, and stores them in
+    CacheControl obj.
+
+    Args:
+     header (str): string containing the HTTP Request Headers.
+
+    Returns:
+        luxon.utils.http.CacheControl obj.
+    """
     cachecontrol = CacheControl()
 
     if header is not None:

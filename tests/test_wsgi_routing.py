@@ -30,7 +30,10 @@
 import pytest
 
 from luxon import g
-from luxon import register_resources
+from luxon import register
+from luxon import router
+
+g.router = router
 
 @pytest.fixture(scope="module")
 def client():
@@ -40,7 +43,7 @@ def client():
 METHODS = ('GET', 'POST', 'PUT', 'PATCH',
            'DELETE', 'HEAD', 'OPTIONS', )
 
-@register_resources()
+@register.resources()
 class Routing(object):
     def __init__(self):
         g.router.add('GET', '/routing', self.home)
