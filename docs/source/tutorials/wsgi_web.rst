@@ -179,6 +179,8 @@ We will implement the view as a class in **views/home.py**:
 			# return a pretty html template 
 			return render_template('myapp/home.html')
 
+We implemented the view as a class with one method. The view could just as effectively been implemented as a single funciton.
+
 As you can see the main difference between the Web App homepage view and the API homepage view is that we return an HTML template that will be compiled by a browser and shown to a user, instead of a JSON object. This is made easy by using Luxon's *render_template* module. Of course for this to work we must first write the HTML which our view returns.
 
 Remember to import the view in **views/__init__.py**:
@@ -216,9 +218,15 @@ Now we can test the view. Launch the webserver from the terminal open in our *ap
 
 When we browse over to http://127.0.0.1:8000 we should see our HTML homepage in all it's glory.
 
+Step 4: Connecting the Web App to the API
+--------------------------------------------
 
+So far we have implemented a single view to respond on a call to the homepage route "/" with an HTML template. The process is very similar to implementing a view in the API. Essentially the only difference between the API in the previous tutorial and the Web Application in this tutorial is that the one responds with JSON data and needs an HTTP Client to use and the other responds with HTML resources and can be used by a regular browser. The API is meant to interface with programs and the Web App is meant to interface with humans. 
 
+We could implement an entire webiste in our Web App. We would simply write views to respond to every request, these views could both serve HTML templates to the user and access the database with models.
+However we won't do that. It's much more logical to keep the API and Web App separate and give the Web App access to the database via the API. The API acts as the entire interface of the database, exposing it to all other agents that need to access it. A user could use an HTTP Client Program to access it directly or a browser to access the Web App which would then access the API. Other programs can also directly access the API. This means that we can deploy the databse/API on one server and any number of Web Apps, which are much slower, on other servers, all pointing to the API.
 
+In this step we will write views to Create/Read/Update/Delete users in the databse. In order to access the database we will use Luxon's HTTP Client :ref:`utility<http_util>` to send requests to the API. We will also use Luxon's HTML Form :ref:`utility<bootstrap_util>` which will convert the JSON data recieved from our API call into a renderable HTML Form.
 
 
 

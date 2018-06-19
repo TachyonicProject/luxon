@@ -316,7 +316,7 @@ Now we can finally test our API. Launch the server again in the *app* directory 
 Part 6: Testing the API
 -------------------------
 
-Default browsers are great for sending GET requests to our API, but we want to be able to send other kinds of requests too. Let's use Postman_, a useful tool to test APIs. 
+Default browsers are great for sending GET requests to our API, but we want to be able to send other kinds of requests too. Let's use Postman_, a HTTP Client Program, useful for testing APIs. 
 
 .. _Postman: https://www.getpostman.com
 
