@@ -29,7 +29,7 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 import pytest
 
-from luxon import register_resource
+from luxon import register
 
 @pytest.fixture(scope="module")
 def client():
@@ -75,7 +75,7 @@ headers['Content-Type'] = "multipart/form-data;" + \
 headers['Content-Length'] = "950"
 
 def test_wsgi_form_json(client):
-    @register_resource('POST', '/form_json')
+    @register.resource('POST', '/form_json')
     def form_json(req, resp):
         return req.form_json
 
@@ -101,7 +101,7 @@ def test_wsgi_form_json(client):
         assert response['multiple_file'][i]['base64'] == 'dGVzdAo=\n'
 
 def test_wsgi_form_get_first(client):
-    @register_resource('POST', '/form_get_first')
+    @register.resource('POST', '/form_get_first')
     def form_get_first(req, resp):
         return req.get_first('text')
 
@@ -110,7 +110,7 @@ def test_wsgi_form_get_first(client):
     assert result.text == 'test'
 
 def test_wsgi_form_get_list(client):
-    @register_resource('POST', '/form_get_list')
+    @register.resource('POST', '/form_get_list')
     def form_get_list(req, resp):
         return req.get_list('multiple_text')
 
@@ -123,7 +123,7 @@ def test_wsgi_form_get_list(client):
         assert response[i] == 'test'
 
 def test_wsgi_form_get_file(client):
-    @register_resource('POST', '/form_get_file')
+    @register.resource('POST', '/form_get_file')
     def form_get_file(req, resp):
         file = req.get_file('file')
         response = {}
@@ -140,7 +140,7 @@ def test_wsgi_form_get_file(client):
     assert response['data'] == 'test\n'
 
 def test_wsgi_form_get_files(client):
-    @register_resource('POST', '/form_get_files')
+    @register.resource('POST', '/form_get_files')
     def form_get_files(req, resp):
         file = req.get_files('multiple_file')
         response = []
@@ -162,7 +162,7 @@ def test_wsgi_form_get_files(client):
         assert response[i]['data'] == 'test\n'
 
 def test_wsgi_form_get_all_files(client):
-    @register_resource('POST', '/form_get_all_files')
+    @register.resource('POST', '/form_get_all_files')
     def form_get_all_files(req, resp):
         file = req.get_all_files()
         response = []

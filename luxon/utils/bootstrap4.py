@@ -29,7 +29,7 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 from collections import OrderedDict
 
-from luxon.utils.html5 import select
+from luxon.utils.html5 import select as html_select
 from luxon.structs.htmldoc import HTMLDoc
 from luxon.structs.models.model import Model
 from luxon.utils.timezone import format_datetime
@@ -192,6 +192,151 @@ class NAVMenu(object):
         return str(self._html_object)
 
 
+def field_group(cls="form-group"):
+    html = HTMLDoc()
+
+    div = html.create_element('div')
+    div.set_attribute('class', cls)
+
+    return div
+
+
+def field_label(field, label=None, cls=None):
+    html = HTMLDoc()
+
+    html_label = html.create_element('label')
+    html_label.set_attribute('for', field)
+
+    if cls:
+        html_label.set_attribute('class', cls)
+
+    if label is not None:
+        html_label.append(label)
+    else:
+        html_label.append(field.title().replace('_', ' '))
+
+    return html
+
+
+def field_checkbox(field, value, id=None, checked=False, disabled=False,
+                   label=None):
+    group = field_group('form-group form-check')
+
+    io = group.create_element('input')
+    io.set_attribute('type', 'checkbox')
+
+    if id is not None:
+        io.set_attribute('id', field)
+
+    io.set_attribute('class', 'form-check-input')
+    io.set_attribute('name', field)
+
+    if disabled is True:
+        io.set_attribute('disabled')
+
+    if checked:
+        io.set_attribute('checked')
+
+    io.set_attribute('value', value)
+
+    group.append(field_label(field, label, 'form-group form-check'))
+
+    return group
+
+
+def field_datetime(field, value=None, id=None, readonly=False,
+                   disabled=False, label=None, placeholder=None,
+                   required=False):
+
+    if value is not None:
+        value = format_datetime(value)
+
+    group = field_group()
+    group.append(field_label(field, label))
+
+    io = group.create_element('input')
+    io.set_attribute('type', 'datetime')
+    io.set_attribute('class', 'form-control')
+    io.set_attribute('id', field)
+    io.set_attribute('name', field)
+
+    if value:
+        io.set_attribute('value', value)
+    if readonly is True:
+        io.set_attribute('readonly')
+    if disabled is True:
+        io.set_attribute('disabled')
+    if required:
+        io.set_attribute('required')
+    if placeholder:
+        io.set_attribute('placeholder', placeholder)
+
+    return group
+
+
+def field_text(field, value=None, id=None, readonly=False,
+               disabled=False, label=None, placeholder=None,
+               required=False):
+    group = field_group()
+    group.append(field_label(field, label))
+
+    io = group.create_element('input')
+    io.set_attribute('type', 'text')
+    io.set_attribute('class', 'form-control')
+    io.set_attribute('id', field)
+    io.set_attribute('name', field)
+
+    if value:
+        io.set_attribute('value', value)
+    if readonly is True:
+        io.set_attribute('readonly')
+    if disabled is True:
+        io.set_attribute('disabled')
+    if required:
+        io.set_attribute('required')
+    if placeholder:
+        io.set_attribute('placeholder', placeholder)
+
+    return group
+
+
+def field_password(field, value=None, id=None, readonly=False,
+                   disabled=False, label=None, placeholder=None,
+                   required=False):
+    group = field_group()
+    group.append(label(field, label))
+
+    io = group.create_element('input')
+    io.set_attribute('type', 'password')
+    io.set_attribute('class', 'form-control')
+    io.set_attribute('id', field)
+    io.set_attribute('name', field)
+
+    if value:
+        io.set_attribute('value', value)
+    if readonly is True:
+        io.set_attribute('readonly')
+    if disabled is True:
+        io.set_attribute('disabled')
+    if required:
+        io.set_attribute('required')
+    if placeholder:
+        io.set_attribute('placeholder', placeholder)
+
+    return group
+
+
+def field_select(field, enum, value=None, id=None, readonly=False,
+                 disabled=False, label=None):
+    group = field_group()
+    group.append(field_label(field, label))
+
+    group.append(html_select(field, enum, value,
+                             readonly=readonly))
+
+    return group
+
+
 def form(model, values=None, readonly=False):
     html = HTMLDoc()
     fields = model.fields
@@ -201,6 +346,56 @@ def form(model, values=None, readonly=False):
         values = {}
 
     def html_field(field):
+        if obj.readonly is True:
+            field_readonly = True
+        else:
+            field_readonly = readonly
+
+        if obj.null:
+            required = True
+        else:
+            required = False
+
+        if obj.label is not None:
+            label = obj.label
+        else:
+            label = obj.name.title().replace('_', ' ')
+
+        if isinstance(obj, Model.Enum):
+            html.append(field_select(field, obj.enum, value=value,
+                                     readonly=field_readonly,
+                                     disabled=field_readonly,
+                                     label=label))
+        elif isinstance(obj, Model.DateTime):
+            html.append(field_datetime(field, value=value,
+                                       readonly=field_readonly,
+                                       disabled=field_readonly,
+                                       required=required,
+                                       placeholder=obj.placeholder,
+                                       label=label))
+        elif isinstance(obj, Model.Boolean):
+            if value:
+                checked = True
+            else:
+                checked = False
+
+            html.append(field_checkbox(field, value=True,
+                                       disabled=field_readonly,
+                                       checked=checked,
+                                       label=label))
+        elif isinstance(obj, (Model.String)):
+            html.append(field_text(field, value=value,
+                                   readonly=field_readonly,
+                                   disabled=field_readonly,
+                                   required=required,
+                                   placeholder=obj.placeholder,
+                                   label=label))
+        else:
+            pass
+
+    for field in fields:
+        obj = fields[field]
+        if obj.hidden is False and obj.internal is False:
             value = values.get(field)
             if value is None:
                 value = obj.default
@@ -208,90 +403,6 @@ def form(model, values=None, readonly=False):
             if hasattr(value, '__call__'):
                 value = value()
 
-            form_group = html.create_element('div')
-            form_group.set_attribute('class', 'form-group')
-            label = form_group.create_element('label')
-            label.set_attribute('class', 'control-label col-sm-2')
-            label.set_attribute('for', 'field')
-
-            if obj.label is not None:
-                label.append(obj.label)
-            else:
-                label.append(obj.name.title().replace('_', ' '))
-
-            div = form_group.create_element('div')
-            div.set_attribute('class', 'col-sm-10')
-
-            if obj.readonly is True:
-                field_readonly = True
-            else:
-                field_readonly = readonly
-
-            if isinstance(obj, Model.Enum):
-                div.append(select(field, obj.enum, value, cls="select",
-                                  readonly=field_readonly))
-            elif isinstance(obj, Model.DateTime):
-                if value is not None:
-                    value = format_datetime(value)
-                input = div.create_element('input')
-                input.set_attribute('type', 'text')
-                input.set_attribute('class', 'form-control')
-                input.set_attribute('id', field)
-                input.set_attribute('name', field)
-                if readonly is True:
-                    input.set_attribute('readonly')
-                    input.set_attribute('disabled')
-                if obj.placeholder is not None:
-                    input.set_attribute('placeholder', obj.placeholder)
-                if value is not None:
-                    input.set_attribute('value', value)
-                if field_readonly:
-                    input.set_attribute('readonly')
-                    input.set_attribute('disabled')
-                if obj.null is False:
-                    input.set_attribute('required')
-                if obj.placeholder:
-                    input.set_attribute('placeholder', obj.placeholder)
-            elif isinstance(obj, Model.Boolean):
-                input = div.create_element('input')
-                input.set_attribute('type', 'checkbox')
-                input.set_attribute('id', field)
-                input.set_attribute('name', field)
-                if field_readonly is True:
-                    input.set_attribute('disabled')
-                if value is True:
-                    input.set_attribute('checked')
-                input.set_attribute('value', 'true')
-
-            elif isinstance(obj, (Model.String, Model.Confirm,)):
-                input = div.create_element('input')
-                if obj.password is False:
-                    input.set_attribute('type', 'text')
-                else:
-                    input.set_attribute('type', 'password')
-                input.set_attribute('class', 'form-control')
-                input.set_attribute('id', field)
-                input.set_attribute('name', field)
-                if readonly is True:
-                    input.set_attribute('readonly')
-                    input.set_attribute('disabled')
-                if obj.placeholder is not None:
-                    input.set_attribute('placeholder', obj.placeholder)
-                if value is not None:
-                    input.set_attribute('value', value)
-                if field_readonly:
-                    input.set_attribute('readonly')
-                    input.set_attribute('disabled')
-                if obj.null is False:
-                    input.set_attribute('required')
-                if obj.placeholder:
-                    input.set_attribute('placeholder', obj.placeholder)
-            else:
-                pass
-
-    for field in fields:
-        obj = fields[field]
-        if obj.hidden is False and obj.internal is False:
             html_field(field)
 
     return html
