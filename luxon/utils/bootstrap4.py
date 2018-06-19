@@ -379,7 +379,7 @@ def form(model, values=None, readonly=False):
             else:
                 checked = False
 
-            html.append(field_checkbox(field, value=value,
+            html.append(field_checkbox(field, value=True,
                                        disabled=field_readonly,
                                        checked=checked,
                                        label=label))
