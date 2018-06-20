@@ -178,13 +178,14 @@ Model base Class
 .. autoclass:: luxon.Model
     :members:
 
+.. _model_fields:
 
-Modal Fields
+model Fields
 =============
 
-Data types supported by Luxon Modals
+Data types supported by Luxon models
 
-**Conveniantly accessible using 'modal_name.field_name'**
+**Conveniantly accessible using 'model_name.field_name'**
 
 Base Fields
 ------------
