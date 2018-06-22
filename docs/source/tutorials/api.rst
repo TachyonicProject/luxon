@@ -576,7 +576,7 @@ Part 9: Securing views with RBAC
 --------------------------------
 Luxon offers the ability to protect views based on users' roles, aka Role Based Access Control (RBAC).
 
-This is done by tagged a view with with a rule. Only users assigned
+This is done by a tagging a view with with a rule. Only users assigned
 with roles that match the rule assigned to the view, can access that view.
 The roles and their associated rules are defined in the **myapi/policy.json** file. This was created when we set up the
 package:
