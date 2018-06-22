@@ -34,6 +34,8 @@ During iteration or fetch methods all return lists of rows containing dict. The 
 
 Configuration should be done via *settings.ini*
 
+.. _mysql_settings:
+
 settings.ini
 ------------
 
