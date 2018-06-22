@@ -4,15 +4,20 @@
 Web App Tutorial
 ================
 
-In this tutorial we will walk through building a simple web interface with Luxon. The same principles that were used to build the API will be used, with different methods and responder code. Luxon provides many powerful tools that will make every step of the process more convenient.
+In this tutorial we will walk through building a simple web interface with Luxon. The same principles that were used
+to build the API will be used, with different methods and responder code. Luxon provides many powerful tools that will
+make every step of the process more convenient.
 If you have not already installed Luxon you will need to do so: :ref:`Installation<install>`
 
-This tutorial follows on the API Tutorial, eventually we will write responders that will communicate with the API. That way we avoid double work. The API that we have already coded will handle the database etc. The Web App will interface between a user and the API so the user will be exposed to the API via rendered HTML rather than direct API calls. This tutorial uses some assumes some dependencies are installed as per the API tutorial.
+This tutorial follows on the :ref:`api_tut`, eventually we will write responders that will communicate with the API.
+That way we avoid double work. The API that we have already coded will handle the database etc. The Web App will
+interface between a user and the API so the user will be exposed to the API via rendered HTML rather than direct API
+calls. This tutorial assumes some dependencies are installed as per the :ref:`api_tut`.
 
 Similarly to the API tutorial we will start by setting up and deploying a package.
 
 Part 1: Setting up a Python Package
---------------------------------------------------------------
+-----------------------------------
 
 In order to have a fully functioning web application we need to create a python package that we can install as a pip library. Then we will be able to deploy the package as a project from where we will launch the webserver. 
 
@@ -80,14 +85,16 @@ The **wsgi.py** file is the entry point to our application we can start off by a
 
 You can read more about Luxon's Wsgi handler :ref:`Here<wsgi_hand>`
 
-We also need to add a **static** directory which Luxon will copy over to the Project. Later we will use it to house the static content for our server.
+We also need to add a **static** directory which Luxon will copy over to the Project. Later we will use it to house the
+static content for our server.
 
 .. code:: bash
 	
 	$ mkdir myapp/static
 	$ touch myapp/static/empty
 
-We can now install our package, let's use pip's *-e* switch which will install it with an egg link, this will allow us to edit the source code after the installation. 
+We can now install our package, let's use pip's *-e* switch which will install it with an egg link, this will allow us
+to edit the source code after the installation.
 
 .. code:: bash
 	
@@ -98,7 +105,8 @@ Part 2: Deploying a Python package with Luxon
 
 Now that we have our package installed as python library and we can deploy it as we would on server.
 
-Let's create a project directory named *app* next to our *myapp* package directory, in the *app* directory we will make another *myapp* directory in which to deploy *myapp*:
+Let's create a project directory named *app* next to our *myapp* package directory, in the *app* directory we will
+make another *myapp* directory in which to deploy *myapp*:
 
 .. code:: bash
 
@@ -113,11 +121,19 @@ Everything is now set up for us to deploy our package with Luxon:
 
 	$ luxon -i myapp myapp 
 
-This does a number of things, it copies over the **policy.json**, **settings.ini**, and **wsgi.py** files from the package directory as well as creating **templates** and **tmp** directories inside **myapp**. The **tmp** directory is where all the session data will live. The **templates** directory can house servable *html* templates which can overwrite templates from the package. We won't actually write any code in the project directory, all of that will still happen in the package directory. We will however launch the webserver from the deployment directory, so I suggest keeping a separate terminal open here while we work. 
+This does a number of things, it copies over the **policy.json**, **settings.ini**, and **wsgi.py** files from the
+`packag`e directory as well as creating **templates** and **tmp** directories inside **myapp**. The **tmp** directory
+is where all the session data will live. The **templates** directory can house several *html* templates which can
+overwrite templates from the package. We won't actually write any code in the project directory, all of that will still
+happen in the package directory. We will however launch the webserver from the `deployment` directory.
 
-We can't yet test if our project was successfully deployed however because we still need to create the *views* module which the **wsgi.py** file imports. We will implement that module in the next step. 
+We can't yet test if our project was successfully deployed however because we still need to create the *views* module
+which the **wsgi.py** file imports. We will implement that module in the next step.
 
-We are simultaneously using two directories, the package and the project. We will mostly be working in the package directory to write code but we will be going back to the project directory to start the server. Make sure not to get confused between the two. Before we move on let's clarify what the directory structure looks like at this point:
+We are simultaneously using two directories, one for the `package` and one for the `project`. We will mostly be working
+in the package directory to write code but we will be going back to the project directory to start the server.
+Make sure not to get confused between the two. Before we move on let's review what the directory structure looks like at
+this point:
 
 .. code:: text
 
@@ -141,12 +157,14 @@ We are simultaneously using two directories, the package and the project. We wil
 	    policy.json
 	    wsgi.py
 	 
-We are finally ready to start working on the Web Application! Leave this terminal open to launch the webserver in future and open a new one in the package directory.
+We are finally ready to start working on the Web Application! Leave this terminal open to launch the webserver in
+future and open a new one in the `package` directory.
 
 Part 3: Homepage View
 ---------------------------
 	 
-Now we can start building our Web App by creating a homepage view. The views will exist as their own module in the package. Let's create the module in our package directory at: **myapp/myapp**
+Now we can start building our Web App by creating a homepage view. The views will exist as their own module in the
+package. Let's create the module in our package directory at: **myapp/myapp**
 
 .. code:: bash
 
@@ -179,7 +197,9 @@ We will implement the view as a class in **views/home.py**:
 			# return a pretty html template 
 			return render_template('myapp/home.html')
 
-As you can see the main difference between the Web App homepage view and the API homepage view is that we return an HTML template that will be compiled by a browser and shown to a user, instead of a JSON object. This is made easy by using Luxon's *render_template* module. Of course for this to work we must first write the HTML which our view returns.
+As you can see the main difference between the Web App homepage view and the API homepage view is that we return an HTML
+template, instead of a JSON object. This is made easy by using Luxon's ``render_template`` function [#jinja]_.
+Of course for this to work we must first write the HTML which our view returns.
 
 Remember to import the view in **views/__init__.py**:
 
@@ -217,7 +237,9 @@ Now we can test the view. Launch the webserver from the terminal open in our *ap
 When we browse over to http://127.0.0.1:8000 we should see our HTML homepage in all it's glory.
 
 
+.. rubric:: Footnotes
 
+.. [#jinja] The ``render_template`` function is a convenient wrapper that makes use of `jinja2 <http://jinja.pocoo.org/docs>`_ templates
 
 
 
