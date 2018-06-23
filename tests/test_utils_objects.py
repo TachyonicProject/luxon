@@ -35,10 +35,8 @@ from luxon.utils.files import *
 def test_object_name():
 
     x1 = FileObject("Gucci", "txt", "pls")
-    x2 = CachedInput("asdfasdfasdfasdf")
 
     assert object_name(x1) == "luxon.utils.files.FileObject"
-    assert object_name(x2) == "luxon.utils.files.CachedInput"
     assert object_name(None) == "builtins.NoneType"
 
 

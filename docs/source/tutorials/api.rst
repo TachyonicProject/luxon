@@ -5,19 +5,7 @@ API Tutorial
 ==============
 
 In this tutorial we will build a simple REST API with the Luxon framework. We will start small and slowly add functionality including authentication. Luxon provides many powerful tools that will make every step of the process more convenient.
-If you have not already installed Luxon you will need to do so: :ref:`Installation<install>`
-
-The completed project will consist of:
-
-	- A database and webserver made with Luxon
-	- A model with witch to interface the database
-	- A number of views to respond to API calls
-
-The project will also have Authentication features:
-
-	- The ability to assign roles to users
-	- The ability to tag responders with roles
-	- A plicy to dictate which roles can access wich tags
+If you have not already installed Luxon you will need to do so. (Installation instructions :ref:`here<install>`)
 	
 Through API calls we will be able to:
 
@@ -32,7 +20,7 @@ Part 1: Setting up a Python Package
 
 In order to have a fully functioning project with a webserver and a database we need to create a python package that we can install as a pip library. Then we will be able to deploy the package as a project, set up the database and launch the webserver. Luxon makes this process very convenient. 
 
-We will create the package in a development directory and then we will deploy the project in an *app* directory. All the source code will live in the development directory and the application will be launched from the *app* directory. We will first create a basic python package and then deploy it as soon as it's done. We will install the package in such a way that we can keep working on the source code and see those changes when we launch the webserver in the project. Then we can build the package piece by piece and test it along the way.
+We will create the package in a *development* directory and then we will deploy the project in an *app* directory. All the source code will live in the development directory and the application will be launched from the *app* directory. We will first create a basic python package and then deploy it as soon as it's done. We will install the package in such a way that we can keep working on the source code and see those changes when we launch the webserver in the project. Then we can build the package piece by piece and test it along the way.
 
 So on to the package, let's call it *myapi*:
 
@@ -104,7 +92,7 @@ The **wsgi.py** file is the entry point to our application we can start off by a
 
 You can read more about Luxon's Wsgi handler :ref:`Here<wsgi_hand>`
 
-The **from myapi import views** line imports a module that does not yet exist, this will cause an error if we try to start the a webserver after we have installed our package. Fear not, we will write the module which is imported here in the next step. The reason we put that line in now already is because when we deploy our package with Luxon, Luxon will copy the **wsgi.py** file from the package into the project and we don't want to edit any of the project code after deployment, only the package code. So we make sure the package has everything that we will eventually need. 
+The ``from myapi import views`` line imports a module that does not yet exist, this will cause an error if we try to start the a webserver after we have installed our package. Fear not, we will write the module which is imported here in the next step. The reason we put that line in now already is because when we deploy our package with Luxon, Luxon will copy the **wsgi.py** file from the `package` dir into the `project` dir and we don't want to edit any of the project code after deployment, only the package code. So we make sure the package has everything that we will eventually need.
 
 Now we can finally install our package! We will use pip's *-e* switch which will install it with an egg link, this will allow us to edit the source code after the installation. 
 
@@ -115,7 +103,7 @@ Now we can finally install our package! We will use pip's *-e* switch which will
 Part 2: Deploying a Python package with Luxon
 -------------------------------------------------
 
-Now that we have our package installed as python library and we can deploy it as we would on server.
+Now that we have our package installed as python library and we can deploy it as we would on a server.
 
 Let's create a project directory named *app* next to our *myapi* package directory, in the *app* directory we will make another *myapi* directory in which to deploy *myapi*:
 
@@ -132,9 +120,15 @@ Everything is now set up for us to deploy our package with Luxon:
 
 	$ luxon -i myapi myapi 
 
-This does a number of things, it copies over the **policy.json**, **settings.ini**, and **wsgi.py** files from the package directory as well as creating **templates** and **tmp** directories inside **myapi**. The **tmp** directory is where all the session data will live. The **templates** directory is where servable *html* templates will live. Neither of these directories will be relevant in this tutorial. We won't actually write any code in the project directory, all of that will still happen in the package directory. We will however launch the webserver from the deployment directory, so I suggest keeping a separate terminal open here while we work. 
+This does a number of things, it copies over the **policy.json**, **settings.ini**, and **wsgi.py** files from the
+package directory as well as creating **templates** and **tmp** directories inside **myapi**. The **tmp** directory
+is where all the session data will live. The **templates** directory is where servable *html* templates will live.
+Neither of these directories will be relevant in this tutorial. We won't actually write any code in the project
+directory, all of that will still happen in the package directory. We will however launch the webserver from the
+deployment directory.
 
-We almost have everything we need to launch a webserver that can serve dynamic Python content. Except of course the webserver itself. We will use Gunicorn_
+We almost have everything we need to launch a webserver that can serve dynamic Python content. Except of course
+the webserver itself. We will use Gunicorn_.
 
 .. _Gunicorn: http://gunicorn.org
 
@@ -142,9 +136,14 @@ We almost have everything we need to launch a webserver that can serve dynamic P
 
     $ pip3 install gunicorn 
 
-We can't yet test if our project was successfully deployed however because we still need to create the *views* module which the **wsgi.py** file imports. Just hang on, by the end of the next step we will be able to launch a webserver that responds to a call on the homepage. 
+We can't yet test if our project was successfully deployed however because we still need to create the *views* module
+which the **wsgi.py** file imports. Just hang on, by the end of the next step we will be able to launch a webserver that
+responds to a call on the homepage.
 
-We are simultaneously using two directories, the package and the project. We will mostly be working in the package directory to write code but we will be going back to the project directory to start the server, set up the database etc. Make sure not to get confused between the two. Before we move on let's clarify what the directory structure looks like at this point:
+We are simultaneously using two directories, the `package` and the `project`. We will mostly be working in the `package`
+directory to write code but we will be going back to the project directory to start the server, set up the database etc.
+Make sure not to get confused between the two. Before we move on let's clarify what the directory structure looks like
+at this point:
 
 .. code:: text
 
@@ -164,12 +163,15 @@ We are simultaneously using two directories, the package and the project. We wil
 	    policy.json
 	    wsgi.py
 	 
-We are finally ready to start working on the API! Leave this terminal open to launch the webserver in future and open a new one in the package directory.
+We are finally ready to start working on the API! Leave this terminal open to launch the webserver in future and open a
+new one in the package directory.
 
 Part 3: Creating a view with Luxon
 ------------------------------------
 	 
-Now we can start building our API by creating views/resources. The views will exist as their own module in the package. The views module will consume and respond to every call made to our API. The views will import all the code they need from the rest of the *myapi* modules as needed. Let's create the module in our package directory at: **myapi/myapi**
+Now we can start building our API by creating views/resources. The views will exist as their own module in the package.
+The views module will consume and respond to every call made to our API. The views will import all the code they need
+from the rest of the *myapi* modules as needed. Let's create the module in our package directory at: **myapi/myapi**
 
 .. code:: bash
 
@@ -190,9 +192,12 @@ The code to impliment the homepage view:
 
 	@register.resource('GET','/')
 	def homepage(req,resp):
-		return "HELLLLOOOOO"
+		return "HELLO WORLD!"
 
-To create the view we defined a function that returns the resource we need. Then we decorated the function with Luxon's powerful *register* module which attaches the function to a specific request method, *GET* in this case, and a root "/" in this case. There is also a *register.resources* which we will use later to implement views in a class.
+To create the view we defined a function that returns the resource we need. Then we decorated the function with Luxon's
+powerful *register* module which attaches the function to a specific request method, *GET* in this case, and a Location,
+root "/" in this case. The ``req`` and ``resp`` arguments for this function is luxon's WSGI :ref:`Request<wsgi_request>` and
+:ref:`Response<wsgi_response>` objects, respectively.
 
 For this view to be usable we need also need to import it in the **views/__init__.py** file:
 
@@ -200,7 +205,8 @@ For this view to be usable we need also need to import it in the **views/__init_
 
 	import myapi.views.homepage
 
-We can now finally use Luxon to start the webserver on our local host, with port *8000*. Remember that we want to execute this command in the terminal open in our *app* directory.
+We can now finally use Luxon to start the webserver on our local host, with port *8000*. Remember that we want to
+execute this command in the terminal open in our *app* directory.
 
 .. code:: bash
 
@@ -211,9 +217,11 @@ When we browse over to http://127.0.0.1:8000 we should be met by our Hello messa
 Part 4: Creating a Model
 -------------------------
 
-A model is a useful data structure that Luxon can use to automatically create/update databases. You can read more about models :ref:`Here<models>`.
+A model is a useful data structure that Luxon can use to automatically create/update databases. You can read more about
+models :ref:`here<models>`.
 
-The models we create will live in their own module, same as the views. In this module we will create a **user.py** file to house our *user* model. Let's create the module in our package directory at: **myapi/myapi**
+The models we create will live in their own module, same as the views. In this module we will create a **user.py** file
+to house our *user* model. Let's create the module in our package directory at: **myapi/myapi**
 
 .. code:: bash
 
@@ -222,7 +230,9 @@ The models we create will live in their own module, same as the views. In this m
 	touch models/user.py
 
 
-The model can have any number of members with highly specific fields provided by Luxon. In this case we will keep it simple. We'll give our users a username, password, role and a universally unique identifier that will double as the primary key. Let's implement it in our **user.py** file:
+The model can have any number of members with highly specific fields provided by Luxon (full list
+:ref:`here <model_fields>`). In this case we will keep it simple. We'll give our users a username, password, role and a
+universally unique identifier that will double as the primary key. Let's implement it in our **user.py** file:
 
 .. code:: python
 
@@ -241,7 +251,8 @@ The model can have any number of members with highly specific fields provided by
 	    primary_key = id
 
 
-Again we use Luxon's *register* module to register the Model and allow it to be used by our API. We use Luxon's SQLModel to define the class and get the valid fields. Very convenient.
+Again we use Luxon's *register* module to register the Model and allow it to be used by our API. We use Luxon's
+SQLModel to define the class and get the valid fields. Very convenient.
 
 Remember to import our new user model in **models/__init__.py**:
 
@@ -250,18 +261,23 @@ Remember to import our new user model in **models/__init__.py**:
 	from myapi.models.user import User
 
 
-At this point we need to set up the database in our project so that our API can make use of models. Luckily Luxon has us covered. Go back to the *app* directory and run:
+At this point we need to set up the database in our project so that our API can make use of models.
+Luckily Luxon has us covered. Go back to the *app* directory and run:
 
 .. code:: bash
 
 	$ luxon -d myapi
 
-You will notice that this has created a **sqlite3** file.
+You will notice that this has created a **sqlite3** file. Sqlite3 is the default, but luxon also supports MariaDB
+MysSQL (by putting ``type=mysql`` in the ``[database]`` section of the **settings.ini** file).
 
 Part 5: Getting serious with the API
 ---------------------------------------
 
-Now that we have a model we can write more sophisticated views to make use of it. Since we will end up having a number of views to perform different actions with users (Create/Read/Update/Delete) we will group them together in a class. This will work slightly differently in that we will use the **register.resources** method to register the view and we will specify all the routes in the constructor. To specify the routes we will use Luxon's **router** module.
+Now that we have a model we can write more sophisticated views to make use of it. Since we will end up having a number
+of views to perform different actions with users (Create/Read/Update/Delete) we will group them together in a class.
+This will work slightly differently in that we will use the **register.resources** method to register the views and we
+will specify all the routes in the constructor. To specify the routes we will use Luxon's **router** module.
 
 We need to create another file in our package directory under **views** to house the *users* views:
 
@@ -281,31 +297,39 @@ Let's impliment the first user view in a class called **Users** in our **views/u
 
 .. code:: python
 	
-	from luxon import register, router
-	from myapi.models.user import User
-	from luxon.utils.password import hash
+    from luxon import register, router
+    from myapi.models.user import User
+    from luxon.utils.password import hash
 
-	#view to create user
-	def create(self,req,resp):
 
-		# create user object from User model
-		user = User()
+    @register.resources()
+    class Users(object):
 
-		# get body of api request from req object
-		create = req.json.copy()
+        def __init__(self):
+            # Assign POST requests to the '/create' path to the create() method
+            router.add('POST','/create', self.create)
 
-		# update User object with request information
-	        user.update(create)
+        #view to create user
+        def create(self,req,resp):
 
-		# hash the password
-		if req.json.get('password') is not None:
-		     user['password'] = hash(req.json['password'])
+            # create user object from User model
+            user = User()
 
-		# save new user in database
-		user.commit()
+            # get body of api request from req object
+            create = req.json.copy()
 
-		# return user object 
-		return user  
+            # hash the password
+            if 'password' in create:
+                create['password'] = hash(create['password'])
+
+            # update User object with request information
+            user.update(create)
+
+            # save new user in database
+            user.commit()
+
+            # return user object
+            return user
 
 Now we can finally test our API. Launch the server again in the *app* directory with:
 
@@ -316,13 +340,15 @@ Now we can finally test our API. Launch the server again in the *app* directory 
 Part 6: Testing the API
 -------------------------
 
-Default browsers are great for sending GET requests to our API, but we want to be able to send other kinds of requests too. Let's use Postman_, a HTTP Client Program, useful for testing APIs. 
+Default browsers are great for sending GET requests to our API, but we want to be able to send other kinds of requests
+too. Let's use Postman_, a useful tool to test APIs.
 
 .. _Postman: https://www.getpostman.com
 
 Fire up Postman so we can create a user.
 
-Create a POST request with "http://127.0.0.1:8000/create" in the *request URL* bar. Next we write the body of the request which will contain all the information that we will send to create the new user as a JSON object:
+Create a POST request with "http://127.0.0.1:8000/create" in the *request URL* bar. Next we write the body of the
+request as raw JSON. It contains all the information that we will send to create the new user:
 
 .. code:: json
 
@@ -343,93 +369,96 @@ Hit send. We should see a returned JSON object with the information we specified
 	    "username": "Ricky T Dunigan"
 	}
 
-Note that the password has been hashed. We hash the clear text password we receive from the user before we send it to the database so that even if someone examens the user table in the database all they will see is a useless hash, the actual password will be safe. More about password hashing in the authentication part of the tutorial.
+Note that the password has been hashed. We hash the clear text password we receive from the user before we send it to
+the database so that even if someone examines the user table in the database all they will see is a useless hash,
+the actual password will be safe. More about password hashing in the authentication part of the tutorial.
 
 Part 7: Fleshing out the API
-------------------------------
+----------------------------
 
-We have already created the "create" view. The rest of the views are created in a similar way. The *users* view, which returns all the users in the database, is slightly more complicated. It requires a connection object which will execute a SQL query. Remember to import *db* from Luxon which will allow us to easily create a connection object. The rest of the views are fairly trivial, here is the complete code for **views/users.py**, note the new imports:
+We have already created the "create" view. The rest of the views are created in a similar way.
+The */users* path, which returns a view of all the users in the database, is slightly more complicated.
+It requires a connection object which will execute a SQL query. Remember to import *db* from Luxon which will allow us
+to easily create a connection object. The rest of the views are fairly straight forward, here is the complete code for
+**views/users.py**. Note the new imports:
 
 .. code:: python
 
-	from luxon import register , router , db
-	from myapi.models.user import User 
-	from luxon.utils.password import hash
+    from luxon import register, router, db
+    from myapi.models.user import User
+    from luxon.utils.password import hash
 
-	@register.resources()
-	class Users(object):
+    @register.resources()
+    class Users(object):
 
-		def __init__(self):
-			# attach user view to /create route with a POST method
-			router.add('POST','/create', self.create)
-			router.add('GET','/users', self.users)
-			router.add('GET','/user/{id}', self.user)
-			router.add(['PUT','PATCH'],'/user/{id}', self.update)
-			router.add('DELETE','/user/{id}', self.delete)
+        def __init__(self):
+            router.add('POST','/create', self.create)
+            router.add('GET','/users', self.list)
+            router.add('GET','/user/{id}', self.user)
+            router.add(['PUT','PATCH'],'/user/{id}', self.update)
+            router.add('DELETE','/user/{id}', self.delete)
 
-		#view to create user
-		def create(self,req,resp):
-		  	# create user object from User model
-		  	user = User()
-		 	# get body of api request from req object
-		  	create = req.json.copy()
-		  	# update User object with request information
-		  	user.update(create)
-		  	# hash the password
-		  	if req.json.get('password') is not None:
-		       		user['password'] = hash(req.json['password'])
+        #view to create user
+        def create(self,req,resp):
+            # create user object from User model
+            user = User()
+            # get body of api request from req object
+            create = req.json.copy()
+            # hash the password
+            if 'password' in create:
+                create['password'] = hash(create['password'])
+            # update User object with request information
+            user.update(create)
+            # save new user in database
+            user.commit()
+            # return user object
+            return user
 
-		  	# save new user in database
-		  	user.commit()
-		  	# return user object 
-		  	return user 
-	  
 
-		#view to return all users
-		def users(self, req, resp):
-			# hardcode sql query
-			sql = "SELECT * FROM user"
-			# connection to database
-			with db() as conn:
-				# execute sql command to get a cursor obj
-				result = conn.execute(sql)
-				# fetch information from cursor obj
-				result = result.fetchall()
-			return result
+        #view to return all users
+        def list(self, req, resp):
+            # hardcode sql query
+            sql = "SELECT * FROM user"
+            # connection to database
+            with db() as conn:
+                # execute sql command to get a cursor obj
+                result = conn.execute(sql)
+                # fetch information from cursor obj
+                result = result.fetchall()
+            return result
 
-		#view to retrun a user
-		def user(self,req,resp,id):
-			user = User()
-			# pass id from url to user object
-			user.sql_id(id)
-			return user
+        #view to retrun a user
+        def user(self, req, resp, id):
+            user = User()
+            # pass id from url to user object
+            user.sql_id(id)
+            return user
 
-		#view to update a user
-		def update(self,req,resp,id):
-		  	# find user
-		  	user = User()
-		  	user.sql_id(id)
-		  	# fetch update information from request
-		  	create = req.json.copy()
-		  	#update specific user
-		  	user.update(create)
-		  	# hash the password
-		  	if req.json.get('password') is not None:
-		       		user['password'] = hash(req.json['password'])
+        #view to update a user
+        def update(self,req,resp,id):
+            # find user
+            user = User()
+            user.sql_id(id)
+            # fetch update information from request
+            create = req.json.copy()
+            # hash the password
+            if 'password' in create:
+                create['password'] = hash(create['password'])
+            #update specific user
+            user.update(create)
+            user.commit()
+            return user
 
-		  	user.commit()
-		  	return user
-
-		#view to delete a user
-		def delete(self,req,resp,id):
-			user = User()
-			user.sql_id(id)
-			# fetch update information from request
-			create = req.json.copy()
-			#delete specific user
-			user.delete()
-			user.commit()
-			return user
+        #view to delete a user
+        def delete(self,req,resp,id):
+            user = User()
+            user.sql_id(id)
+            # fetch update information from request
+            create = req.json.copy()
+            #delete specific user
+            user.delete()
+            user.commit()
+            return user
 
 
 
@@ -495,7 +524,7 @@ Now to implement the new view:
 			result = crsr.fetchone()
 
 		if result is None:
-			raise AccessDeniedError("Send username and password")
+			raise AccessDeniedError("User not found")
 
 		# password from database
 		db_password = result['password']
@@ -505,7 +534,7 @@ Now to implement the new view:
 			raise AccessDeniedError("Wrong password")
 
 		# now that the login details have been validated
-		# we can create a the user credentials which will include:
+		# we can create the user credentials which will include:
 		# the username, user id, user role, token and token expiry time
 		req.credentials.new(result['id'], username)
 		# add the user's role to the token 
@@ -524,7 +553,9 @@ To test the login we'll create a POST request to "http://127.0.0.1:8000/login" a
 
 	}
 
-The password we sent matches the password for that user in the database so we get the user's credentials back: all the user details along with a token as well as a new "expire" field, which is the time when the token will expire. For more about Luxon's password hashing have a look :ref:`Here<passwords>` 
+The password we sent matches the password for that user in the database so we get the user's credentials back: all the
+user details along with a token as well as a new "expire" field, which is the time when the token will expire. For more
+about Luxon's password hashing have a look :ref:`Here<passwords>`
 
 .. code:: json
 
@@ -543,7 +574,10 @@ Part 9: Securing views with RBAC
 --------------------------------------
 Role Based Access Control
 
-As we have already seen, users can be assigned roles. Every view can also be tagged with a role. Only users with the tagged role assigned to them can access that view. The roles are specified in the **myapi/policy.json** file. Which we already implemented when we set up the package:
+As we have already seen, users can be assigned roles. Every view can also be tagged with a rule. Only users assigned
+with roles that match the rule assigned to the view, can access that view.
+The rules and roles are specified in the **myapi/policy.json** file. Which we already implemented when we set up the
+package:
 
 .. code:: json
 
@@ -554,9 +588,12 @@ As we have already seen, users can be assigned roles. Every view can also be tag
 		"user_view": "$role:admin or $role:user"
 	}
 
-These roles will be added to **req.credentials** as users with the roles assigned to them login.
+These rules are executed as python statements. For example, the ``admin_view`` rule will be expanded to ``True``, if
+the ``role:admin`` rule expands to ``True``. And the ``role:admin`` rule will expand to ``True`` if
+``'admin' in req.credentials.roles`` expands to ``True``.
 
-Then we can simply add a tag to the root definition of every User view in **views/users.py**
+To protect the `User` views with role based access, simply add a tag as an argument to every User view in
+**views/users.py**
 
 .. code:: python
 
@@ -569,10 +606,23 @@ Then we can simply add a tag to the root definition of every User view in **view
 		router.add(['PUT','PATCH'],'/user/{id}', self.update,tag = 'admin_view')
 		router.add('DELETE','/user/{id}', self.delete,tag = 'admin_view')
 
-Now only users with the *admin* role assigned to them can make calls to the *create*, *update* and *delete* views, that's to say all the views that write to the database. A user with the *user* role can access the views which only read from the database. A user with the *admin* role can also access views with the *user* tag.
+Now only users with the *admin* role assigned to them can make calls to the *create*, *update* and *delete* views,
+that's to say all the views that write to the database. A user with the *user* role can access the views which only
+read from the database. A user with the *admin* role can also access views with the *user* tag.
 
-Right, now our API is secure, this will make it a bit more complicated to test however, remember to restart the server so these changes take effect.
-We already have a user "Ricky T Dunigan", with the admin role, that we can log in as. Once we logged in with him and received a Token we can use it to access the *create* view. Create a POST request with "http://127.0.0.1:8000/create" in the *request URL* bar same as before. All we need to do is add a header. Put "X-Auth-Token" in the *key* field and paste the Token into the *value* field.
+Right, now our API is secure. Remember to restart the server so these changes take effect.
+We already have a user "Ricky T Dunigan", with the admin role, that we can log in as. Once we logged in with him and
+received a Token we can use it to access the *create* view. Create a POST request with "http://127.0.0.1:8000/create"
+in the *request URL* bar same as before. All we need to do is add a header. Put "X-Auth-Token" in the *key* field
+and paste the Token into the *value* field.
+
+Doing this with ``curl`` will look like:
+
+.. code:: bash
+
+    $ # Log in and get the token:
+    $ token=$(curl -d ‘{“username”: “Ricky T Dunigan”, “password”: “hypnotizeminds”}’ http://localhost:8000/login | grep token | awk -F \” ‘{print $4}’))
+    $ curl -H "X-Auth-Token:$token" -d {“username”: “user2”, “password”: “pass”, "role": "user"} http://localhost:8000/create
 
 Create another user with a *user* role instead of *admin* and repeat the same process of adding a header to the request. This user will not be able to access the *create* view etc..
 

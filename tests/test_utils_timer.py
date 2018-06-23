@@ -28,21 +28,17 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 
-#import pytest
-
 import time
 from luxon.utils.timer import Timer
 from luxon import g
 
-g.debug = True
+g.app.debug = True
 
 
 def test_Timer():
-
     with Timer() as elapsed:
 
         assert elapsed()<0.001
         time.sleep(0.01)
         assert elapsed()<0.02 and elapsed()>0.01
-
 
