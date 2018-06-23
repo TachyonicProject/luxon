@@ -244,7 +244,7 @@ universally unique identifier that will double as the primary key. Let's impleme
 	@register.model()
 	class User(SQLModel):
 
-	    id = SQLModel.Uuid(default = uuid4)
+	    id = SQLModel.Uuid(default = uuid4, internal=True)
 	    username = SQLModel.Text()
 	    password = SQLModel.Text()
 	    role = SQLModel.Enum('user', 'admin')
@@ -455,8 +455,6 @@ to easily create a connection object. The rest of the views are fairly straight 
         def delete(self,req,resp,id):
             user = User()
             user.sql_id(id)
-            # fetch update information from request
-            create = req.json.copy()
             #delete specific user
             user.delete()
             user.commit()
@@ -576,7 +574,7 @@ Part 9: Securing views with RBAC
 --------------------------------
 Luxon offers the ability to protect views based on users' roles, aka Role Based Access Control (RBAC).
 
-This is done by a tagging a view with with a rule. Only users assigned
+This is done by a tagged view with with a rule. Only users assigned
 with roles that match the rule assigned to the view, can access that view.
 The roles and their associated rules are defined in the **myapi/policy.json** file. This was created when we set up the
 package:
@@ -602,7 +600,7 @@ To protect the `User` views with role based access, simply add a tag as an argum
 		
     def __init__(self):
         router.add('POST','/create', self.create, tag='admin_view')
-        router.add('GET','/users', self.users, tag='user_view')
+        router.add('GET','/users', self.list, tag='user_view')
         router.add('GET','/user/{id}', self.user, tag='user_view')
         router.add(['PUT','PATCH'],'/user/{id}', self.update, tag='admin_view')
         router.add('DELETE','/user/{id}', self.delete, tag='admin_view')
