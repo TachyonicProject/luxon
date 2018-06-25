@@ -5,18 +5,15 @@ Installation
 
 Luxon Framework currently fully supports `CPython <https://www.python.org/downloads/>`__ 3.6.
 
-PyPi
-----
+Installing from PyPi
+--------------------
 .. code:: bash
 
     $ pip3 install luxon
 
-.. note::
 
-    If you have both python 2 and python 3 installed, replace all the uses of ``pip`` in this page with ``pip3``
-
-Source Code
------------
+Installing from Source Code
+---------------------------
 
 Luxon infrastructure and code is hosted on `GitHub <https://github.com/TachyonicProject/luxon>`_.                                   
 Making the code easy to browse, download, fork, etc. Pull requests are always welcome!
@@ -35,10 +32,9 @@ can install Luxon like this:
     $ cd luxon
     $ pip3 install .
 
-Or, if you want to edit the code, first fork the main repo, clone the fork
-to your desktop, and then run the following to install it using symbolic
-linking, so that when you change your code, the changes will be automagically
-available to your app without having to reinstall the package:
+Or, if you want to contribute to the code, first fork the main repo, clone the fork
+to your desktop, and then run the following to install it with the editable option (-e), so that changes do not require
+re-installation:
 
 .. code:: bash
 

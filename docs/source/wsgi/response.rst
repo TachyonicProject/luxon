@@ -1,3 +1,5 @@
+.. _wsgi_response:
+
 Response Class
 ------------------------
 

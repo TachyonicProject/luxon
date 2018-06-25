@@ -746,6 +746,7 @@ class Client(object):
         self._s.timeout = timeout
         self._endpoints = {}
 
+    @property
     def endpoints(self):
         return self._endpoints
 
@@ -754,7 +755,7 @@ class Client(object):
             url = uri
         elif endpoint:
             try:
-                url = (self.endpoint[endpoint].rstrip('/') + '/' +
+                url = (self.endpoints[endpoint].rstrip('/') + '/' +
                        uri.lstrip('/'))
             except KeyError:
                 raise ValueError('Endpoint not found')

@@ -28,38 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 
-import pytest
-import os
 from luxon.utils.files import *
-
-def test_CachedInput():
-    #os.remove("tests/testfile.txt")
-
-    #read()
-    pls = b"Never worry about theory\n" \
-          b"as long as the machinery does what it's supposed to do"
-    io_string = BytesIO(pls)
-    cache_obj = CachedInput(io_string)
-    output_string = cache_obj.read()
-    assert output_string == b"Never worry about theory\n" \
-                            b"as long as the machinery does " \
-                            b"what it's supposed to do"
-
-    empty_obj = CachedInput(None)
-    empty_out_str = empty_obj.read()
-    assert empty_out_str == b""
-
-    #seek
-    cache_obj.seek(0)
-    # Without doing this readline() only ever returns b""?
-    # The cursor is set to the last position after read() was called?
-
-    #readline()
-    frst_line = cache_obj.readline()
-    scnd_line = cache_obj.readline()
-    assert frst_line == b"Never worry about theory\n"
-    assert scnd_line == b"as long as the machinery does what it's supposed to do"
-
 
 def test_TrackFile():
 
