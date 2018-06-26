@@ -105,7 +105,7 @@ to edit the source code after the installation.
 	$ pip3 install -e .
 
 Part 2: Deploying a Python package with Luxon
--------------------------------------------------
+---------------------------------------------
 
 Now that we have our package installed as python library and we can deploy it as we would on server.
 

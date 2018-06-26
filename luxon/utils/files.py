@@ -565,3 +565,7 @@ def abspath(path):
 
 def joinpath(path, *p):
     return os.path.join(path, *p)
+
+
+def dirname(path):
+    return os.path.dirname(path)

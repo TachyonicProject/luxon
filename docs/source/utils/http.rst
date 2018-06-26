@@ -1,8 +1,12 @@
+<<<<<<< HEAD
 .. _http_util:
 
 ===============
+=======
+=============
+>>>>>>> ea6ebd15e2b4c76b986b628cdf5a58891326bd5a
 HTTP Utilites
-===============
+=============
 
 .. _Forwarded_Element:
 
@@ -27,6 +31,9 @@ Content Type Encoding
 .. autofunction:: luxon.utils.http.content_type_encoding
 
 
+.. _luxon_client:
 
+HTTP Client
+===========
 
-
+.. autofunction:: luxon.utils.http.Client
