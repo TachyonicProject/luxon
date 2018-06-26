@@ -296,6 +296,9 @@ class Request(RequestBase):
         user_token (str): The value of the token for the user's current
                           request.
 
+        scope_token (str): The value of the scoped token for the user's current
+                           scoped request.
+
         cookies (dict): A dict of name/value cookie pairs.
         is_bot (bool): If user-agent is detected as 'Bot' e.g Google Bot
         is_mobile (bool): If user-agent is detected as mobile. e.g. Iphone
