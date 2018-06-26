@@ -334,6 +334,7 @@ class Request(RequestBase):
         '_cached_match',
         '_cached_none_match',
         '_user_token',
+        '_scope_token',
     )
 
     def __init__(self, env, start_response):
@@ -361,6 +362,7 @@ class Request(RequestBase):
 
         # Caching
         self._user_token = None
+        self._scope_token = None
         self._cached_json = None
         self._cached_session = None
         self._cached_app_uri = None
@@ -900,6 +902,26 @@ class Request(RequestBase):
             value = ''
 
         self.session['token'] = value
+        self.session.save()
+
+    @property
+    def scope_token(self):
+        if self._scope_token is not None:
+            return self._scope_token
+
+        elif self.host in self.cookies and 'scoped' in self.session:
+            return self.session['scoped']
+
+        return self._scope_token
+
+    @scope_token.setter
+    def scope_token(self, value):
+        self._scope_token = value
+
+        if value is None:
+            value = ''
+
+        self.session['scoped'] = value
         self.session.save()
 
     @property
