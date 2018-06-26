@@ -1,6 +1,8 @@
-=========
+.. _caching:
+
+=======
 Caching
-=========
+=======
 
 Luxon provides a number of Cache options.
 

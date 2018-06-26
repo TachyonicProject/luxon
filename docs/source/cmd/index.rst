@@ -1,7 +1,8 @@
+.. _cmd_handler:
 
-=============
+===========
 CMD Handler
-=============
+===========
 
 It handles the CMDs
 
