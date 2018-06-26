@@ -3,6 +3,8 @@ Sessions
 
 Luxon comes with a session base class that can be used in end-points and modules to provide session handling as needed. Luxon allows for handling session data with Redis as well as files and cookies.
 
+.. _base_session:
+
 Base Class
 -----------
 .. autoclass:: luxon.core.session.session.Session

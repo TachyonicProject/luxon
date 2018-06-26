@@ -1,4 +1,4 @@
-.. api_tut:
+.. _api_tut:
 
 ==============
 API Tutorial
@@ -244,7 +244,7 @@ universally unique identifier that will double as the primary key. Let's impleme
 	@register.model()
 	class User(SQLModel):
 
-	    id = SQLModel.Uuid(default = uuid4)
+	    id = SQLModel.Uuid(default = uuid4, internal=True)
 	    username = SQLModel.Text()
 	    password = SQLModel.Text()
 	    role = SQLModel.Enum('user', 'admin')
@@ -268,8 +268,9 @@ Luckily Luxon has us covered. Go back to the *app* directory and run:
 
 	$ luxon -d myapi
 
-You will notice that this has created a **sqlite3** file. Sqlite3 is the default, but luxon also supports MariaDB
-MysSQL (by putting ``type=mysql`` in the ``[database]`` section of the **settings.ini** file).
+You will notice that this has created a **sqlite3** file in the *app/myapp* directory.
+Sqlite3 is the default, but luxon also supports MariaDB
+MysSQL (see example settings.ini file :ref:`here <mysql_settings>`).
 
 Part 5: Getting serious with the API
 ---------------------------------------
@@ -279,7 +280,8 @@ of views to perform different actions with users (Create/Read/Update/Delete) we 
 This will work slightly differently in that we will use the **register.resources** method to register the views and we
 will specify all the routes in the constructor. To specify the routes we will use Luxon's **router** module.
 
-We need to create another file in our package directory under **views** to house the *users* views:
+We need to create another file in our package directory under **views** to house the *users* views in the *myapi/myapi*
+directory:
 
 .. code:: bash
 
@@ -453,8 +455,6 @@ to easily create a connection object. The rest of the views are fairly straight 
         def delete(self,req,resp,id):
             user = User()
             user.sql_id(id)
-            # fetch update information from request
-            create = req.json.copy()
             #delete specific user
             user.delete()
             user.commit()
@@ -571,12 +571,12 @@ about Luxon's password hashing have a look :ref:`Here<passwords>`
 	
 
 Part 9: Securing views with RBAC
---------------------------------------
-Role Based Access Control
+--------------------------------
+Luxon offers the ability to protect views based on users' roles, aka Role Based Access Control (RBAC).
 
-As we have already seen, users can be assigned roles. Every view can also be tagged with a rule. Only users assigned
+This is done by a tagged view with with a rule. Only users assigned
 with roles that match the rule assigned to the view, can access that view.
-The rules and roles are specified in the **myapi/policy.json** file. Which we already implemented when we set up the
+The roles and their associated rules are defined in the **myapi/policy.json** file. This was created when we set up the
 package:
 
 .. code:: json
@@ -588,8 +588,8 @@ package:
 		"user_view": "$role:admin or $role:user"
 	}
 
-These rules are executed as python statements. For example, the ``admin_view`` rule will be expanded to ``True``, if
-the ``role:admin`` rule expands to ``True``. And the ``role:admin`` rule will expand to ``True`` if
+These rules and roles are executed as python statements. For example, the ``admin_view`` rule will be expanded to ``True``, if
+the ``role:admin`` role expands to ``True``. And the ``role:admin`` role will expand to ``True`` if the python statement
 ``'admin' in req.credentials.roles`` expands to ``True``.
 
 To protect the `User` views with role based access, simply add a tag as an argument to every User view in
@@ -598,13 +598,12 @@ To protect the `User` views with role based access, simply add a tag as an argum
 .. code:: python
 
 		
-	def __init__(self):
-		# attach user view to /create route with a POST method
-		router.add('POST','/create', self.create, tag = 'admin_view')
-		router.add('GET','/users', self.users,tag = 'user_view')
-		router.add('GET','/user/{id}', self.user,tag = 'user_view')
-		router.add(['PUT','PATCH'],'/user/{id}', self.update,tag = 'admin_view')
-		router.add('DELETE','/user/{id}', self.delete,tag = 'admin_view')
+    def __init__(self):
+        router.add('POST','/create', self.create, tag='admin_view')
+        router.add('GET','/users', self.list, tag='user_view')
+        router.add('GET','/user/{id}', self.user, tag='user_view')
+        router.add(['PUT','PATCH'],'/user/{id}', self.update, tag='admin_view')
+        router.add('DELETE','/user/{id}', self.delete, tag='admin_view')
 
 Now only users with the *admin* role assigned to them can make calls to the *create*, *update* and *delete* views,
 that's to say all the views that write to the database. A user with the *user* role can access the views which only
@@ -616,16 +615,17 @@ received a Token we can use it to access the *create* view. Create a POST reques
 in the *request URL* bar same as before. All we need to do is add a header. Put "X-Auth-Token" in the *key* field
 and paste the Token into the *value* field.
 
+Create another user with a *user* role instead of *admin* and repeat the same process of adding a header to the request.
+
 Doing this with ``curl`` will look like:
 
 .. code:: bash
 
     $ # Log in and get the token:
-    $ token=$(curl -d ‘{“username”: “Ricky T Dunigan”, “password”: “hypnotizeminds”}’ http://localhost:8000/login | grep token | awk -F \” ‘{print $4}’))
-    $ curl -H "X-Auth-Token:$token" -d {“username”: “user2”, “password”: “pass”, "role": "user"} http://localhost:8000/create
+    $ token=$(curl -d ‘{"username": "Ricky T Dunigan", password": "hypnotizeminds"}’ http://localhost:8000/login | grep token | awk -F \" '{print $4}')
+    $ curl -H "X-Auth-Token:$token" -d {"username": "user2", "password": "pass", "role": "user"} http://localhost:8000/create
 
-Create another user with a *user* role instead of *admin* and repeat the same process of adding a header to the request. This user will not be able to access the *create* view etc..
-
+This user will not be able to access the *create* view etc..
 
 
 
