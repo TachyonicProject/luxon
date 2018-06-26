@@ -219,7 +219,7 @@ def field_label(field, label=None, cls=None):
 
 
 def field_checkbox(field, value, id=None, checked=False, disabled=False,
-                   label=None):
+                   label=None, attrs=None):
     group = field_group('form-group form-check')
 
     io = group.create_element('input')
@@ -230,6 +230,10 @@ def field_checkbox(field, value, id=None, checked=False, disabled=False,
 
     io.set_attribute('class', 'form-check-input')
     io.set_attribute('name', field)
+
+    if isinstance(attrs, dict):
+        for attr in attrs:
+            io.set_attribute(attr, attrs[attr])
 
     if disabled is True:
         io.set_attribute('disabled')
@@ -382,7 +386,8 @@ def form(model, values=None, readonly=False):
             html.append(field_checkbox(field, value=True,
                                        disabled=field_readonly,
                                        checked=checked,
-                                       label=label))
+                                       label=label,
+                                       attrs={'data-boolean': None}))
         elif isinstance(obj, (Model.String)):
             html.append(field_text(field, value=value,
                                    readonly=field_readonly,
