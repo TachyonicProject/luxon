@@ -59,8 +59,8 @@ class SessionCookie(object):
         content = if_unicode_to_bytes(js.dumps(self._session))
         content = base64.b64encode(content)
         content = if_bytes_to_unicode(content)
-        if len(content) > 1920:
-            raise ValueError('SessionCookie size exceeded 15KB')
+        if len(content) > 4000:
+            raise ValueError('SessionCookie size exceeded 4KB')
 
         cookie = self._session_id
         path = '/' + req.app.lstrip('/')
