@@ -1,16 +1,6 @@
-.. _bootstrap_util:
 
 ==================
-Bootstap Utility
-==================
-
-NAVMenu
+NAV Menue
 ==================
 
 .. autoclass:: luxon.utils.bootstrap4.NAVMenu
-	:members:
-
-HTML Form
-================
-
-.. autofunction:: luxon.utils.bootstrap4.form
