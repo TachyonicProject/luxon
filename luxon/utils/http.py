@@ -570,6 +570,8 @@ def request(client, method, url, params={},
         try:
             if g.current_request.user_token:
                 headers['X-Auth-Token'] = g.current_request.user_token
+            if g.current_request.scope_token:
+                    headers['X-Auth-Token'] = g.current_request.scope_token
             if g.current_request.context_domain:
                 headers['X-Domain'] = g.current_request.context_domain
             if g.current_request.context_tenant_id:
