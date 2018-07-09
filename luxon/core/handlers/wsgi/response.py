@@ -58,10 +58,12 @@ class Response(Redirects):
         status (int): HTTP status code. (e.g. '200') Default 200.
         etags (obj): The luxon.utils.http.Etags obj associated with the
                      Response.
-        cache_control(str): The value of cache-control in the Response header.
-        expire(str): The value of expire in the Response header.
-        last_modified(str): The value of last-modified in the Response header.
-        age(int): The value of age in the Response header.
+        cache_control (str): The value of cache-control in the Response header.
+        content_type (str): Mime format of the content
+                            (e.g. application/xml; charset=utf-8).
+        expire (str): The value of expire in the Response header.
+        last_modified (str): The value of last-modified in the Response header.
+        age (int): The value of age in the Response header.
     """
     _DEFAULT_CONTENT_TYPE = const.APPLICATION_JSON
     _BODILESS_STATUS_CODES = (

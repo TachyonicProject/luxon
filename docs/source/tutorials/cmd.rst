@@ -384,7 +384,7 @@ to you by your API.
 Part 5: Adding new users
 ------------------------
 
-In this Section we will be adding the view that allows us to add a new user account. Just like the WSGI hanler,
+In this Section we will be adding the view that allows us to add a new user account. Just like the WSGI handler,
 luxon's cmd handler also works with request and reponse objects. The request object has a ``.read()`` method, that
 reads from stdin. This gives us the opportunity to capture input from the user's terminal.
 

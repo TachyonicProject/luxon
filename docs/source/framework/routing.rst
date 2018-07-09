@@ -35,7 +35,7 @@ However if you only use a couple of these, there will be no major performance im
 
 Regex route follows the format of 'regex:expression'. Its important that 'regex:' is prepended since its used to determine the processing needed for the route.
 
-Please refer to (:ref:`Responders <responders>`) for view using routes.
+Refer to :ref:`Responders <responders>` for a usage example.
 
 
 Router Class

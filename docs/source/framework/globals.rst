@@ -14,9 +14,9 @@ There are builtin globals such a *'current_request', 'app' and 'router'*.
 
 Context
 -------
-All middleware and responders __init__ is within the global context of the python namespace. Hence what you do here happens before a request is even made. You can use the constructors to establish database connection for example. Then reference it in 'g'. 
+All middleware and responders ``__init__`` is within the global context of the python namespace. Hence what you do here happens before a request is even made. You can use the constructors to establish database connection for example. Then reference it in 'g'.
 
-Once a thread is processing a request it has access to globals via 'g' and utilities, helpers can access request data from g.current_request. g.current_request is builtin which only references the request object for the specific thread.
+Once a thread is processing a request it has access to globals via 'g' and utilities, helpers can access request data from ``g.current_request``. ``g.current_request`` is builtin which only references the request object for the specific thread.
 
 Request objects simply provides a representation of the client request. Such as route, method and payload. Different handlers such as wsgi extend the request methods and properties.
 
@@ -29,7 +29,7 @@ Using 'g' by example
 
     from luxon import g
 
-    print(g.app_root) # Will Raise NoContextError. 
+    print(g.app.path) # Will Raise NoContextError.
 
 **The following works as expected**
 
@@ -41,7 +41,7 @@ Using 'g' by example
     app = Wsgi(__name__)
 
     # G App is equal to app.
-    print(g.app_root) # Works
+    print(g.app.path) # Works
 
 Using 'g' for your own purpose
 ------------------------------
@@ -66,7 +66,7 @@ Access the request object
     print(g.current_request.method)
 
 Globals Class
-=================
+=============
 
 .. autoclass:: luxon.core.globals.Globals
     :members:
