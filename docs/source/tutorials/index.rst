@@ -16,6 +16,7 @@ the completed project will consist of:
 
     - A RESTFull API with views to Create, Read, Update and Delete (CRUD) users.
     - An HTTP Web user interface through which the same can be achieved.
+    - A Command Line client through which the same can be achieved.
     - Models to interface with HTML Forms and MySQL databases.
 
 The project will also have authentication and access control features:

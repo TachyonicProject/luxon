@@ -42,7 +42,7 @@ class RequestBase(object):
         id (str): The request ID.
         context (obj): Dictionary/Property object to hold any data about the
             request which is specific to your app. (e.g. auth object)
-        credentials (obj): Cached luxon.core.auth.Auth object
+        credentials (obj): Cached luxon.core.auth.Auth object.
         user_token (str): To be overwritten by specific handlers, if used.
                           Objects from the RequestBase Class returns None.
         context_domain (str): To be overwritten by specific handlers, if used.
@@ -87,7 +87,6 @@ class RequestBase(object):
 
     @property
     def credentials(self):
-        """Credentials"""
         if self._cached_auth is None:
             expire = g.app.config.getint('tokens', 'expire', fallback=3600)
             self._cached_auth = Auth(expire=expire)
