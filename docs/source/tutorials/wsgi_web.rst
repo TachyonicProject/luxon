@@ -521,7 +521,7 @@ First we'll create a template to render the users. Create **templates/users.html
 		    <tr>
 		        <td>{{ user.username }}</td>
 		        <td>{{ user.role }}</td>
-		        <td><a href="/user/edit/{{ user.id }}">-</a></td>
+		        <td><a href="/user/edit/{{ user.id }}">update</a></td>
 		        <td><a href="/user/delete/{{ user.id }}">X</a></td>
 		    </tr>
 		{% endfor %}
@@ -629,60 +629,78 @@ Running your application with ``luxon -s`` should now have views for all the men
 to view a list of existing users, and also be able to create a new user.
 
 
-Part 8: Deleting or Editing a user
-------------------------------------
+Part 8: Editing a user
+----------------------
 
-Our last task is to provide the options to delete and edit users. We don't need a template to do this, we'll simply
+The Edit view will work similarly to the Add User view, and use the same template **add_user** template. First a 'GET' request will return a form populated by the user in question's user info, using luxon's form utility. Then a "PUT" call is made to the API to edit the user with updated info when a POST is received by submitting the form to the UI.
+
+.. code:: python
+
+    @register.resources()
+    class users():
+        def __init__(self):
+            router.add(('GET','POST'),'/user/edit/{id}',self.edit)
+
+        def edit(self,req,resp,id):
+            if req.method == 'GET':
+                usr = api.execute("GET","/user/"+id)
+                user_form = form(User,usr.json)
+                return render_template('myapp/add_user.html',form=user_form, title="Edit User")
+            elif req.method == 'POST':
+                api.execute("PUT","/user/"+id,data=req.form_dict)
+                resp.redirect('/users')
+
+
+Part 9: Deleting a user
+-----------------------
+
+Our last task is to provide the option to delete users. We don't need a template to do this, we'll simply
 look out for a **GET** on ``/user/delete/{id}``, and then create a **DELETE** request to our API on ``/user/{id}``.
-
-The Edit view will work similarly to the Add User view, and use the same template **add_user** template. First a 'GET' request will return a form populated by the user in question's user info, using luxon's form utility. Then a "PUT" call is made to the API to edit the user with updated info.
 
 The final version of our **views/users.py** looks like this:
 
 
 .. code:: python
 
-	from luxon import register, render_template, router
-	from myapi.models.user import User
-	from luxon.utils.bootstrap4 import form
-	from luxon.utils.http import Client
+    from luxon import register, render_template, router
+    from myapi.models.user import User
+    from luxon.utils.bootstrap4 import form
+    from luxon.utils.http import Client
 
-	api = Client('http://localhost:8000')
+    api = Client('http://localhost:8000')
 
-	@register.resources()
-	class users():
-	    def __init__(self):
-		router.add('GET', '/users', self.list)
-		router.add(('GET', 'POST'), '/user/add', self.add)
-		router.add('GET', '/user/delete/{id}', self.delete)
-		router.add(('GET','POST'),'/user/edit/{id}',self.edit)
+    @register.resources()
+    class users():
+        def __init__(self):
+            router.add('GET', '/users', self.list)
+            router.add(('GET', 'POST'), '/user/add', self.add)
+            router.add(('GET','POST'),'/user/edit/{id}',self.edit)
+            router.add('GET', '/user/delete/{id}', self.delete)
 
-	    def list(self, req, resp):
-		users = api.execute('GET', '/users')
-		return render_template('myapp/users.html', users=users.json, title="Users")
+        def list(self, req, resp):
+            users = api.execute('GET', '/users')
+            return render_template('myapp/users.html', users=users.json, title="Users")
 
-	    def add(self, req, resp):
-		if req.method == 'GET':
-		    user_form = form(User)
-		    return render_template('myapp/add_user.html',form=user_form, title="Add User")
-		elif req.method == 'POST':
-		    api.execute("POST", "/create", data=req.form_dict)
-		    resp.redirect('/users')
+        def add(self, req, resp):
+            if req.method == 'GET':
+                user_form = form(User)
+                return render_template('myapp/add_user.html',form=user_form, title="Add User")
+            elif req.method == 'POST':
+                api.execute("POST", "/create", data=req.form_dict)
+                resp.redirect('/users')
 
-	    def delete(self, req, resp, id):
-		    api.execute("DELETE", "/user/"+id)
-		    resp.redirect('/users')
+        def edit(self,req,resp,id):
+            if req.method == 'GET':
+                usr = api.execute("GET","/user/"+id)
+                user_form = form(User,usr.json)
+                return render_template('myapp/add_user.html',form=user_form, title="Edit User")
+            elif req.method == 'POST':
+                api.execute("PUT","/user/"+id,data=req.form_dict)
+                resp.redirect('/users')
 
-	    def edit(self,req,resp,id):
-		usr = api.execute("GET","/user/"+id)
-
-		if req.method == 'GET':
-		    user_form = form(User,usr.json)
-		    return render_template('myapp/add_user.html',form=user_form, title="Edit User")
-
-		elif req.method == 'POST':
-		    api.execute("PUT","/user/"+id,data=req.form_dict)
-		    resp.redirect('/users')
+        def delete(self, req, resp, id):
+            api.execute("DELETE", "/user/"+id)
+            resp.redirect('/users')
 
 
 And there you have it, a Web Front end for your API.
