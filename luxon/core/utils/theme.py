@@ -34,6 +34,15 @@ from luxon import g
 
 
 class Theme():
+    """Class to deterime the Theme in use.
+
+    Args:
+        app (obj): obj of class luxon.core.app.App
+
+    Returns:
+        Location of Theme directory.
+
+    """
     def __init__(self, app):
         self._default_theme = app.config.get(
             'application', 'default_theme',

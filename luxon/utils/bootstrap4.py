@@ -38,6 +38,13 @@ from luxon.utils.objects import orderdict
 
 class NAVMenu(object):
     """CSS HTML Menu.
+
+    Args:
+        name (str): Name of the Application.
+        logo (str): URL location of the logo image.
+        url (str): Application URL.
+        style (str): In-line CSS style to be applied to Menu.
+        css (str): CSS to be applied to Menu.
     """
     def __init__(self, name='Site', logo=None, url='#',
                  style=None,
