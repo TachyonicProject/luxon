@@ -49,11 +49,22 @@ public_key_re = re.compile(r"-----BEGIN.*PUBLIC.*-----END.*-----",
 
 
 class RSAKey(object):
+    """Utility class to work with RSA keys.
+    """
     def __init__(self):
         self._private_key = None
         self._public_key = None
 
     def generate_private_key(self, bits=4096, password=None):
+        """Method to generate a private RSA key.
+
+        Args:
+            bits (int): Key bit length.
+            password (str): Key password.
+
+        Returns:
+             Unicode encoded private key.
+        """
         self._private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=bits,
@@ -78,6 +89,7 @@ class RSAKey(object):
 
     @property
     def public_key(self):
+        """Property to return the unicode encoded RSA public key"""
         if self._public_key is None and self._private_key is None:
             raise ValueError('No Public or Private Key Loaded')
 
@@ -90,6 +102,12 @@ class RSAKey(object):
         ))
 
     def load_pem_key(self, pem_key, password=None):
+        """Method to load the key from string.
+
+        Args:
+            pem_key (str): Key to be loaded.
+            password (str): Password for the key.
+        """
         for key in private_key_re.findall(if_bytes_to_unicode(pem_key)):
             key = if_unicode_to_bytes(key)
             password = if_unicode_to_bytes(password)
@@ -111,10 +129,24 @@ class RSAKey(object):
         raise ValueError('Invalid PEM Key')
 
     def load_pem_key_file(self, file, password=None):
+        """Method to load the key from string.
+
+        Args:
+            file (str): Location of file containing the key.
+            password (str): Password for the key.
+        """
         with open(file, 'rb') as key_file:
             self.load_pem_key(key_file.read(), password)
 
     def sign(self, message):
+        """Method to sign a message with the Private key.
+
+        Args:
+            message (str): Message to by cryptograpically signed
+
+        Returns:
+            base64 encoded signed message.
+        """
         if self._private_key is None:
             raise ValueError('No Private Key Loaded')
 
@@ -130,6 +162,13 @@ class RSAKey(object):
         return if_bytes_to_unicode(base64.b64encode(signature))
 
     def verify(self, signature, message):
+        """Method to verify the authenticity of a signed message
+
+        Args:
+            signature (str): The message's signature.
+            message (str): The cleartext message that was signed and for which
+                           authenticity is to be verified.
+        """
         if self._public_key is None and self._private_key is None:
             raise ValueError('No Public or Private Key Loaded')
 
@@ -154,6 +193,14 @@ class RSAKey(object):
             raise ValueError('RSA Verify Invalid Signature') from None
 
     def encrypt(self, message):
+        """Method to encrypt a message with the public Key.
+
+        Args:
+            message (str): Cleartext message to be encrypted.
+
+        Returns:
+            base64 encoded encrypted message.
+        """
         if self._public_key is None and self._private_key is None:
             raise ValueError('No Public or Private Key Loaded')
 
@@ -173,6 +220,14 @@ class RSAKey(object):
         return if_bytes_to_unicode(base64.b64encode(enc))
 
     def decrypt(self, message):
+        """Method to decrypt a message with the private Key.
+
+        Args:
+            message (str): message encrypted wit the public key.
+
+        Returns:
+            Unicode encoded decrypted message.
+        """
         if self._private_key is None:
             raise ValueError('No Private Key Loaded')
 
