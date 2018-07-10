@@ -11,11 +11,11 @@ The WSGI handler provides environment that is fast, flexible, scalable and simpl
 .. code:: python
 
     from luxon.core.handlers.wsgi import Wsgi
-    from luxon import register_resource
+    from luxon import register
 
     application = Wsgi(__name__)
 
-    @register_resource('GET', '/hello')
+    @register.resource('GET', '/hello')
     def hello(req, resp):
         return 'hello world'
 

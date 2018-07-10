@@ -1,3 +1,5 @@
+.. _cmd_tut:
+
 CMD Tutorial
 ============
 

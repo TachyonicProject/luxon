@@ -30,7 +30,7 @@ WARNING:
     e.g. qmark cannot be used when providing a dict.
     This is because qmark has no reference to the dict key.
 
-During iteration or fetch methods all return lists of rows containing dict. The dict keys are equeal to the column names used in the database.
+During iteration or fetch methods all return lists of rows containing dict. The dict keys are equal to the column names used in the database.
 
 Configuration should be done via *settings.ini*
 

@@ -49,20 +49,20 @@ Note:
 Responder Middleware
 --------------------
 
-There is a conveniant utility decorator provided to add middleware responder(s) per responder.
+There is a convenient utility decorator provided to add middleware responder(s) per responder.
 
 **Example**
 
 .. code:: python
 
-	from luxon import register_resource, register_middleware
+	from luxon import register
 
 	# Your middleware for specific responders.
 	def middleware(req, resp, **kwargs):
 		pass
 
-	@register_resource('GET', '/')
-	@register_middleware(middleware)
+	@register.resource('GET', '/')
+	@register.middleware(middleware)
 	def resource(req, resp, **kwargs):
 		pass
 

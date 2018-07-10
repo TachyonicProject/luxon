@@ -34,5 +34,10 @@ from luxon import register
 @register.resource('GET', '/')
 def index(req, resp):
     """Index of API Resources.
+
+    Returns:
+        A List of tuples containing routes when performing a 'GET' on the
+        API application's root '/' path.
+        E.g. [ ( ‘GET’, ‘/test’, ‘rule1’, resource_view_object), ]
     """
     return router.index

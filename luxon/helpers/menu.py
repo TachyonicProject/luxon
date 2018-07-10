@@ -35,15 +35,36 @@ class Menu(object):
 
     Used to generate Menu objects to add items
     for a Tachyonic Menu.
+
+    Args:
+        html_class (class): Class to be used to generate menu object.
     """
     def __init__(self, html_class):
         self._items = []
         self._html_class = html_class
 
     def add(self, path_name, href='#', tag=None, **kwargs):
+        """Method to append item to menu item list.
+
+        Args:
+            path_name (list): Menu path entry, eg ``["Top", "Sub", "Sub-sub"]``
+            href (str): href value.
+            tag (str): policy tag used to protect menu item.
+            kwargs (kwargs): Keyword args used when link() -ing on html_class
+                             obj.
+        """
         self._items.append((path_name, tag, href, kwargs))
 
     def render(self, *args, **kwargs):
+        """Method to render the menu's html.
+
+        Args:
+            args: Arguments used generate html_class obj.
+            kwargs: Keyword Arguments used when linking menu item.
+
+        Returns:
+            Rendered obj of type html_class.
+        """
         req = g.current_request
         root_menu = self._html_class(*args, **kwargs)
 
@@ -75,6 +96,8 @@ class Menu(object):
         return len(self._itmes)
 
     def hasitems(self):
+        """Returns True if menu has items, else False.
+        """
         if len(self._items) > 0:
             return True
         else:

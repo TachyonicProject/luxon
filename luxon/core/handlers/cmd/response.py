@@ -32,6 +32,9 @@ import sys
 
 class Response(object):
     """Represents an CMD response to a client request.
+
+    When returned from a Luxon registered resource, the String representation
+    is returned.
     """
     def __init__(self):
         pass
@@ -43,4 +46,9 @@ class Response(object):
         return '<%s>' % (self.__class__.__name__)
 
     def write(self, value):
+        """Writes the value to sys.stdout
+
+        Args:
+            value(str): Value to write to sys.stdout
+        """
         sys.stdout.write(value)
