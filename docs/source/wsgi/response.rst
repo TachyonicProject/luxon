@@ -1,7 +1,7 @@
 .. _wsgi_response:
 
-Response Class
-------------------------
+WSGI Response Class
+-------------------
 
 .. autoclass:: luxon.core.handlers.wsgi.response.Response
 	:members:

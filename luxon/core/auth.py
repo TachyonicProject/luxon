@@ -47,17 +47,20 @@ class Auth(object):
     """Authentication class.
 
     Luxon auth tokens use PKI. Its required to have the private key to sign
-    new tokens on the tachyonic api. Endpoints will require the public cert
-    to validate tokens authenticity.
+    new tokens on the tachyonic api. Endpoints will require the public key
+    to validate token authenticity.
 
-    The tokens should be stored in the application root. Usually where the
+    The keys should be stored in the application root. Usually where the
     wsgi file is located.
 
-    Creating token:
-        openssl req  -nodes -new -x509  -keyout token.key -out token.cert
+    Create RSA Privat Key with 2048 bits
+        openssl genrsa -des3 -out private.pem 2048
 
-    # Create RSA Privat Key with 2048 bits
-    openssl genrsa -des3 -out private.pem 2048
+    Export the RSA Public Key to a File
+        openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+
+    The Luxon command line tool can generate both of these with
+        luxon -r app_root/
 
     """
     __slots__ = ('_token_expire',

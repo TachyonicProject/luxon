@@ -66,7 +66,7 @@ Default settings.ini
 ---------------------
 
 .. literalinclude:: /../../luxon/core/config/defaults.py
-   :lines: 30-68
+   :lines: 31-72
 
 Configparser
 =============

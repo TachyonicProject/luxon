@@ -53,6 +53,15 @@ def _render_template(template, **kwargs):
     return template.render(**kwargs)
 
 def parse_attachment(message_part):
+    """Function to parse attachment from MIME message part.
+
+        Args:
+            message_part (obj): part in the MIME message object tree.
+
+        Returns:
+            obj of either StringIO (for strings) else BytesIO. If no
+            attachments were present, 'None' is returned.
+    """
     content_disposition = message_part.get("Content-Disposition", None)
     content_id = message_part.get("Content-ID", None)
     if content_disposition:
@@ -94,6 +103,13 @@ def parse_attachment(message_part):
     return None
 
 class ParseContent(object):
+    """Utility Class to Parse the content of a MIME message.
+
+    Args:
+        msg (obj): object of python email library's EmailMessage class.
+        html_template (str): Name of jinja2 template to use to render HTML.
+        text_template (str): Name of jinja2 template to use to render text.
+    """
     def __init__(self, msg, html_template=None, text_template=None):
         self._text = None
         self._html = None
@@ -133,9 +149,14 @@ class ParseContent(object):
 
     @property
     def attachments(self):
+        """Returns list of file attachment objects"""
         return self._attachments
 
     def html(self, **kwargs):
+        """Returns text as rendered by the html jinja2 template.
+
+        If no html was found, None is returned.
+        """
         # NOTE(cfrademan): If html found render from html template.
         # Will return none otherwise.
         return self._render(self._html_template,
@@ -143,6 +164,11 @@ class ParseContent(object):
                             **kwargs)
 
     def text(self, **kwargs):
+        """Returns text as rendered by the text jinja2 template.
+
+        If no text is found, the HTML rendered from the HTML template is
+        returned, if both html and html template were present.
+        """
         # NOTE(cfrademan): If no html found, try render from text.
         # However this will use the text template if possible.
         if self._text is None and self._html is not None:
@@ -157,6 +183,22 @@ class ParseContent(object):
 
 def new_message(subject=None, email_from=None, email_to=None, old_msg=None,
                 multipart=True):
+    """Utility function to generate an email message.
+
+    Either generating a new message form scratch, or updates a previous
+    message.
+
+    Args:
+        subject (str): Email Subject.
+        email_from(str): Sender email address.
+        email_to(str): Recipient email address.
+        old_msg (obj): object of python email library's EmailMessage class to
+                       be updated.
+        multipart (bool): Whether or not to create MIMEMultipart msg.
+
+    Returns:
+        obj of type MIMEMultipart if multipart is True, else EmailMessage.
+    """
     if multipart is True:
         new_msg = MIMEMultipart('related')
     else:
@@ -186,6 +228,25 @@ def format_msg(msg, html_template=None, text_template=None,
                multipart=None,
                attachments=True,
                **kwargs):
+    """Utility function to generate an email message with content rendered
+    from jinja2 templates.
+
+    If multipart is not specified, a multipart message is returned.
+
+    Args:
+        msg (obj): object of python email library's EmailMessage class.
+        html_template (str): Name of jinja2 template to use to render HTML.
+        text_template (str): Name of jinja2 template to use to render text.
+        subject (str): Email Subject.
+        email_from(str): Sender email address.
+        email_to(str): Recipient email address.
+        multipart (bool): Whether or not to create MIMEMultipart msg.
+        attachments (bool): Whether or not to include attachments.
+        kwargs (kwargs): Keyword Args used to render the templates.
+
+    Returns:
+        Python email message object.
+    """
 
     # NOTE(cfrademan): if multipart is set use that otherwise
     # use original message value.
@@ -240,6 +301,27 @@ def format_msg(msg, html_template=None, text_template=None,
 
 
 class SMTPClient(object):
+    """Utility Class for sending email via SMTP server.
+
+    Example usage:
+
+    .. code:: python
+
+        with SMTPClient(email, server) as server:
+            result = server.send(rcpt, subject=subject, body=body, msg=msg)
+
+    Args:
+        email (str): Sender email address.
+        server (str): IP address of SMTP server.
+        port (int): TCP port of SMTP server.
+        tls (bool): Whether or not to use TLS.
+        auth (tuple): (username, password) to use for authentication.
+
+    Attributes:
+        smtp (obj): object of class smtplib.SMTP.
+        email (str): Sender email address.
+
+    """
     def __init__(self, email, server, port=587, tls=False, auth=None):
         self.smtp = smtplib.SMTP(server, port)
         if self.smtp.starttls()[0] != 220 and tls is True:
@@ -252,6 +334,17 @@ class SMTPClient(object):
         self.email = email
 
     def send(self, email=None, subject=None, body=None, msg=None):
+        """Method to send Email.
+
+        Args:
+            email (str): Recipient Email address.
+            subject (str): Email Subject.
+            body (str): Email Body
+            msg (obj): object of python email library's EmailMessage class.
+
+        Returns:
+        Bool: True if sending was successful, else False.
+        """
         if msg is None:
             msg = EmailMessage()
 
