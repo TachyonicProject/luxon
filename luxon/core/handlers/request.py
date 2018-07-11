@@ -92,7 +92,10 @@ class RequestBase(object):
             self._cached_auth = Auth(expire=expire)
             if self.user_token:
                 try:
-                    self.credentials.token = self.user_token
+                    if self.scope_token:
+                        self.credentials.token = self.scope_token
+                    else:
+                        self.credentials.token = self.user_token
                     self.log['USER-ID'] = self._cached_auth.user_id
                 except AccessDeniedError as e:
                     self.user_token = None
