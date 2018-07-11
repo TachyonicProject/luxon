@@ -255,7 +255,7 @@ The HTML template that the homepage view responds with will go in **templates/ho
     <h1>Welcome to my Web Application</h1>
     {% endblock %}
 
-`Jinja2 <http://jinja.pocoo.org/docs/2.10/>`_ is pretty self explanatory - *extend the "base.html" template. Populate the "body" block with this html*
+Jinja2 is pretty self explanatory - *extend the "base.html" template. Populate the "body" block with this html*
 
 Now we can test the view. Launch the webserver from the terminal open in our *app* directory.
 
