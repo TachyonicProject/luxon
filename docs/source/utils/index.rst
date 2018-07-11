@@ -28,6 +28,7 @@ Utilities Guide
     rd
     rsa
     singleton
+    sort
     split
     sql
     system
