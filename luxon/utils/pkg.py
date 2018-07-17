@@ -29,10 +29,37 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 
 from pkg_resources import (resource_stream, resource_listdir,
-                           resource_isdir, resource_exists)
+                           resource_isdir, resource_exists,
+                           iter_entry_points)
 
+from luxon.utils.singleton import NamedSingleton
 from luxon.utils.imports import import_module
 from luxon.utils.files import mkdir, exists, is_dir
+
+
+class EntryPoints(metaclass=NamedSingleton):
+    def __init__(self, name):
+        self.named_objects = {}
+        for entry_point in iter_entry_points(group=name):
+            self.named_objects.update({entry_point.name: entry_point.load()})
+
+    def __getattr__(self, name):
+        try:
+            return self.named_objects[name]
+        except KeyError:
+            raise AttributeError(name) from None
+
+    def __getitem__(self, name):
+        try:
+            return self.named_objects[name]
+        except KeyError:
+            raise KeyError(name) from None
+
+
+    def __iter__(self):
+        return iter(self.named_objects)
+
+
 
 class Module(object):
     """Imports installed module and performs actions on it
