@@ -105,7 +105,7 @@ to edit the source code after the installation.
 	$ pip3 install -e .
 
 Part 2: Deploying a Python package with Luxon
--------------------------------------------------
+---------------------------------------------
 
 Now that we have our package installed as python library and we can deploy it as we would on server.
 
@@ -218,14 +218,16 @@ locate templates in the *templates* directory of the *package*) [#template_overr
 
 
 For the home view we will return a template called ``home.html``, but to avoid double work, we'll create a base
-template that will contain all the static boilerplate HTML that should be present on all pages.
+template that will contain all the static boilerplate HTML that should be present on all pages. The we can create
+a custom **.html** file for every subsequent view that needs to return one.
 
 .. code:: bash
 
 	$ mkdir templates
 	$ touch templates/base.html
+	$ touch templates/home.html
 
-Populate this file with:
+Populate ``base.html`` file with:
 
 .. code:: html
 
@@ -344,8 +346,7 @@ with ``luxon -s`` again.
 
 When the form is submitted, we wil receive a **POST** at ``/login``. We'll process both methods on the same view,
 and respond accordingly. The data sent by submitting the form is available to us as a dict in the request's
-``req.form_dict`` attribute. Luxon comes with an HTTP client that we can use to send requests to our API. So when our
-web app receives data from the browser, it will make a new request to the API to pass this data along.
+``req.form_dict`` attribute. Luxon comes with an HTTP client that we can use to send requests to our API. So when our web app receives data from the browser, it will make a new request to the API to pass this data along.
 
 Modify **myapp/myapp/views/login.py** with:
 
@@ -385,6 +386,8 @@ Lastly, the session is saved to persist this data, and we redirect the user to t
 
 At this point, you should be able to successfully log in with a user account that you created in the API tutorial.
 
+Of course to test this you would have to go to the directory where you deployed the API and launch it on port 8000, as per the instructions in the previous tutorial.
+
 While we're at it, let's also provide a view to log out. The final version of our **myapp/myapp/views/login.py** file
 should look like this:
 
@@ -421,7 +424,7 @@ should look like this:
             resp.redirect('/login')
 
 
-Part 5 - Navigation Menu
+Part 5: Navigation Menu
 ------------------------
 
 Bootstrap gives us a nice `navigation bar <https://getbootstrap.com/docs/4.0/components/navbar/>`_ that we can use for
@@ -484,8 +487,8 @@ the menu.
 In our menu we are referencing two views we have not yet created - ``/users`` and ``/user/add``. These will be created
 in the next two sections.
 
-Part 6 Listing Users
---------------------
+Part 6: Listing Users
+---------------------
 
 In this part we create a view to list the users currently in the database. We obtain the list by making a call
 to the ``/users`` view on our API.
@@ -494,36 +497,40 @@ First we'll create a template to render the users. Create **templates/users.html
 
 .. code:: HTML
 
-    {% extends "myapp/base.html" %}
-    {% block body %}
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>
-                    Username
-                </th>
-                <th>
-                    Role
-                </th>
-                <th>
-                    Delete
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in users %}
-                <tr>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.role }}</td>
-                    <td><a href="/user/delete/{{ user.id }}">X</a></td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endblock %}
+	{% extends "myapp/base.html" %}
+	{% block body %}
+	<table class="table table-hover">
+	    <thead>
+		<tr>
+		    <th>
+		        Username
+		    </th>
+		    <th>
+		        Role
+		    </th>
+		    <th>
+		        Edit
+		    </th>
+		    <th>
+		        Delete
+		    </th>
+		</tr>
+	    </thead>
+	    <tbody>
+		{% for user in users %}
+		    <tr>
+		        <td>{{ user.username }}</td>
+		        <td>{{ user.role }}</td>
+		        <td><a href="/user/edit/{{ user.id }}">update</a></td>
+		        <td><a href="/user/delete/{{ user.id }}">X</a></td>
+		    </tr>
+		{% endfor %}
+	    </tbody>
+	</table>
+	{% endblock %}
 
 To render this template, we'll need to pass a list variable called ``users`` to iterate through. We've added an option
-to delete the user so long, we will create responders for the ``user/delete/{id}`` views later.
+to delete the user so long, we will create responders for the ``user/delete/{id}`` and ``user/edit/{id}`` views later.
 
 Next up we create the view. Create **views/users.py** with:
 
@@ -557,7 +564,7 @@ Import this view: update **views/__init__.py**:
     import myapp.views.login
     import myapp.views.users
 
-Part 6 - Adding a User
+Part 7: Adding a User
 ----------------------
 
 In this part we'll create a view to add new users. Once again, we'll start with the template. Create
@@ -622,11 +629,34 @@ Running your application with ``luxon -s`` should now have views for all the men
 to view a list of existing users, and also be able to create a new user.
 
 
-Part 7 - Deleting a user
-------------------------
+Part 8: Editing a user
+----------------------
 
-Our last task is to provide the option to delete a user. We don't need a template to do this, we'll simply
+The Edit view will work similarly to the Add User view, and use the same template **add_user** template. First a 'GET' request will return a form populated by the user in question's user info, using luxon's form utility. Then a "PUT" call is made to the API to edit the user with updated info when a POST is received by submitting the form to the UI.
+
+.. code:: python
+
+    @register.resources()
+    class users():
+        def __init__(self):
+            router.add(('GET','POST'),'/user/edit/{id}',self.edit)
+
+        def edit(self,req,resp,id):
+            if req.method == 'GET':
+                usr = api.execute("GET","/user/"+id)
+                user_form = form(User,usr.json)
+                return render_template('myapp/add_user.html',form=user_form, title="Edit User")
+            elif req.method == 'POST':
+                api.execute("PUT","/user/"+id,data=req.form_dict)
+                resp.redirect('/users')
+
+
+Part 9: Deleting a user
+-----------------------
+
+Our last task is to provide the option to delete users. We don't need a template to do this, we'll simply
 look out for a **GET** on ``/user/delete/{id}``, and then create a **DELETE** request to our API on ``/user/{id}``.
+
 The final version of our **views/users.py** looks like this:
 
 
@@ -644,6 +674,7 @@ The final version of our **views/users.py** looks like this:
         def __init__(self):
             router.add('GET', '/users', self.list)
             router.add(('GET', 'POST'), '/user/add', self.add)
+            router.add(('GET','POST'),'/user/edit/{id}',self.edit)
             router.add('GET', '/user/delete/{id}', self.delete)
 
         def list(self, req, resp):
@@ -658,9 +689,18 @@ The final version of our **views/users.py** looks like this:
                 api.execute("POST", "/create", data=req.form_dict)
                 resp.redirect('/users')
 
-        def delete(self, req, resp, id):
-                api.execute("DELETE", "/user/"+id)
+        def edit(self,req,resp,id):
+            if req.method == 'GET':
+                usr = api.execute("GET","/user/"+id)
+                user_form = form(User,usr.json)
+                return render_template('myapp/add_user.html',form=user_form, title="Edit User")
+            elif req.method == 'POST':
+                api.execute("PUT","/user/"+id,data=req.form_dict)
                 resp.redirect('/users')
+
+        def delete(self, req, resp, id):
+            api.execute("DELETE", "/user/"+id)
+            resp.redirect('/users')
 
 
 And there you have it, a Web Front end for your API.

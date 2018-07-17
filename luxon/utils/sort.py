@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018 Dave Kruger.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,28 +27,41 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import sys
 
+class Itemgetter:
+    """itemgetter that caters for items that are 'None'
 
-class Response(object):
-    """Represents an CMD response to a client request.
+    Return a callable object that fetches the given item(s) from its operand.
+    After f = itemgetter(2), the call f(r) returns r[2].
+    After g = itemgetter(2, 5, 3), the call g(r) returns (r[2], r[5], r[3])
 
-    When returned from a Luxon registered resource, the String representation
-    is returned.
+    When using itemgetter as the key when sorting, Python3 can not compare
+    values to NoneTypes. This version of itemgetter returns "" whenever a
+    value of None is present.
     """
-    def __init__(self):
-        pass
+    __slots__ = ('_items', '_call')
+
+    def __init__(self, item, *items):
+        if not items:
+            self._items = (item,)
+            def func(obj):
+                if not obj[item]:
+                    return ""
+                return obj[item]
+            self._call = func
+        else:
+            self._items = items = (item,) + items
+            def func(obj):
+                return tuple((obj[i] or "") for i in items)
+            self._call = func
+
+    def __call__(self, obj):
+        return self._call(obj)
 
     def __repr__(self):
-        return '<%s>' % (self.__class__.__name__)
+        return '%s.%s(%s)' % (self.__class__.__module__,
+                              self.__class__.__name__,
+                              ', '.join(map(repr, self._items)))
 
-    def __str__(self):
-        return '<%s>' % (self.__class__.__name__)
-
-    def write(self, value):
-        """Writes the value to sys.stdout
-
-        Args:
-            value(str): Value to write to sys.stdout
-        """
-        sys.stdout.write(value)
+    def __reduce__(self):
+        return self.__class__, self._items

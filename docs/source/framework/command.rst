@@ -1,7 +1,7 @@
 Command Line Tool
 ==================
 
-Luxon also ships with a cli ``luxon`` command, which allows one to initialize application directory structures, databases, and even start a web server.
+Luxon ships with a cli ``luxon`` command, which allows one to initialize application directory structures, databases, and even start a web server.
 
 **Usage**
 

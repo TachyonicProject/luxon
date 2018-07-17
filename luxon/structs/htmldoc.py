@@ -39,7 +39,7 @@ html5_void_elements = ["area", "base", "br", "col",
 
 
 class HTMLDoc(object):
-    """HTMLDoc HTMLDoc Object.
+    """HTMLDoc Object.
 
     This class provides minimal validation for speed.
 

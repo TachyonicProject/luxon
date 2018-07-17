@@ -31,8 +31,10 @@
 import collections
 
 class CiDict(collections.MutableMapping):
-    """
-    A case-insensitive ``dict``-like object.
+    """A case-insensitive ``dict``-like object.
+
+    Args:
+        data (dict): Dictionary to be used in obj initialization.
     """
     def __init__(self, data=None, **kwargs):
         self._store = dict()
@@ -56,6 +58,8 @@ class CiDict(collections.MutableMapping):
         return len(self._store)
 
     def lower_items(self):
+        """Returns lower case version of all items.
+        """
         return (
             (lowerkey, keyval[1])
             for (lowerkey, keyval)
@@ -70,6 +74,7 @@ class CiDict(collections.MutableMapping):
         return dict(self.lower_items()) == dict(other.lower_items())
 
     def copy(self):
+        """Returns a copy of the object"""
         return CiDict(self._store.values())
 
     def __repr__(self):

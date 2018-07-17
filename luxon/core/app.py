@@ -76,6 +76,14 @@ class App(object):
             else:
                 self._config.load(ini)
 
+            # When application is called directly from another directory,
+            # still want to be able to detect the app_root by providing
+            # __name__ = __main__, but allowing settings.ini to specify
+            # a better name for the application.
+            if self._config.has_section('application') and self.config.get(
+                'application', 'name') and name == "__main__":
+                self._name = self.config.get('application','name')
+
         # Configure Logger.
         log.configure(self.config)
 

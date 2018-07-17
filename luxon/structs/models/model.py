@@ -99,11 +99,6 @@ class Model(BaseFields, BlobFields, IntFields, TextFields):
                 "Model %s:" % self.model_name +
                 " No such field '%s'" % key) from None
 
-        if self.fields[key].internal is True:
-            raise ValidationError(
-                "Model %s:" % self.model_name +
-                " Internal only field '%s'" % key) from None
-
         if (self.primary_key is not None and
                 self[key] is not None and
                 key == self.primary_key.name):

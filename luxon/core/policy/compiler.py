@@ -43,9 +43,12 @@ def compiler(dict_rule_set):
     performance during conditional matching.
 
     Example of rule_set in dict format:
-        { 'role:admin': '"admin" in role_kwarg',
-          'user:login': '"login_kwarg" is True',
-          'match:both': '$role:admin or $system:login' }
+
+        .. code:: json
+
+            { 'role:admin': '"admin" in role_kwarg',
+              'user:login': '"login_kwarg" is True',
+              'match:both': '$role:admin or $system:login' }
 
         The syntax for the rule is exactly as per python conditional
         statements. Note these statements can be nested using braces ().

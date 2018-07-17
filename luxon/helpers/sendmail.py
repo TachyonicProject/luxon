@@ -33,6 +33,32 @@ from luxon.utils.mail import SMTPClient
 
 def sendmail(email, rcpt=None, subject=None, body=None, msg=None,
              fail_callback=None, success_callback=None):
+    """Helper function to send an email.
+
+    SMTP server settings are obtained from *settings.ini* file. E.g:
+
+    .. code::
+
+        [smtp]
+        host = 127.0.0.1
+        port = 587
+        tls = False
+        username = None
+        password = None
+
+    Args:
+        email (str): Sender email address.
+        rcpt (str): Recipient email address.
+        subject (str): Email Subject.
+        body (str): Email Body
+        msg (obj): object of python email library's EmailMessage class.
+        fail_callback (func): Function to call on send failure.
+        success_callback (func): Function to call on send success.
+
+    Returns:
+        Bool: True if sending was successful, else False.
+
+    """
 
     server = g.app.config.get('smtp', 'host', fallback='127.0.0.1')
     port = g.app.config.getint('smtp', 'port', fallback=587)

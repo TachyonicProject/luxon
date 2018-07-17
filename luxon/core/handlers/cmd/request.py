@@ -33,6 +33,10 @@ from luxon.core.handlers.request import RequestBase
 
 class Request(RequestBase):
     """Represents a cmd request.
+
+    Args:
+        method (str): Command action argument.
+        route (str): Path to indicate resource location.
     """
 
     __slots__ = (
@@ -58,10 +62,12 @@ class Request(RequestBase):
 
     @property
     def stream(self):
+        """Returns sys.stdin"""
         return sys.stdin
 
     @property
     def raw(self):
+        """Returns sys.stdin"""
         return sys.stdin
 
     def read(self, size=None):

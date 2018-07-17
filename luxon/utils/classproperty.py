@@ -65,9 +65,9 @@ class classproperty(property):
             TEST
 
 
-    | Class Method -> test.fnc_1()
-    | Property -> test().fnc_2
-    | Class Property -> test.fnc_3
+    | Class Method -> ``test.fnc_1()``
+    | Property -> ``test().fnc_2``
+    | Class Property -> ``test.fnc_3``
 
     """
     def __new__(cls, fget=None, doc=None):

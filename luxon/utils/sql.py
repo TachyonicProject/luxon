@@ -36,7 +36,7 @@ def build_where(**kwargs):
 
     Keyword Args:
        Containing SQL search string
-       Eg: {"foo": 1, "bar": None}
+       Eg: ``{"foo": 1, "bar": None}``
 
     Returns:
         Tuple containing string that can
@@ -64,13 +64,13 @@ def build_like(operator="AND", **kwargs):
 
     Keyword Args:
        Containing SQL search string
-       Eg: {"foo": 1, "bar": None}
+       Eg: ``{"foo": "x", "bar": None}``
 
     Returns:
         Tuple containing string that can
-        be used after WHERE in SQL statement,
+        be used after LIKE in SQL statement,
         along with a list of the values.
-        Eg. ("foo=? AND bar IS NULL", [ 1 ])
+        Eg. ("foo like ? AND bar IS NULL", [ "x%" ])
 
     """
     vals = []

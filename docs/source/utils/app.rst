@@ -1,7 +1,7 @@
 .. _app:
 
-=====================
-Determine App Route
-=====================
+=====================================================
+Utility to determine the Application's root directory
+=====================================================
 
 .. autofunction:: luxon.core.utils.app.determine_app_root

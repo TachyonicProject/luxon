@@ -221,7 +221,7 @@ class Application(object):
                                         response,
                                         **r_kwargs)
                         if view is not None:
-                            response.body(view)
+                            response.write(view)
                     else:
                         raise NotFoundError("Route not found" +
                                             " Method '%s'" % request.method +
