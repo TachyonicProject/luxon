@@ -35,7 +35,41 @@ class BlobFields(object):
     """Blob Fields outer class"""
     __slots__ = ()
 
-    class Blob(BaseFields.BaseField):
+
+    class BaseBlob(BaseFields.BaseField):
+        """Blob Field.
+
+        64 KB field
+        65535 Octets
+
+        Keyword Args:
+            length (int): Length of field value.
+            null (bool): If value is allowed to NULL.
+            default: Default value for field.
+            on_update: Default value for field on update..
+            db (bool): Whether to store value in db column.
+            label (str): Human friendly name for field.
+            placeholder (str): Example to display in field.
+            readonly (bool): Whether field can be updated.
+            prefix (str): Text placed in front of field input.
+            suffix (str): Text placed after field input.
+            hidden (bool): To hide field from forms.
+        """
+
+        def __init__(self, length=None, min_length=None, max_length=None,
+                     null=True, default=None, db=True, label=None,
+                     placeholder=None, readonly=False, prefix=None,
+                     suffix=None, columns=None, hidden=False,
+                     enum=[], on_update=None, password=False):
+
+            super().__init__(length=None,
+                             min_length=min_length, max_length=max_length,
+                             null=True, default=None, db=True, label=None,
+                             placeholder=None, readonly=False, prefix=None,
+                             suffix=None, columns=None, hidden=False,
+                             enum=[], on_update=None, password=False)
+
+    class Blob(BaseBlob):
         """Blob Field.
 
         64 KB field
@@ -84,7 +118,7 @@ class BlobFields(object):
             return value
 
 
-    class TinyBlob(Blob):
+    class TinyBlob(BaseBlob):
         """Tiny Blob Field.
 
         255 Octets
@@ -125,7 +159,7 @@ class BlobFields(object):
                              enum=[], on_update=None, password=False)
 
 
-    class MediumBlob(Blob):
+    class MediumBlob(BaseBlob):
         """Medium Blob Field.
 
         16 MB field
@@ -167,7 +201,7 @@ class BlobFields(object):
                              enum=[], on_update=None, password=False)
 
 
-    class LongBlob(Blob):
+    class LongBlob(BaseBlob):
         """Long Blob Field.
 
         4 GB field

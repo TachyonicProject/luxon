@@ -35,7 +35,40 @@ class TextFields(object):
     """Text Fields outer class"""
     __slots__ = ()
 
-    class Text(BaseFields.String):
+    class BaseText(BaseFields.String):
+        """Text Field.
+
+        64 KB field
+        65535 Octets
+
+        Keyword Args:
+            length (int): Length of field value.
+            null (bool): If value is allowed to NULL.
+            default: Default value for field.
+            on_update: Default value for field on update..
+            db (bool): Whether to store value in db column.
+            label (str): Human friendly name for field.
+            placeholder (str): Example to display in field.
+            readonly (bool): Whether field can be updated.
+            prefix (str): Text placed in front of field input.
+            suffix (str): Text placed after field input.
+            hidden (bool): To hide field from forms.
+        """
+
+        def __init__(self, length=None, min_length=None, max_length=None,
+                     null=True, default=None, db=True, label=None,
+                     placeholder=None, readonly=False, prefix=None,
+                     suffix=None, columns=None, hidden=False,
+                     enum=[], on_update=None, password=False):
+
+            super().__init__(length=None,
+                             min_length=min_length, max_length=max_length,
+                             null=True, default=None, db=True, label=None,
+                             placeholder=None, readonly=False, prefix=None,
+                             suffix=None, columns=None, hidden=False,
+                             enum=[], on_update=None, password=False)
+
+    class Text(BaseText):
         """Text Field.
 
         64 KB field
@@ -76,7 +109,7 @@ class TextFields(object):
                              suffix=None, columns=None, hidden=False,
                              enum=[], on_update=None, password=False)
 
-    class TinyText(BaseFields.String):
+    class TinyText(BaseText):
         """Tiny Text Field.
 
         255 Octets
@@ -117,7 +150,7 @@ class TextFields(object):
                              suffix=None, columns=None, hidden=False,
                              enum=[], on_update=None, password=False)
 
-    class MediumText(BaseFields.String):
+    class MediumText(BaseText):
         """Medium Text Field.
 
         16 MB field
@@ -158,7 +191,7 @@ class TextFields(object):
                              suffix=None, columns=None, hidden=False,
                              enum=[], on_update=None, password=False)
 
-    class LongText(BaseFields.String):
+    class LongText(BaseText):
         """Long Text Field.
 
         4 GB field
