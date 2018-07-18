@@ -53,7 +53,7 @@ class Sqlite3(object):
                 column = model_fields[field].name
                 null = model_fields[field].null
 
-                if isinstance(model_fields[field], self._model.Text):
+                if isinstance(model_fields[field], self._model.BaseText):
                     sql_field = " %s TEXT" % column
 
                 elif isinstance(model_fields[field], self._model.Float):
@@ -74,7 +74,7 @@ class Sqlite3(object):
                 elif isinstance(model_fields[field], self._model.DateTime):
                     sql_field = " %s INTEGER" % column
 
-                elif isinstance(model_fields[field], self._model.Blob):
+                elif isinstance(model_fields[field], self._model.BaseBlob):
                     sql_field = " %s BLOB" % column
 
                 if null is False:
