@@ -733,7 +733,7 @@ class Request(RequestBase):
         try:
             self._cached_content_type = self.env['CONTENT_TYPE']
         except KeyError:
-            self._cached_content_type_string = None
+            self._cached_content_type = None
 
         return self._cached_content_type
 
