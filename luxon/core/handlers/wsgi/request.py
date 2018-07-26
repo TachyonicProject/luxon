@@ -901,8 +901,8 @@ class Request(RequestBase):
     def user_token(self, value):
         self._user_token = value
 
-        if value is None:
-            value = ''
+        # if value is None:
+        #     value = ''
 
         self.session['token'] = value
         self.session.save()
@@ -921,8 +921,8 @@ class Request(RequestBase):
     def scope_token(self, value):
         self._scope_token = value
 
-        if value is None:
-            value = ''
+        # if value is None:
+        #     value = ''
 
         self.session['scoped'] = value
         self.session.save()
