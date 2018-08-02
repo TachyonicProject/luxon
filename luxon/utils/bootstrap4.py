@@ -395,7 +395,7 @@ def form(model, values=None, readonly=False):
                                        checked=checked,
                                        label=label,
                                        attrs={'data-boolean': None}))
-        elif isinstance(obj, (Model.String)):
+        elif isinstance(obj, (Model.String, Model.Integer)):
             html.append(field_text(field, value=value,
                                    readonly=field_readonly,
                                    disabled=field_readonly,
