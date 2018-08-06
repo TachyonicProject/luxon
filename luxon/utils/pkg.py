@@ -35,6 +35,7 @@ from pkg_resources import (resource_stream, resource_listdir,
 from luxon.utils.singleton import NamedSingleton
 from luxon.utils.imports import import_module
 from luxon.utils.files import mkdir, exists, is_dir
+from luxon.exceptions import Error
 
 
 class EntryPoints(metaclass=NamedSingleton):
@@ -53,7 +54,7 @@ class EntryPoints(metaclass=NamedSingleton):
         try:
             return self.named_objects[name]
         except KeyError:
-            raise KeyError(name) from None
+            raise Error("Adapter/Driver/Entry Point/Interface '%s' not found" % name) from None
 
 
     def __iter__(self):
