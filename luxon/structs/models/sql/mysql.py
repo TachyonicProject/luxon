@@ -63,7 +63,7 @@ class Mysql(object):
                     d = None
 
                 max_length = model_fields[field].max_length
-                if isinstance(model_fields[field], self._model.Integer):
+                if isinstance(model_fields[field], self._model.BaseInteger):
                     max_length = len(str(max_length))
 
                 enum = list(model_fields[field].enum)
@@ -151,7 +151,7 @@ class Mysql(object):
                         max_length = '255'
                     sql_field = " %s varchar(%s)" % (column, max_length)
 
-                elif isinstance(model_fields[field], self._model.Integer):
+                elif isinstance(model_fields[field], self._model.BaseInteger):
                     if max_length is None:
                         sql_field = " %s integer" % column
                     else:

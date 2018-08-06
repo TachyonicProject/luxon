@@ -184,60 +184,6 @@ class BaseFields(object):
             value = super().parse(value)
             return value
 
-    class Integer(BaseField):
-        """Integer Field.
-
-        4 Octet Integer
-        Minimum value -2147483648
-        Maximum value 2147483647
-
-        Keyword Args:
-            length (int): Length of field value.
-            min_length (int): Minimum Length of field value.
-            max_length (int): Maximum Length of field value others length value.
-            signed (bool): If Integer value is signed or un-signed.
-            null (bool): If value is allowed to NULL.
-            default: Default value for field.
-            on_update: Default value for field on update..
-            db (bool): Whether to store value in db column.
-            label (str): Human friendly name for field.
-            placeholder (str): Example to display in field.
-            readonly (bool): Whether field can be updated.
-            prefix (str): Text placed in front of field input.
-            suffix (str): Text placed after field input.
-            hidden (bool): To hide field from forms.
-        """
-
-        def __init__(self, length=None, min_length=None, max_length=None,
-                     null=True, default=None, db=True, label=None,
-                     placeholder=None, readonly=False, prefix=None,
-                     suffix=None, columns=None, hidden=False,
-                     enum=[], on_update=None, password=False,
-                     signed=True):
-
-            try:
-                min_length, max_length = defined_length_check(min_length,
-                                                              max_length,
-                                                              -2147483648,
-                                                              2147483647)
-            except ValueError as e:
-                self.error(e)
-
-            super().__init__(length=None,
-                             min_length=min_length, max_length=max_length,
-                             null=True, default=None, db=True, label=None,
-                             placeholder=None, readonly=False, prefix=None,
-                             suffix=None, columns=None, hidden=False,
-                             enum=[], on_update=None, password=False)
-
-        def parse(self, value):
-            try:
-                value = int(value)
-            except ValueError:
-                self.error('Integer value required)', value)
-            value = super().parse(value)
-            return value
-
     class Float(BaseField):
         """Float Field.
 
