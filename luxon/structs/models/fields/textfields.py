@@ -61,12 +61,13 @@ class TextFields(object):
                      suffix=None, columns=None, hidden=False,
                      enum=[], on_update=None, password=False):
 
-            super().__init__(length=None,
+            super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
-                             null=True, default=None, db=True, label=None,
-                             placeholder=None, readonly=False, prefix=None,
-                             suffix=None, columns=None, hidden=False,
-                             enum=[], on_update=None, password=False)
+                             null=null, default=default, db=db, label=label,
+                             placeholder=placeholder, readonly=readonly,
+                             prefix=prefix, suffix=suffix, columns=columns, 
+                             hidden=hidden, enum=enum, on_update=on_update,
+                             password=password)
 
     class Text(BaseText):
         """Text Field.
@@ -102,12 +103,13 @@ class TextFields(object):
             except ValueError as e:
                 self.error(e)
 
-            super().__init__(length=None,
+            super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
-                             null=True, default=None, db=True, label=None,
-                             placeholder=None, readonly=False, prefix=None,
-                             suffix=None, columns=None, hidden=False,
-                             enum=[], on_update=None, password=False)
+                             null=null, default=default, db=db, label=label,
+                             placeholder=placeholder, readonly=readonly,
+                             prefix=prefix, suffix=suffix, columns=columns, 
+                             hidden=hidden, enum=enum, on_update=on_update,
+                             password=password)
 
     class TinyText(BaseText):
         """Tiny Text Field.
@@ -143,12 +145,13 @@ class TextFields(object):
             except ValueError as e:
                 self.error(e)
 
-            super().__init__(length=None,
+            super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
-                             null=True, default=None, db=True, label=None,
-                             placeholder=None, readonly=False, prefix=None,
-                             suffix=None, columns=None, hidden=False,
-                             enum=[], on_update=None, password=False)
+                             null=null, default=default, db=db, label=label,
+                             placeholder=placeholder, readonly=readonly,
+                             prefix=prefix, suffix=suffix, columns=columns, 
+                             hidden=hidden, enum=enum, on_update=on_update,
+                             password=password)
 
     class MediumText(BaseText):
         """Medium Text Field.
@@ -184,12 +187,13 @@ class TextFields(object):
             except ValueError as e:
                 self.error(e)
 
-            super().__init__(length=None,
+            super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
-                             null=True, default=None, db=True, label=None,
-                             placeholder=None, readonly=False, prefix=None,
-                             suffix=None, columns=None, hidden=False,
-                             enum=[], on_update=None, password=False)
+                             null=null, default=default, db=db, label=label,
+                             placeholder=placeholder, readonly=readonly,
+                             prefix=prefix, suffix=suffix, columns=columns, 
+                             hidden=hidden, enum=enum, on_update=on_update,
+                             password=password)
 
     class LongText(BaseText):
         """Long Text Field.
@@ -225,9 +229,10 @@ class TextFields(object):
             except ValueError as e:
                 self.error(e)
 
-            super().__init__(length=None,
+            super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
-                             null=True, default=None, db=True, label=None,
-                             placeholder=None, readonly=False, prefix=None,
-                             suffix=None, columns=None, hidden=False,
-                             enum=[], on_update=None, password=False)
+                             null=null, default=default, db=db, label=label,
+                             placeholder=placeholder, readonly=readonly,
+                             prefix=prefix, suffix=suffix, columns=columns, 
+                             hidden=hidden, enum=enum, on_update=on_update,
+                             password=password)
