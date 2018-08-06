@@ -68,7 +68,7 @@ class Sqlite3(object):
                 elif isinstance(model_fields[field], self._model.String):
                     sql_field = " %s TEXT" % column
 
-                elif isinstance(model_fields[field], self._model.Integer):
+                elif isinstance(model_fields[field], self._model.BaseInteger):
                     sql_field = " %s INTEGER" % column
 
                 elif isinstance(model_fields[field], self._model.DateTime):
