@@ -252,6 +252,8 @@ Now you should be able to run the command ``mycmd`` from any directory:
       -a APP, --app APP  Application Path
       -p PID, --pid PID  PID File
 
+Note that this will not work yet because we have not yet implemented the **views** module that the **wsgi.py** file imports.
+
 Because we protected our views with policy tags, we won't have access to them
 unless the user authenticates first. For convenience sake, we'll allow the administrator to specify the login details
 in the **settings.ini** file, as we did when creating the package:
@@ -305,7 +307,7 @@ it:
 .. code:: bash
 
     $ touch views/users.py
-    $ echo "import mycmd.views.users" >> views/users.py
+    $ echo "import mycmd.views.users" >> views/__init__.py
 
 We'll start of with the first view, one that will list all the existing users. We *could* let the view grab the list
 of users straight from the database, but for the purpose of this tutorial, we show how you can do this
@@ -351,6 +353,10 @@ this time luxon registeres the routes and views as command arguments. When we ru
 The response is a luxon :ref:`wsgi_response` object, and since our API returns JSON data, we can access that
 as a dict in the response's ``.json`` attribute. We convert this back into JSON formated text, which we return to the
 user of the script.
+
+Essentially all our CMD's functionality comes from making calls to our API, as in *myapp*, so keep in mind that for the 
+CMD to work our API *myapi* will have to be running all the time on http://localhost:8000, or the url we specified in the
+settings.ini file.
 
 When you run your ``mycmd`` command with the ``-h`` switch again, you should see that it now shows that you require,
 and have available, a positional argument called "list", which will "list resources".

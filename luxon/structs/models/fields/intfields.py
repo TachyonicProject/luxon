@@ -72,12 +72,13 @@ class IntFields(object):
             except ValueError as e:
                 self.error(e)
 
-            super().__init__(length=None,
+            super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
-                             null=True, default=None, db=True, label=None,
-                             placeholder=None, readonly=False, prefix=None,
-                             suffix=None, columns=None, hidden=False,
-                             enum=[], on_update=None, password=False)
+                             null=null, default=default, db=db, label=label,
+                             placeholder=placeholder, readonly=readonly,
+                             prefix=prefix, suffix=suffix, columns=columns,
+                             hidden=hidden, enum=[], on_update=on_update,
+                             password=password)
 
     class SmallInt(BaseFields.Integer):
         """Small Integer Field.
@@ -115,12 +116,13 @@ class IntFields(object):
             except ValueError as e:
                 self.error(e)
 
-            super().__init__(length=None,
+            super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
-                             null=True, default=None, db=True, label=None,
-                             placeholder=None, readonly=False, prefix=None,
-                             suffix=None, columns=None, hidden=False,
-                             enum=[], on_update=None, password=False)
+                             null=null, default=default, db=db, label=label,
+                             placeholder=placeholder, readonly=readonly,
+                             prefix=prefix, suffix=suffix, columns=columns,
+                             hidden=hidden, enum=[], on_update=on_update,
+                             password=password)
 
     class MediumInt(BaseFields.Integer):
         """Medium Integer Field.
@@ -160,10 +162,11 @@ class IntFields(object):
 
             super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
-                             null=null, default=None, db=True, label=None,
-                             placeholder=None, readonly=False, prefix=None,
-                             suffix=None, columns=None, hidden=False,
-                             enum=[], on_update=None, password=False)
+                             null=null, default=default, db=db, label=label,
+                             placeholder=placeholder, readonly=readonly,
+                             prefix=prefix, suffix=suffix, columns=columns,
+                             hidden=hidden, enum=[], on_update=on_update,
+                             password=password)
 
     class BigInt(BaseFields.Integer):
         """Big Integer Field.
@@ -203,12 +206,13 @@ class IntFields(object):
             except ValueError as e:
                 self.error(e)
 
-            super().__init__(length=None,
+            super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
-                             null=True, default=None, db=True, label=None,
-                             placeholder=None, readonly=False, prefix=None,
-                             suffix=None, columns=None, hidden=False,
-                             enum=[], on_update=None, password=False)
+                             null=null, default=default, db=db, label=label,
+                             placeholder=placeholder, readonly=readonly,
+                             prefix=prefix, suffix=suffix, columns=columns,
+                             hidden=hidden, enum=[], on_update=on_update,
+                             password=password)
 
     class Boolean(TinyInt):
         """Boolean Field.
