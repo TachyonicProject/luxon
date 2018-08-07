@@ -310,6 +310,29 @@ def field_text(field, value=None, id=None, readonly=False,
 
     return group
 
+def field_textarea(field, value=None, id=None, readonly=False,
+               disabled=False, label=None, placeholder=None,
+               required=False):
+    group = field_group()
+    group.append(field_label(field, label))
+
+    io = group.create_element('textarea')
+    io.set_attribute('class', 'form-control')
+    io.set_attribute('id', field)
+    io.set_attribute('name', field)
+
+    if value:
+        io.contents = value
+    if readonly is True:
+        io.set_attribute('readonly')
+    if disabled is True:
+        io.set_attribute('disabled')
+    if required:
+        io.set_attribute('required')
+    if placeholder:
+        io.set_attribute('placeholder', placeholder)
+
+    return group
 
 def field_password(field, value=None, id=None, readonly=False,
                    disabled=False, label=None, placeholder=None,
@@ -395,6 +418,13 @@ def form(model, values=None, readonly=False):
                                        checked=checked,
                                        label=label,
                                        attrs={'data-boolean': None}))
+        elif isinstance(obj, (Model.LongText, Model.MediumText)):
+            html.append(field_textarea(field, value=value,
+                                       readonly=field_readonly,
+                                       disabled=field_readonly,
+                                       required=required,
+                                       placeholder=obj.placeholder,
+                                       label=label))
         elif isinstance(obj, (Model.String, Model.Integer)):
             html.append(field_text(field, value=value,
                                    readonly=field_readonly,
