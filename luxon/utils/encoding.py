@@ -61,7 +61,7 @@ def if_bytes_to_unicode(string, codec='UTF-8'):
     try:
         return string.decode(codec)
     #else:
-    except Exception:
+    except AttributeError:
         return string
 
 
