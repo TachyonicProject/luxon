@@ -66,11 +66,10 @@ class Crypto(object):
             bits (int): Key bit length.
 
         Returns:
-             Unicode encoded private key.
+             Binary encoded private key.
         """
         self._key = os.urandom(floor(bits/8))
-
-        return if_bytes_to_unicode(self._key)
+        return self._key
 
     def generate_iv(self, bits=16*8):
         """Method to generate a initialization vector.
@@ -79,19 +78,19 @@ class Crypto(object):
             bits (int): vector bit length.
 
         Returns:
-             Unicode encoded initialization vector.
+             Binary initialization vector.
         """
         self._iv = os.urandom(floor(bits/8))
 
-        return if_bytes_to_unicode(self._iv)
+        return self._iv
 
     @property
     def key(self):
-        """Property to return the unicode encoded key"""
+        """Property to return the binary key"""
         if self._key is None:
             raise ValueError('No Key Loaded')
 
-        return if_bytes_to_unicode(self._key)
+        return self._key
 
     @property
     def iv(self):
@@ -99,19 +98,19 @@ class Crypto(object):
         if self._iv is None:
             raise ValueError('No Initialization Vector Loaded')
 
-        return if_bytes_to_unicode(self._iv)
+        return self._iv
 
 
     def load_key(self, key):
-        """Method to load the key from string.
+        """Method to load the binary key.
 
         Args:
             key (str): Key to be loaded.
         """
-        self._key = if_unicode_to_bytes(key)
+        self._key = key
 
     def load_iv(self, iv):
-        """Method to load the initialization vector from string.
+        """Method to load the initialization vector from binary.
 
         Args:
             iv (str): Initialization vector to be loaded.
