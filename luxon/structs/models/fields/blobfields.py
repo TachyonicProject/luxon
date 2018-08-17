@@ -39,9 +39,6 @@ class BlobFields(object):
     class BaseBlob(BaseFields.BaseField):
         """Blob Field.
 
-        64 KB field
-        65535 Octets
-
         Keyword Args:
             length (int): Length of field value.
             null (bool): If value is allowed to NULL.
@@ -95,14 +92,6 @@ class BlobFields(object):
                      suffix=None, columns=None, hidden=False,
                      enum=[], on_update=None, password=False):
 
-            try:
-                min_length, max_length = defined_length_check(min_length,
-                                                              max_length,
-                                                              0,
-                                                              65535)
-            except ValueError as e:
-                self.error(e)
-
             super().__init__(length=None,
                              min_length=min_length, max_length=max_length,
                              null=True, default=None, db=True, label=None,
@@ -143,14 +132,6 @@ class BlobFields(object):
                      suffix=None, columns=None, hidden=False,
                      enum=[], on_update=None, password=False):
 
-            try:
-                min_length, max_length = defined_length_check(min_length,
-                                                              max_length,
-                                                              0,
-                                                              255)
-            except ValueError as e:
-                self.error(e)
-
             super().__init__(length=None,
                              min_length=min_length, max_length=max_length,
                              null=True, default=None, db=True, label=None,
@@ -185,14 +166,6 @@ class BlobFields(object):
                      suffix=None, columns=None, hidden=False,
                      enum=[], on_update=None, password=False):
 
-            try:
-                min_length, max_length = defined_length_check(min_length,
-                                                              max_length,
-                                                              0,
-                                                              16777215)
-            except ValueError as e:
-                self.error(e)
-
             super().__init__(length=None,
                              min_length=min_length, max_length=max_length,
                              null=True, default=None, db=True, label=None,
@@ -226,14 +199,6 @@ class BlobFields(object):
                      placeholder=None, readonly=False, prefix=None,
                      suffix=None, columns=None, hidden=False,
                      enum=[], on_update=None, password=False):
-
-            try:
-                min_length, max_length = defined_length_check(min_length,
-                                                              max_length,
-                                                              0,
-                                                              4294967295)
-            except ValueError as e:
-                self.error(e)
 
             super().__init__(length=None,
                              min_length=min_length, max_length=max_length,
