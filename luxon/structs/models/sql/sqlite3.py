@@ -52,6 +52,7 @@ class Sqlite3(object):
 
                 column = model_fields[field].name
                 null = model_fields[field].null
+                signed = model_fields[field].signed
 
                 if isinstance(model_fields[field], self._model.BaseText):
                     sql_field = " %s TEXT" % column
@@ -70,6 +71,10 @@ class Sqlite3(object):
 
                 elif isinstance(model_fields[field], self._model.BaseInteger):
                     sql_field = " %s INTEGER" % column
+
+                    if signed is False:
+                        sql_field += ' UNSIGNED'
+
 
                 elif isinstance(model_fields[field], self._model.DateTime):
                     sql_field = " %s INTEGER" % column
