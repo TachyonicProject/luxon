@@ -32,16 +32,14 @@ from luxon.structs.models.fields.basefields import BaseFields
 from luxon.structs.models.utils import defined_length_check
 
 
+
+
 class IntFields(object):
     """Int Fields outer class"""
     __slots__ = ()
 
     class BaseInteger(BaseFields.BaseField):
         """Integer Field.
-
-        4 Octet Integer
-        Minimum value -2147483648
-        Maximum value 2147483647
 
         Keyword Args:
             length (int): Length of field value.
@@ -67,12 +65,13 @@ class IntFields(object):
                      enum=[], on_update=None, password=False,
                      signed=True):
 
-            super().__init__(length=None,
+            super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
-                             null=True, default=None, db=True, label=None,
-                             placeholder=None, readonly=False, prefix=None,
-                             suffix=None, columns=None, hidden=False,
-                             enum=[], on_update=None, password=False)
+                             null=null, default=default, db=db, label=label,
+                             placeholder=placeholder, readonly=readonly,
+                             prefix=prefix, suffix=suffix, columns=columns,
+                             hidden=hidden, enum=[], on_update=on_update,
+                             password=password, signed=signed)
 
         def parse(self, value):
             try:
@@ -111,13 +110,16 @@ class IntFields(object):
                      enum=[], on_update=None, password=False,
                      signed=True):
 
-            try:
-                min_length, max_length = defined_length_check(min_length,
-                                                              max_length,
-                                                              -2147483648,
-                                                              2147483647)
-            except ValueError as e:
-                self.error(e)
+            if signed is True:
+                if min_length is None:
+                    min_length = -2147483648
+                if max_length is None:
+                    max_length = 2147483647
+            else:
+                if min_length is None:
+                    min_length = 0
+                if max_length is None:
+                    max_length = 4294967295
 
             super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
@@ -125,7 +127,7 @@ class IntFields(object):
                              placeholder=placeholder, readonly=readonly,
                              prefix=prefix, suffix=suffix, columns=columns,
                              hidden=hidden, enum=[], on_update=on_update,
-                             password=password)
+                             password=password, signed=signed)
 
     class TinyInt(BaseInteger):
         """Tiny Integer Field.
@@ -155,13 +157,16 @@ class IntFields(object):
                      enum=[], on_update=None, password=False,
                      signed=True):
 
-            try:
-                min_length, max_length = defined_length_check(min_length,
-                                                              max_length,
-                                                              -128,
-                                                              127)
-            except ValueError as e:
-                self.error(e)
+            if signed is True:
+                if min_length is None:
+                    min_length = -128
+                if max_length is None:
+                    max_length = 127
+            else:
+                if min_length is None:
+                    min_length = 0
+                if max_length is None:
+                    max_length = 255
 
             super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
@@ -169,7 +174,7 @@ class IntFields(object):
                              placeholder=placeholder, readonly=readonly,
                              prefix=prefix, suffix=suffix, columns=columns,
                              hidden=hidden, enum=[], on_update=on_update,
-                             password=password)
+                             password=password, signed=signed)
 
     class SmallInt(BaseInteger):
         """Small Integer Field.
@@ -199,13 +204,16 @@ class IntFields(object):
                      enum=[], on_update=None, password=False,
                      signed=True):
 
-            try:
-                min_length, max_length = defined_length_check(min_length,
-                                                              max_length,
-                                                              -32768,
-                                                              32767)
-            except ValueError as e:
-                self.error(e)
+            if signed is True:
+                if min_length is None:
+                    min_length = -32768
+                if max_length is None:
+                    max_length = 32767
+            else:
+                if min_length is None:
+                    min_length = 0
+                if max_length is None:
+                    max_length = 65535
 
             super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
@@ -213,7 +221,7 @@ class IntFields(object):
                              placeholder=placeholder, readonly=readonly,
                              prefix=prefix, suffix=suffix, columns=columns,
                              hidden=hidden, enum=[], on_update=on_update,
-                             password=password)
+                             password=password, signed=signed)
 
     class MediumInt(BaseInteger):
         """Medium Integer Field.
@@ -243,13 +251,16 @@ class IntFields(object):
                      enum=[], on_update=None, password=False,
                      signed=True):
 
-            try:
-                min_length, max_length = defined_length_check(min_length,
-                                                              max_length,
-                                                              -8388608,
-                                                              8388607)
-            except ValueError as e:
-                self.error(e)
+            if signed is True:
+                if min_length is None:
+                    min_length = -8388608
+                if max_length is None:
+                    max_length = 8388607
+            else:
+                if min_length is None:
+                    min_length = 0
+                if max_length is None:
+                    max_length = 16777215
 
             super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
@@ -257,7 +268,7 @@ class IntFields(object):
                              placeholder=placeholder, readonly=readonly,
                              prefix=prefix, suffix=suffix, columns=columns,
                              hidden=hidden, enum=[], on_update=on_update,
-                             password=password)
+                             password=password, signed=signed)
 
     class BigInt(BaseInteger):
         """Big Integer Field.
@@ -289,13 +300,16 @@ class IntFields(object):
                      enum=[], on_update=None, password=False,
                      signed=True):
 
-            try:
-                min_length, max_length = defined_length_check(min_length,
-                                                              max_length,
-                                                              -9223372036854775808,
-                                                              9223372036854775807)
-            except ValueError as e:
-                self.error(e)
+            if signed is True:
+                if min_length is None:
+                    min_length = -9223372036854775808
+                if max_length is None:
+                    max_length = 9223372036854775807
+            else:
+                if min_length is None:
+                    min_length = 0
+                if max_length is None:
+                    max_length = 18446744073709551615
 
             super().__init__(length=length,
                              min_length=min_length, max_length=max_length,
@@ -303,7 +317,7 @@ class IntFields(object):
                              placeholder=placeholder, readonly=readonly,
                              prefix=prefix, suffix=suffix, columns=columns,
                              hidden=hidden, enum=[], on_update=on_update,
-                             password=password)
+                             password=password, signed=signed)
 
     class Boolean(TinyInt):
         """Boolean Field.
