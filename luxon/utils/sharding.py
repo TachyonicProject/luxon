@@ -27,12 +27,14 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-from luxon.utils.encoding import if_unicode_to_bytes
-
 import hashlib
 
+from luxon.utils.encoding import if_unicode_to_bytes
+from luxon.exceptions import NotFoundError
+from luxon.utils import js
 
-PARTITIONS = 255
+
+PARTITIONS = 256
 
 
 def shard(string):
@@ -44,10 +46,13 @@ def shard(string):
 
 
 class Partition(object):
-    def __init__(self):
-        self._partitions = []
+    def __init__(self, nodes, replicas=1):
+        if len(nodes) == 0:
+            raise NotFoundError('No nodes found')
 
-    def create(self, nodes, replicas=1):
+        self._nodes = nodes
+        self._replicas = replicas
+        self._partitions = []
         number_of_nodes = len(nodes)
         counter = 0
 
@@ -61,8 +66,17 @@ class Partition(object):
 
             self._partitions.append(partition_nodes)
 
-        return self._partitions
+    @property
+    def json(self):
+        return js.dumps(self._partitions)
 
     def select(self, string):
         string = if_unicode_to_bytes(string)
         return self._partitions[shard(string)]
+
+    def __str__(self):
+        return str(self._partitions)
+
+    def __repr__(self):
+        return repr(self._partitions)
+
