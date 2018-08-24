@@ -568,7 +568,7 @@ def request(client, method, url, params={},
             _cache_engine = None
 
         for kwarg in kwargs:
-            headers[kwarg] = kwargs
+            headers[kwarg] = kwargs[kwarg]
 
         if data is not None:
             if hasattr(data, 'json'):
