@@ -39,6 +39,7 @@ PARTITIONS = 256
 
 def shard(string):
     hashed = 0
+    string = if_unicode_to_bytes(string)
     for h in hashlib.md5(string).digest():
         hashed += h
 
@@ -80,3 +81,8 @@ class Partition(object):
     def __repr__(self):
         return repr(self._partitions)
 
+    def __getitem__(self, item):
+        try:
+            return self._partitions[item]
+        except IndexError:
+            return []
