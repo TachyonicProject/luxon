@@ -139,6 +139,27 @@ class FileObject(object):
         self.file = file
 
 
+class Lock(object):
+    def __init__(self, file, perms=600):
+        perms = _perm_to_octal(perms)
+        self._lock_file = file + '.lock'
+        self._lock_file_fd = open(
+            os.open(self._lock_file, os.O_CREAT | os.O_WRONLY,
+                    perms),
+            'wb')
+        fcntl.flock(self._lock_file_fd, fcntl.LOCK_EX)
+
+    def unlock(self):
+        rm(self._lock_file)
+        self._lock_file_fd.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.unlock()
+
+
 class Open(object):
     """Open File
 
@@ -169,13 +190,8 @@ class Open(object):
             if not exists(file):
                 raise FileNotFoundError(file)
 
+        self._lock = Lock(file, perms)
         perms = _perm_to_octal(perms)
-        self._lock_file = file + '.lock'
-        self._lock_file_fd = open(
-            os.open(self._lock_file, os.O_CREAT | os.O_WRONLY,
-                    perms),
-            'wb')
-        fcntl.flock(self._lock_file_fd, fcntl.LOCK_EX)
 
         try:
             self.fd = open(
@@ -269,7 +285,7 @@ class Open(object):
         """Close File"""
         self.flush()
         self.fd.close()
-        self._lock_file_fd.close()
+        self._lock.unlock()
 
     def __enter__(self):
         return self

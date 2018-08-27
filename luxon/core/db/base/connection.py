@@ -203,8 +203,11 @@ class Connection(BaseExeptions):
         except exceptions.SQLOperationalError:
             # THIS ONE MATCHES FOR SQLLITE3? Kinda wrong.
             return False
+        except exceptions.SQLDatabaseError:
+            # MYSQL USES THIS ONE?
+            return False
         except exceptions.SQLProgrammingError:
-            # MYSQL USES THIS ONE
+            # MYSQL USES THIS ONE?
             return False
 
     def insert(self, table, data):
