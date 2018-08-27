@@ -552,6 +552,10 @@ class Response(Redirects):
 
         yield b''
 
+    def close(self):
+        if hasattr(self._stream, 'close'):
+            self._stream.close()
+
     def read(self):
         """Reads the entire Response body.
         """
