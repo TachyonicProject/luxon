@@ -112,16 +112,21 @@ def log_formatted(logger_facility, message, prepend=None, append=None,
 
 
 class _TachyonFilter(logging.Filter):
-    def __init__(self):
+    def __init__(self, app_name=None):
         logging.Filter.__init__(self)
+        self.app_name = app_name
 
     def filter(self, record):
         try:
             record.app_name = ' ' + g.app.config.get('application',
                                                      'name',
                                                      fallback='')
+            return True
         except NoContextError:
             pass
+
+        if self.app_name:
+            record.app_name = ' ' + self.app_name
 
         return True
 
@@ -160,6 +165,13 @@ def configure(config, config_section, logger):
         # Config Section
         section = config[config_section]
 
+        # Giving out-of-context apps the opportunity to
+        # specify a name
+        if config_section == 'application' and 'name' in section:
+            _tachyonfilter = _TachyonFilter(section['name'])
+        else:
+            _tachyonfilter = _TachyonFilter()
+
         # Clean/Remove Handlers
         for handler in logger.handlers:
             logger.removeHandler(handler)
@@ -173,7 +185,7 @@ def configure(config, config_section, logger):
         if section.getboolean('log_stdout', fallback=False):
             handler = logging.StreamHandler(stream=sys.stdout)
             handler.setFormatter(log_format)
-            handler.addFilter(_TachyonFilter())
+            handler.addFilter(_tachyonfilter)
             logger.addHandler(handler)
 
         # Set Syslog
@@ -194,7 +206,7 @@ def configure(config, config_section, logger):
                 handler = logging.handlers.SysLogHandler(address=(host, port))
 
             handler.setFormatter(log_format)
-            handler.addFilter(_TachyonFilter())
+            handler.addFilter(_tachyonfilter)
             logger.addHandler(handler)
 
         # ENABLE FILE LOG FOR GLOBAL OR MODULE
@@ -203,7 +215,7 @@ def configure(config, config_section, logger):
             handler = logging.FileHandler(log_file)
 
             handler.setFormatter(log_format)
-            handler.addFilter(_TachyonFilter())
+            handler.addFilter(_tachyonfilter)
             logger.addHandler(handler)
 
 
