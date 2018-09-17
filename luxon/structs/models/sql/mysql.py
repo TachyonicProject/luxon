@@ -160,7 +160,7 @@ class Mysql(object):
                     if signed is False:
                         sql_field += ' UNSIGNED'
 
-                    if self._model.primary_key.name == field:
+                    if self._model.primary_key and self._model.primary_key.name == field:
                         sql_field += " auto_increment"
 
                 if null is False:

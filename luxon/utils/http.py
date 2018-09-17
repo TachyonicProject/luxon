@@ -40,6 +40,7 @@ from luxon import __identity__
 from luxon.core.logger import GetLogger
 from luxon.utils.timer import Timer
 from luxon.exceptions import (NoContextError,
+                              HTTPClientError,
                               HTTPClientInvalidHeader,
                               HTTPClientInvalidURL,
                               HTTPClientInvalidSchema,
@@ -51,6 +52,7 @@ from luxon.exceptions import (NoContextError,
                               HTTPClientConnectTimeoutError,
                               HTTPClientReadTimeoutError,
                               HTTPClientContentDecodingError,
+                              TokenExpiredError,
                               HTTPError)
 from luxon.constants import HTTP_STATUS_CODES
 from luxon.utils.encoding import if_unicode_to_bytes, if_bytes_to_unicode
@@ -144,7 +146,7 @@ class ETags(object):
 
     def to_header(self):
         """Convert the etags set into a HTTP header string."""
-        if self.star_tag:
+        if self._star_tag:
             return '*'
         return ', '.join(
             ['"%s"' % x for x in self._strong] +
@@ -475,13 +477,11 @@ class Response(object):
         self._cached_headers = None
         self._result = requests_response
 
-    @property
-    def iter_content(self):
-        return self._result.iter_content()
+    def iter_content(self, chunk_size=8192):
+        return self._result.iter_content(chunk_size=chunk_size)
 
-    @property
-    def iter_lines(self):
-        return self._result.iter_lines()
+    def iter_lines(self, chunk_size=8192):
+        return self._result.iter_lines(chunk_size=chunk_size)
 
     @property
     def content(self):
@@ -496,14 +496,19 @@ class Response(object):
 
     @property
     def text(self):
-        return if_bytes_to_unicode(self.content, self.encoding)
+        if self.encoding is None:
+            encoding = 'ISO-8859-1'
+        else:
+            encoding = self.encoding
+
+        return if_bytes_to_unicode(self.content, encoding)
 
     @property
     def status_code(self):
         return int(self._result.status_code)
 
     def __len__(self):
-        return len(self.body)
+        return len(self.headers['content-length'])
 
     @property
     def content_type(self):
@@ -568,7 +573,12 @@ def request(client, method, url, params={},
             _cache_engine = None
 
         for kwarg in kwargs:
-            headers[kwarg] = kwargs[kwarg]
+            # NOTE(cfrademan):
+            # Generally headers have '-' not '_'. Also kwargs
+            # cannot contain '-'.
+            if kwargs[kwarg] is not None:
+                header = kwarg.replace('_', '-')
+                headers[header] = str(kwargs[kwarg])
 
         if data is not None:
             if hasattr(data, 'json'):
@@ -577,8 +587,8 @@ def request(client, method, url, params={},
                 data = js.dumps(data)
             data = if_unicode_to_bytes(data)
 
-        if isinstance(data, bytes):
-            headers['Content-Length'] = str(len(data))
+            if isinstance(data, bytes):
+                headers['Content-Length'] = str(len(data))
 
         cached = None
         if (_cache_engine and stream is False and
@@ -619,12 +629,30 @@ def request(client, method, url, params={},
                     headers['If-None-Match'] = etag
 
         try:
-            response = Response(client._s.request(method.upper(),
-                                                  url,
-                                                  params=params,
-                                                  data=data,
-                                                  headers=headers,
-                                                  stream=stream))
+            # response = Response(client._s.request(method.upper(),
+            #                                      url,
+            #                                      params=params,
+            #                                      data=data,
+            #                                      headers=headers,
+            #                                      stream=stream))
+
+            # NOTE(cfrademan): Using prepared requests, because we need to
+            # no Transfer Encoding chunked, and expect Content-Length...
+            # Chunked encoding is not well supported uploading to WSGI app.
+            prepped = client._s.prepare_request(
+                requests.Request(method.upper(),
+                                 url,
+                                 params=params,
+                                 data=data,
+                                 headers=headers))
+
+            if 'Content-Length' in prepped.headers:
+                if 'Transfer-Encoding' in prepped.headers:
+                    del prepped.headers['Transfer-Encoding']
+
+            response = Response(client._s.send(prepped,
+                                               stream=stream))
+
             if (_cache_engine and cached is not None and
                     response.status_code == 304):
 
@@ -637,11 +665,14 @@ def request(client, method, url, params={},
                 return cached
 
             if response.status_code >= 400:
+                if 'X-Expired-Token' in response.headers:
+                    raise TokenExpiredError()
 
                 try:
                     title = None
                     description = None
-                    if 'error' in response.json:
+                    if ('json' in response.content_type.lower() and
+                        'error' in response.json):
                         error = response.json['error']
                         try:
                             title = error.get('title')
@@ -651,7 +682,7 @@ def request(client, method, url, params={},
 
                     raise HTTPError(response.status_code, description, title)
                 except HTTPClientContentDecodingError:
-                    raise HTTPError(response.status_code)
+                    raise HTTPError(response.status_code) from None
 
             if _cache_engine and stream is False and method == 'GET':
                 if response.status_code == 200:
@@ -688,8 +719,12 @@ def request(client, method, url, params={},
         except requests.exceptions.HTTPError as e:
             raise HTTPError(e.response.status_code, e)
 
-        _debug(method, url, params, data, headers, response.headers,
-               response.content, response.status_code, elapsed())
+        if stream is True:
+            _debug(method, url, params, data, headers, response.headers,
+                   None, response.status_code, elapsed())
+        else:
+            _debug(method, url, params, data, headers, response.headers,
+                   response.content, response.status_code, elapsed())
 
     return response
 
@@ -705,17 +740,69 @@ class Stream(object):
         self._headers = headers
         self._response = None
         self._kwargs = kwargs
+        self._iterator = None
 
     def __enter__(self):
+        # NOTE(cfrademan): Not fanatstic idea...
+        #if self._response is not None:
+        #    raise HTTPClientError('Stream already open')
+
+        self.open()
+
+        return self._response
+
+    def __exit__(self, type, value, traceback):
+        self._response.close()
+
+    def __iter__(self):
+        if self._response is None:
+            raise HTTPClientError('Stream not open')
+
+        return self._response.iter_content(8192)
+
+    def open(self):
+        if self._response is not None:
+            raise HTTPClientError('Stream already open')
+
         self._response = request(self._client, self._method, self._uri,
                                  params=self._params,
                                  data=self._data,
                                  headers=self._headers,
                                  stream=True,
                                  **self._kwargs)
-        return self._response
+        return self
 
-    def __exit__(self, type, value, traceback):
+    def read(self, *args):
+        if self._response is None:
+            raise HTTPClientError('Stream not open')
+
+        if not self._iterator:
+            self._iterator = self.__iter__()
+
+        try:
+            return next(self._iterator)
+        except StopIteration:
+            return None
+
+    @property
+    def headers(self):
+        if self._response is None:
+            raise HTTPClientError('Stream not open')
+
+        return self._response.headers
+
+    @property
+    def status_code(self):
+        if self._response is None:
+            raise HTTPClientError('Stream not open')
+
+        return self._response.status_code
+
+
+    def close(self):
+        if self._response is None:
+            raise HTTPClientError('Stream not open')
+
         self._response.close()
 
 
@@ -766,8 +853,10 @@ class Client(object):
                       headers,
                       **kwargs)
 
-    def execute(self, method, uri, params={},
-                data=None, headers={}, endpoint=None, **kwargs):
+    def execute(self, method, uri, params=None,
+                data=None, headers=None, endpoint=None, **kwargs):
+        params = params or {}
+        headers = headers or {}
 
         return request(self, method, self._build_url(uri, endpoint),
                        params=params,

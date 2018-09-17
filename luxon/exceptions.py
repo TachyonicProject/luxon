@@ -92,6 +92,32 @@ class AccessDeniedError(ValidationError):
         super().__init__(message)
 
 
+class TokenExpiredError(AccessDeniedError):
+    """Token Expired Error.
+
+    This error indicates that the server understood the request but refuses to
+    authorize it.
+
+    Args:
+        message (str): Reason for access denied.
+    """
+    def __init__(self):
+        super().__init__("Credentials token expired")
+
+
+class TokenMissingError(AccessDeniedError):
+    """Token Missing Error.
+
+    This error indicates that the server understood the request but refuses to
+    authorize it.
+
+    Args:
+        message (str): Reason for access denied.
+    """
+    def __init__(self):
+        super().__init__("Credentials token missing")
+
+
 class NotFoundError(ValidationError):
     """Not Found.
 
@@ -440,7 +466,7 @@ class HTTPError(Error):
 
         self.headers = headers
 
-        super().__init__(self.title + ' ' + self.description)
+        super().__init__(self.title + ' ' + '(' + self.description + ')')
 
 
 class HTTPClientError(HTTPError):

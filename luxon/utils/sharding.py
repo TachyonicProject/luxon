@@ -62,8 +62,9 @@ class Partition(object):
 
             for replicate in range(replicas):
                 node = counter % number_of_nodes
-                partition_nodes.append(nodes[node])
-                counter += 1
+                if nodes[node] not in partition_nodes:
+                    partition_nodes.append(nodes[node])
+                    counter += 1
 
             self._partitions.append(partition_nodes)
 

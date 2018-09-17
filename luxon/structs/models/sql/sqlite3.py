@@ -85,7 +85,7 @@ class Sqlite3(object):
                 if null is False:
                     sql_field += ' NOT NULL'
 
-                if self._model.primary_key.name == column:
+                if self._model.primary_key and self._model.primary_key.name == column:
                     sql_field += ' PRIMARY KEY'
 
                 if sql_field is not None:

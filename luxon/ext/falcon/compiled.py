@@ -123,6 +123,8 @@ class CompiledRouter(object):
                         node.method_map = method_map
                         node.resource = resource
                         node.uri_template = uri_template
+                        node.tag = tag
+                        node.cache = cache
                     else:
                         insert(node.children, path_index)
 

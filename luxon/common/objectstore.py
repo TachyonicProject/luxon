@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2016-2017, Christiaan Frans Rademan.
+# Copyright (c) 2018 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,46 +27,21 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+from luxon.utils.sharding import shard
+from luxon.utils.files import joinpath
+from luxon import g
 
-defaults = {
-    'DEFAULT': {
-        'host': '127.0.0.1',
-    },
-    'application': {
-        'name': 'Application',
-        'static': '/static',
-        'use_forwarded': 'false',
-        'timezone': 'local',
-        'default_theme': 'default',
-        'log_stdout': 'True',
-        'log_level': 'WARNING',
-        'debug': 'False',
-    },
-    'identity': {
-        'url': 'http://127.0.0.1/infinitystone',
-        'interface': 'public',
-        'region': 'Region1',
-        'connect_timeout': '2',
-        'read_timeout': '8',
-        'verify': 'True',
-    },
-    'tokens': {
-        'expire': '3600',
-    },
-    'sessions': {
-        'expire': '86400',
-        'backend': 'luxon.core.session:Cookie',
-        'session': 'luxon.core.session:TrackCookie',
-    },
-    'database': {
-        'type': 'sqlite3',
-    },
-    'redis': {
-        'db': '0',
-    },
-    'cache': {
-        'backend': 'luxon.core.cache:Memory',
-        'max_objects': '5000',
-        'max_object_size': '50',
-    },
-}
+def get_partition(tenant_id, container, object):
+    return shard(joinpath(tenant_id, container, object))
+
+def get_nodes(shards, tenant_id, container, obj):
+    ordered_nodes = []
+    partition = get_partition(tenant_id, container, obj)
+    nodes = shards[partition]
+    primary_node = shard(obj) % len(nodes)
+    ordered_nodes.append(nodes.pop(primary_node))
+    for node in nodes:
+        ordered_nodes.append(node)
+
+    return ordered_nodes
+
