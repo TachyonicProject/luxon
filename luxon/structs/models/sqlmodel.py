@@ -81,7 +81,7 @@ class SQLModel(Model, SQLFields):
                 crsr.commit()
                 self._sql_parse([result])
             else:
-                raise ValueError('object not found')
+                raise exceptions.NotFoundError('object not found')
 
     def delete(self):
         self._deleted = True
@@ -199,9 +199,11 @@ class SQLModel(Model, SQLFields):
 
     @classmethod
     def create_table(cls):
-        if cls.primary_key is None:
-            raise KeyError("Model %s:" % cls.name +
-                           " No primary key") from None
+        # NOTE(cfrademan):
+        # This should not be a dependancy any more for models.
+        #if cls.primary_key is None:
+        #    raise KeyError("Model %s:" % cls.model_name +
+        #                   " No primary key") from None
 
         api = g.app.config.get('database', 'type')
         driver_cls = api.title()

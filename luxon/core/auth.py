@@ -35,7 +35,9 @@ from luxon.utils.encoding import (if_unicode_to_bytes,
                                   if_bytes_to_unicode,)
 from luxon.utils import rsa
 from luxon.core.logger import GetLogger
-from luxon.exceptions import AccessDeniedError
+from luxon.exceptions import (AccessDeniedError,
+                              TokenExpiredError,
+                              TokenMissingError)
 from luxon.utils import js
 from luxon.utils.timezone import utc, now
 from luxon.utils import files
@@ -100,11 +102,11 @@ class Auth(object):
     def token(self):
         # Return serialized token.
         if not self.authenticated:
-            raise AccessDeniedError("Credentials token missing")
+            raise TokenMissingError()
 
         utc_expire = utc(self._credentials['expire'])
         if now() > utc_expire:
-            raise AccessDeniedError('Auth Token Expired')
+            raise TokenExpiredError()
 
         bytes_token = if_unicode_to_bytes(js.dumps(self._credentials,
                                                    indent=None))
@@ -132,7 +134,7 @@ class Auth(object):
         utc_expire = utc(decoded['expire'])
 
         if now() > utc_expire:
-            raise AccessDeniedError('Auth Token Expired')
+            raise TokenExpiredError()
 
         self._credentials = decoded
 
@@ -140,11 +142,11 @@ class Auth(object):
     def json(self):
         # Return json token.
         if not self.authenticated:
-            raise AccessDeniedError("Credentials token missing")
+            raise TokenMissingError()
 
         utc_expire = utc(self._credentials['expire'])
         if now() > utc_expire:
-            raise AccessDeniedError('Auth Token Expired')
+            raise TokenExpiredError()
 
         credentials = {}
         credentials['token'] = self.token
@@ -238,12 +240,12 @@ class Auth(object):
 
     def validate(self):
         if not self.authenticated:
-            raise AccessDeniedError("Credentials token missing") from None
+            raise TokenMissingError() from None
         elif 'expire' in self._credentials:
             utc_expire = utc(self._credentials['expire'])
             if now() > utc_expire:
                 self.clear()
-                raise AccessDeniedError('Credentials token expired') from None
+                raise TokenExpiredError() from None
 
     def __setattr__(self, attr, value):
         if attr in self.__slots__:
