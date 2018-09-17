@@ -32,6 +32,8 @@ import os
 import stat
 import fcntl
 import shutil
+from io import BytesIO
+
 from luxon.utils.encoding import if_bytes_to_unicode
 from luxon.utils.timezone import to_timezone, TimezoneSystem, TimezoneUTC
 from luxon.utils.singleton import NamedSingleton
@@ -515,10 +517,7 @@ def file_info(path):
     owner = f_stat.st_uid
     group = f_stat.st_gid
     mode = f_stat.st_mode
-    if 'size' in f_stat:
-        size = f_stat.size
-    else:
-        size = 0
+    size = f_stat.st_size
     access_time = f_stat.st_atime
     modified_time = f_stat.st_mtime
     create_time = f_stat.st_ctime
@@ -585,3 +584,7 @@ def joinpath(path, *p):
 
 def dirname(path):
     return os.path.dirname(path)
+
+
+def rename(src, dst):
+    return os.rename(src, dst)

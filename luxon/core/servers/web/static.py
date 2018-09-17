@@ -55,7 +55,7 @@ def static(req, resp):
         sfile = open(sfile_path, 'rb').read()
         resp.content_type = const.APPLICATION_OCTET_STREAM
         mime_type = mimetypes.guess_type(sfile_path)
-        if mime_type is not None:
+        if mime_type[0] is not None:
             resp.content_type = mime_type[0]
             if mime_type[1] is not None:
                 resp.content_type += ';charset=%s' % mime_type[1]

@@ -77,6 +77,7 @@ class Response(Redirects):
 
     __slots__ = (
         'content_type',
+        '_content_length',
         '_stream',
         '_headers',
         '_http_response_status_code',
@@ -87,6 +88,7 @@ class Response(Redirects):
 
     def __init__(self, environ, start_response):
         self.content_type = None
+        self._content_length = None
         self._stream = None
         self._headers = {}
 
@@ -108,16 +110,15 @@ class Response(Redirects):
         return '<%s: %s>' % (self.__class__.__name__, self.status)
 
     @property
-    def rows(self):
-        return (self._total_rows, self._filtered_rows)
-
-    @property
     def content_length(self):
         """Value of bytes in response.
 
         Returns:
             int: total octects for response.
         """
+        if self._content_length:
+            return str(self._content_length)
+
         try:
             return self._stream.getbuffer().nbytes
         except AttributeError:
@@ -127,6 +128,10 @@ class Response(Redirects):
             return len(self._stream)
         except TypeError:
             return None
+
+    @content_length.setter
+    def content_length(self, value):
+        self._content_length = value
 
     def body(self, obj):
         """Set Response Body.
@@ -456,13 +461,8 @@ class Response(Redirects):
         if path:
             self._cookies[name]['path'] = path
 
-        if secure is None:
-            is_secure = self.options.secure_cookies_by_default
-        else:
-            is_secure = secure
-
-        if is_secure:
-            self._cookies[name]['secure'] = True
+        if secure:
+            self._cookies[name]['secure'] = secure
 
         if http_only:
             self._cookies[name]['httponly'] = http_only

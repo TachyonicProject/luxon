@@ -36,7 +36,7 @@ from luxon.core.handlers.wsgi.response import Response
 from luxon.exceptions import (Error, NotFoundError,
                               AccessDeniedError, JSONDecodeError,
                               ValidationError, FieldError,
-                              HTTPError)
+                              HTTPError, TokenExpiredError)
 from luxon.utils.html5 import error_page, error_ajax
 from luxon import render_template
 from luxon.core.logger import GetLogger
@@ -247,6 +247,10 @@ class Application(object):
                                     exception))
             title = "Access Denied"
             description = str(exception)
+
+            if isinstance(exception, TokenExpiredError):
+                resp.set_header('X-Expired-Token', 'true')
+
             resp.status = 403
 
         elif isinstance(exception, NotFoundError):

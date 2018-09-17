@@ -935,7 +935,7 @@ class Request(RequestBase):
         elif self.host in self.cookies and 'region' in self.session:
             return self.session.get('region')
 
-        return g.app.config.get('restapi', 'region', fallback=None)
+        return g.app.config.get('identity', 'region', fallback=None)
 
     @property
     def context_interface(self):
@@ -945,7 +945,7 @@ class Request(RequestBase):
         elif self.host in self.cookies and 'interface' in self.session:
             return self.session.get('interface')
 
-        return g.app.config.get('restapi', 'interface', fallback='public')
+        return g.app.config.get('identity', 'interface', fallback='public')
 
     @property
     def context_domain(self):
@@ -955,7 +955,8 @@ class Request(RequestBase):
         elif self.host in self.cookies and 'domain' in self.session:
             return self.session.get('domain')
 
-        return self.credentials.domain
+        return g.app.config.get('identity', 'domain',
+                                fallback=self.credentials.domain)
 
     @property
     def context_tenant_id(self):
@@ -965,7 +966,8 @@ class Request(RequestBase):
         elif self.host in self.cookies and 'tenant_id' in self.session:
             return self.session.get('tenant_id')
 
-        return self.credentials.tenant_id
+        return g.app.config.get('identity', 'tenant_id',
+                                fallback=self.credentials.tenant_id)
 
     def get_first(self, field, required=False, default=None):
         """Get the value for the given field name in form.
