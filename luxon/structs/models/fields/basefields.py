@@ -49,7 +49,7 @@ from luxon.core.regex import (EMAIL_RE,
                               IP4_PREFIX_RE,
                               IP6_PREFIX_RE)
 from luxon.structs.models.utils import defined_length_check
-
+from luxon import js
 
 class BaseFields(object):
     """Base Fields outer class"""
@@ -303,6 +303,23 @@ class BaseFields(object):
 
         def parse(self, value):
             return value
+
+    class Json(String):
+        """Json Field.
+
+        When provided with a dict or list, the parser will convert to str
+        in JSON format (eg. for writing into database).
+        When provided with a str, the parser will attempt to load as dict/list
+        to return. (eg. for when reading from database).
+        """
+        def parse(self, value):
+            if isinstance(value, (dict, list)):
+                return js.dumps(value, indent=0).replace('\n','')
+            if isinstance(value, str):
+                try:
+                    return js.loads(value)
+                except:
+                    self.error("Invalid json in '%s'" % value, value)
 
     class Enum(String):
         """Enum Field.
