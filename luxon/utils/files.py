@@ -32,8 +32,9 @@ import os
 import stat
 import fcntl
 import shutil
-from io import BytesIO
+from multiprocessing import Lock as ProcessLock
 
+from luxon.structs.threaddict import ThreadDict
 from luxon.utils.encoding import if_bytes_to_unicode
 from luxon.utils.timezone import to_timezone, TimezoneSystem, TimezoneUTC
 from luxon.utils.singleton import NamedSingleton
@@ -141,19 +142,29 @@ class FileObject(object):
         self.file = file
 
 
+per_thread_lock = ThreadDict()
+
+
 class Lock(object):
     def __init__(self, file, perms=600):
-        perms = _perm_to_octal(perms)
         self._lock_file = file + '.lock'
         self._lock_file_fd = open(
-            os.open(self._lock_file, os.O_CREAT | os.O_WRONLY,
-                    perms),
+            self._lock_file,
             'wb')
+        chmod(self._lock_file, perms)
         fcntl.flock(self._lock_file_fd, fcntl.LOCK_EX)
+
+        if self._lock_file not in per_thread_lock:
+            per_thread_lock[self._lock_file] = ProcessLock()
+            per_thread_lock[self._lock_file].acquire()
+        else:
+            per_thread_lock[self._lock_file].acquire()
 
     def unlock(self):
         rm(self._lock_file)
         self._lock_file_fd.close()
+        proclock = per_thread_lock.pop(self._lock_file)
+        proclock.release()
 
     def __enter__(self):
         return self
@@ -178,122 +189,41 @@ class Open(object):
         * closefd
         * opener
 
-
-    Args:
+    Arguments:
         file (file): file to be opened
+
+    Keyword Arguements:
         mode (str): mode
 
     """
     def __init__(self, file, mode='r', buffering=-1, encoding=None,
                  errors=None, newline=None, closefd=True, opener=None,
-                 perms=600, create=True):
-
-        if create is False:
-            if not exists(file):
-                raise FileNotFoundError(file)
+                 perms=600):
 
         self._lock = Lock(file, perms)
-        perms = _perm_to_octal(perms)
 
         try:
-            self.fd = open(
-                os.open(file, os.O_RDWR | os.O_CREAT, perms),
+            self.file = open(
+                file,
                 mode=mode, buffering=buffering,
                 encoding=encoding, errors=errors,
                 newline=newline, closefd=closefd,
                 opener=opener
             )
-        except FileNotFoundError:
-            self._lock_file_fd.close()
-            raise
-
-    @property
-    def encoding(self):
-        """Property
-
-        Encode file"""
-        if hasattr(self.fd, 'encoding'):
-            return self.fd.encoding
-        else:
-            raise AttributeError('encoding')
-
-    @property
-    def errors(self):
-        """Property
-
-        Unicode Error Handler"""
-        if hasattr(self.fd, 'errors'):
-            return self.fd.errors
-        else:
-            raise AttributeError('errors')
-
-    @property
-    def newlines(self):
-        """Property
-
-        end-of-line convention"""
-        if hasattr(self.fd, 'newlines'):
-            return self.fd.newlines
-        else:
-            raise AttributeError('newlines')
-
-    @property
-    def buffer(self):
-        """Property
-
-        Buffer size"""
-        if hasattr(self.fd, 'buffer'):
-            return self.fd.buffer
-        else:
-            raise AttributeError('buffer')
-
-    def read(self, size=-1):
-        """Read file"""
-        return self.fd.read(size)
-
-    def readline(self, size=-1):
-        """Read line"""
-        if hasattr(self.fd, 'readline'):
-            return self.fd.readline(size)
-        else:
-            raise AttributeError('readline')
-
-    def seek(self, offset, whence=0):
-        """Move to new file position"""
-        if hasattr(self.fd, 'seek'):
-            return self.fd.seek(offset, whence)
-        else:
-            raise AttributeError('seek')
-
-    def tell(self):
-        """Current file position"""
-        if hasattr(self.fd, 'tell'):
-            return self.fd.tell()
-        else:
-            raise AttributeError('tell')
-
-    def write(self, value):
-        """Write File"""
-        self.fd.write(value)
-
-    def flush(self):
-        """Clear the buffer"""
-        if hasattr(self.fd, 'flush'):
-            return self.fd.flush
-        else:
-            raise AttributeError('flush')
-
-    def close(self):
-        """Close File"""
-        self.flush()
-        self.fd.close()
-        self._lock.unlock()
+            chmod(file, perms)
+        except Exception as e:
+            self._lock.unlock()
+            raise e from None
 
     def __enter__(self):
-        return self
+        """Return File"""
+        return self.file
 
     def __exit__(self, type, value, traceback):
-        self.close()
+        """Close File"""
+        self.file.flush()
+        self.file.close()
+        self._lock.unlock()
 
 
 def get_free_space(path):
