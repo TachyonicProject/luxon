@@ -425,7 +425,8 @@ def form(model, values=None, readonly=False):
                                        required=required,
                                        placeholder=obj.placeholder,
                                        label=label))
-        elif isinstance(obj, (Model.String, Model.Integer)):
+        elif isinstance(obj, (Model.Decimal, Model.Double,
+                              Model.Float, Model.String, Model.Integer)):
             html.append(field_text(field, value=value,
                                    readonly=field_readonly,
                                    disabled=field_readonly,

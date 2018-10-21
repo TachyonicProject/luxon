@@ -27,45 +27,24 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import pickle
+from pytest import raises
+import pytest
+parametrize = pytest.mark.parametrize
 
-from luxon.utils.objects import object_name
-from luxon.core.cache import Cache
-from luxon.utils.hashing import md5sum
-from luxon.utils.objects import orderdict
+from luxon.utils.sharding import Ring, NodesTree
 
 
-def cache(expire, func, *args, **kwargs):
-    global _cache_engine
+class TestSharding(object):
+    def test_ring(self):
+        nodes = NodesTree(ring_power=16, replicas=2)
+        ring = Ring(nodes, ring_power=16, replicas=2)
+        nodes.test_create_nodes(1365, 1)
+        nodes.test_create_nodes(1365, 2)
+        nodes.test_create_nodes(1365, 3)
+        ring.build()
+        nodes, zones = ring.test_distribution()
+        for node in nodes:
+            assert node['percent'] < 1
+        for zone in zones:
+            assert zone['percent'] == 100
 
-    _cache_engine = Cache()
-
-    # mem args used to build reference id for cache.
-    mem_args = [object_name(func), ]
-
-    # NOTE(cfrademan): This is important, we dont want object address,
-    # types etc inside of the cache reference. We cannot memoize based
-    # on args, kwargsargs provided to function containing objects other than
-    # str, int, float, bytes,
-    scan_args = list(args) + list(orderdict(kwargs).items())
-    for arg in scan_args:
-        if not isinstance(arg, (str, int, float, bytes,)):
-            mem_args.append(object_name(arg))
-        else:
-            raise ValueError("Cache 'callable' not possible with" +
-                             " args/kwargsargs containing values with types" +
-                             " other than 'str', 'int', 'float', 'bytes'")
-
-    # create the actual key / reference id.
-    key = md5sum(pickle.dumps(mem_args))
-
-    cached = _cache_engine.load(key)
-
-    if cached is not None:
-        return cached
-
-    print(args)
-    result = func(*args, **kwargs)
-    _cache_engine.store(key, result, expire)
-
-    return result

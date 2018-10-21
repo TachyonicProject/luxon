@@ -27,45 +27,32 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import pickle
+from uuid import UUID
 
-from luxon.utils.objects import object_name
-from luxon.core.cache import Cache
-from luxon.utils.hashing import md5sum
-from luxon.utils.objects import orderdict
+def validate_uuid4(uuid_string):
+    """
+    Validate that a UUID string is in
+    fact a valid uuid4.
+    Happily, the uuid module does the actual
+    checking for us.
+    It is vital that the 'version' kwarg be passed
+    to the UUID() call, otherwise any 32-character
+    hex string is considered valid.
+    """
 
+    try:
+        val = UUID(uuid_string, version=4)
+    except ValueError:
+        # If it's a value error, then the string 
+        # is not a valid hex code for a UUID.
+        return False
 
-def cache(expire, func, *args, **kwargs):
-    global _cache_engine
+    # If the uuid_string is a valid hex code, 
+    # but an invalid uuid4,
+    # the UUID.__init__ will convert it to a 
+    # valid uuid4. This is bad for validation purposes.
+    if (val.hex.upper() == uuid_string.upper() or
+            str(val).upper() == uuid_string.upper()):
+        return True
 
-    _cache_engine = Cache()
-
-    # mem args used to build reference id for cache.
-    mem_args = [object_name(func), ]
-
-    # NOTE(cfrademan): This is important, we dont want object address,
-    # types etc inside of the cache reference. We cannot memoize based
-    # on args, kwargsargs provided to function containing objects other than
-    # str, int, float, bytes,
-    scan_args = list(args) + list(orderdict(kwargs).items())
-    for arg in scan_args:
-        if not isinstance(arg, (str, int, float, bytes,)):
-            mem_args.append(object_name(arg))
-        else:
-            raise ValueError("Cache 'callable' not possible with" +
-                             " args/kwargsargs containing values with types" +
-                             " other than 'str', 'int', 'float', 'bytes'")
-
-    # create the actual key / reference id.
-    key = md5sum(pickle.dumps(mem_args))
-
-    cached = _cache_engine.load(key)
-
-    if cached is not None:
-        return cached
-
-    print(args)
-    result = func(*args, **kwargs)
-    _cache_engine.store(key, result, expire)
-
-    return result
+    return False
