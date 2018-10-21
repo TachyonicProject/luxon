@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018 Dave Kruger.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,21 +27,38 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-from luxon.utils.sharding import shard
-from luxon.utils.files import joinpath
-from luxon import g
 
-def get_partition(tenant_id, container, object):
-    return shard(joinpath(tenant_id, container, object))
+import threading
+import math
 
-def get_nodes(shards, tenant_id, container, obj):
-    ordered_nodes = []
-    partition = get_partition(tenant_id, container, obj)
-    nodes = shards[partition]
-    primary_node = shard(obj) % len(nodes)
-    ordered_nodes.append(nodes.pop(primary_node))
-    for node in nodes:
-        ordered_nodes.append(node)
+from luxon import GetLogger
+from luxon.utils.objects import object_name
 
-    return ordered_nodes
+log = GetLogger(__name__)
 
+def thread_balance(per_thread, func, items):
+    if isinstance(items, dict):
+        items = list(items.keys())
+
+    name = object_name(func)
+
+    log.info("Balancing '%s' items to '%s'." % (len(items), name,))
+
+    total_items = len(items)
+    threads = []
+    try:
+        for thread in range(0, total_items, per_thread):
+            end = thread + per_thread
+            t = threading.Thread(target=func, args=(items[thread:end],))
+            threads.append(t)
+            t.start()
+
+        log.info("Balanced '%s' items to '%s'. Total threads '%s'" %
+                 (len(items), name, len(threads),))
+
+        for thread in threads:
+            thread.join()
+
+    except KeyboardInterrupt:
+        for thread in threads:
+            thread.join()

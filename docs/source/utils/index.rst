@@ -27,6 +27,7 @@ Utilities Guide
     pyver
     rd
     rsa
+    sharding
     singleton
     sort
     split

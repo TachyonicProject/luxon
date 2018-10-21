@@ -52,5 +52,8 @@ class ThreadDict(threading.local):
     def __delitem__(self, key):
         del self.__dict__[key]
 
+    def pop(self, key):
+        return self.__dict__.pop(key)
+
     def __iter__(self):
         return iter(self.__dict__)

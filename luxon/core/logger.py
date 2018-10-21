@@ -48,6 +48,9 @@ log_format = logging.Formatter('%(asctime)s%(app_name)s' +
                                ' <%(levelname)s>: %(message)s',
                                datefmt='%b %d %H:%M:%S')
 
+simple_format = logging.Formatter('%(name)s' +
+                                  '[%(process)d]' +
+                                  ' <%(levelname)s>: %(message)s')
 
 def log_formatted(logger_facility, message, prepend=None, append=None,
                   timer=None, log_id=None):
@@ -151,15 +154,17 @@ def set_level(logger, level):
 
 def configure(config, config_section, logger):
     if (config_section == 'application' and
-       config_section not in config):
+            config_section not in config):
+
         # Clean/Remove Handlers
         for handler in logger.handlers:
             logger.removeHandler(handler)
 
-        # Set Stdout
+        # DEFAULT Set Stdout
         handler = logging.StreamHandler(stream=sys.stdout)
         handler.addFilter(_TachyonFilter())
         logger.addHandler(handler)
+        handler.setFormatter(simple_format)
 
     if config_section in config:
         # Config Section
@@ -232,6 +237,13 @@ class GetLogger(metaclass=NamedSingleton):
 
     def __init__(self, name=None):
         self.logger = logging.getLogger(name)
+
+        if not name:
+            # DEFAULT Set Stdout
+            handler = logging.StreamHandler(stream=sys.stdout)
+            handler.addFilter(_TachyonFilter())
+            self.logger.addHandler(handler)
+            handler.setFormatter(simple_format)
 
     @property
     def level(self):

@@ -92,12 +92,12 @@ def dict_value_property(dictionary, key):
 def save(obj, file_path, perms=600):
     from luxon.utils.files import Open
 
-    with Open(file_path, 'wb', 0, perms=perms) as fp:
+    with Open(file_path, 'wb', perms=perms) as fp:
         pickle.dump(obj, fp)
 
 
 def load(file_path, perms=600):
     from luxon.utils.files import Open
 
-    with Open(file_path, 'rb', 0, create=False, perms=perms) as fp:
+    with Open(file_path, 'rb', perms=perms) as fp:
         return pickle.load(fp)

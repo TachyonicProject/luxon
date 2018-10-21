@@ -202,10 +202,12 @@ class BaseFields(object):
             m (int): Values can be stored with up to M digits in total.
             d (int): Digits that may be after the decimal point.
         """
-        def __init__(self, m, d):
+        def __init__(self, m, d, default=None, null=True):
             self.m = m
             self.d = d
             super().__init__()
+            self.default = default
+            self.null = null
 
         def parse(self, value):
             try:
@@ -258,8 +260,12 @@ class BaseFields(object):
             m (int): Values can be stored with up to M digits in total.
             d (int): Digits that may be after the decimal point.
         """
-        def __init__(self, m, d):
+        def __init__(self, m, d, default=None, null=True):
+            self.m = m
+            self.d = d
             super().__init__()
+            self.default = default
+            self.null = null
 
         def parse(self, value):
             try:
@@ -315,9 +321,12 @@ class BaseFields(object):
         """
         def __init__(self, *args, **kwargs):
             super().__init__(**kwargs)
-            self.enum = args
+            self.enum = []
+            for arg in args:
+                self.enum.append(str(arg))
 
         def parse(self, value):
+            value = str(value)
             value = super().parse(value)
             if value not in self.enum:
                 self.error('Invalid option', value)

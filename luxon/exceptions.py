@@ -74,6 +74,17 @@ class ValidationError(Error):
         super().__init__(message)
 
 
+class DuplicateError(Error):
+    """Duplicate  Error.
+
+    Args:
+        message (str): Reason for validation error.
+    """
+
+    def __init__(self, message):
+        super().__init__(message)
+
+
 class AccessDeniedError(ValidationError):
     """Access Denied.
 

@@ -813,6 +813,9 @@ class Client(object):
 
         self._url = url
         self._s = requests.Session()
+        adapter = requests.adapters.HTTPAdapter(pool_connections=1000, max_retries=3)
+        self._s.mount('http://', adapter)
+        self._s.mount('https://', adapter)
         self._s.headers.update({'User-Agent': __identity__})
 
         if auth:
