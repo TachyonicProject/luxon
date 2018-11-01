@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018 Christiaan Frans Rademan, Dave Kruger
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@ from luxon import metadata
 from luxon.core.servers.web import server as web_server
 from luxon import db
 from luxon.utils.rsa import RSAKey
+from luxon.utils.crypto import Crypto
 from luxon.utils.files import mkdir
 from luxon.utils.pkg import Module
 from luxon.core.utils import models
@@ -97,6 +98,19 @@ def rsa(args):
     with Open(args.path.rstrip('/') + '/public.pem', 'w') as f:
         f.write(rsakey.public_key)
 
+def gen_key(args):
+    """Generates a new AES symmetrical key and iv in *credentials.key*"""
+    print("Generating new AES key and initialization "
+          "vector in credentials.key")
+    crypto = Crypto()
+    key_loc = args.path.rstrip('/') + '/credentials.key'
+    if not os.path.isfile(key_loc):
+        key = crypto.generate_key()
+        iv = crypto.generate_iv()
+        with open(key_loc, 'wb') as f:
+            f.write(key + iv)
+    else:
+        print("Key already exists, not overwriting")
 
 def clean_sessions(args):
     """Removes all expired session files"""
@@ -192,6 +206,12 @@ def main(argv):
                        action='append_const',
                        const=rsa,
                        help='Generate RSA Private/Public Key pairs')
+
+    group.add_argument('-k',
+                       dest='funcs',
+                       action='append_const',
+                       const=gen_key,
+                       help='Generate Symmetrical Encryption Key')
 
     parser.add_argument('--password',
                        help='RSA Private Key Password',
