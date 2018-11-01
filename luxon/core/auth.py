@@ -220,6 +220,10 @@ class Auth(object):
         self._credentials['tenant_id'] = value
 
     @property
+    def user_id(self):
+        return self._credentials.get('user_id', None)
+
+    @property
     def user_domain(self):
         return self._credentials.get('user_domain', None)
 

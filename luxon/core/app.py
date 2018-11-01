@@ -35,6 +35,9 @@ from luxon.core.config.defaults import defaults as default_config
 from luxon.core.template import TachyonicLoader, Environment
 from luxon.utils.timezone import format_datetime, now
 from luxon.core.utils.theme import Theme
+from luxon.utils.files import is_file
+from luxon.utils.pkg import Module
+from luxon.utils.encoding import if_bytes_to_unicode
 
 log = GetLogger(__name__)
 
@@ -72,7 +75,11 @@ class App(object):
 
         if ini is not False:
             if ini is None:
-                self._config.load(path + '/settings.ini')
+                if is_file(path + '/settings.ini'):
+                    self._config.load(path + '/settings.ini')
+                else:
+                    luxon_config = Module('luxon').read('settings.ini')
+                    self._config.read_string(if_bytes_to_unicode(luxon_config))
             else:
                 self._config.load(ini)
 

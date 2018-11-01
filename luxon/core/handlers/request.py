@@ -86,6 +86,14 @@ class RequestBase(object):
         return self._context
 
     @property
+    def context_region(self):
+        return g.app.config.get('identity', 'region', fallback=None)
+
+    @property
+    def context_interface(self):
+        return g.app.config.get('identity', 'interface', fallback='public')
+
+    @property
     def credentials(self):
         if self._cached_auth is None:
             expire = g.app.config.getint('tokens', 'expire', fallback=3600)
@@ -99,6 +107,7 @@ class RequestBase(object):
                     self.log['USER-ID'] = self._cached_auth.user_id
                 except AccessDeniedError as e:
                     self.user_token = None
+                    self.scope_token = None
                     self.session.clear()
                     raise
 
@@ -106,6 +115,10 @@ class RequestBase(object):
 
     @property
     def user_token(self):
+        return None
+
+    @property
+    def scope_token(self):
         return None
 
     @property

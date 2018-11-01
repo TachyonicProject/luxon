@@ -28,6 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 import traceback
+from luxon import g
 
 from luxon import router
 from luxon.core.logger import GetLogger
@@ -40,7 +41,9 @@ _middleware_resource = []
 _middleware_post = []
 _error_template = None
 _ajax_error_template = None
-
+g.javascripts = []
+g.stylesheets = []
+g.dashboards = []
 
 class Register(object):
     __slots__ = ()
@@ -102,3 +105,15 @@ class Register(object):
         global _ajax_error_template
 
         _ajax_error_template = template
+
+    def javascript(self, javascript):
+        javascript = javascript.strip('/')
+        g.javascripts.append(javascript)
+
+    def stylesheet(self, stylesheet):
+        sylesheet = stylesheet.strip('/')
+        g.stylesheets.append(stylesheet)
+
+    def dashboard(self, heading, dashboard):
+        g.dashboards.append((heading, dashboard))
+
