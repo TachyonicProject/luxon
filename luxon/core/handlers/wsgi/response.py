@@ -94,8 +94,8 @@ class Response(Redirects):
 
         self._start_response = start_response
 
-        # Used internally.
-        self._http_response_status_code = 200
+        # Default Response Status Used internally.
+        self._http_response_status_code = 204
 
         # Some Default Headers..
         self._headers['X-Powered-By'] = __identity__
@@ -145,6 +145,9 @@ class Response(Redirects):
         Args:
             obj (object): Any valid object for response body.
         """
+        if self._http_response_status_code == 204:
+            self._http_response_status_code = 200
+
         if isinstance(obj, (str, bytes,)):
             # If Body is string, bytes.
             obj = if_unicode_to_bytes(obj)
@@ -183,6 +186,8 @@ class Response(Redirects):
             self._stream = BytesIO()
 
         length = self._stream.write(value)
+        if self._http_response_status_code == 204:
+            self._http_response_status_code = 200
 
         if self.content_type is None:
             self.content_type = self._DEFAULT_CONTENT_TYPE

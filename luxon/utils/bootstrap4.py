@@ -217,10 +217,7 @@ def field_label(field, label=None, cls=None):
     if cls:
         html_label.set_attribute('class', cls)
 
-    if label is not None:
-        html_label.append(label)
-    else:
-        html_label.append(field.title().replace('_', ' '))
+    html_label.append(label)
 
     return html
 
@@ -390,10 +387,7 @@ def form(model, values=None, readonly=False):
         else:
             required = False
 
-        if obj.label is not None:
-            label = obj.label
-        else:
-            label = obj.name.title().replace('_', ' ')
+        label = obj.label
 
         if isinstance(obj, Model.Enum):
             html.append(field_select(field, obj.enum, value=value,

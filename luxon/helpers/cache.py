@@ -33,6 +33,7 @@ from luxon.utils.objects import object_name
 from luxon.core.cache import Cache
 from luxon.utils.hashing import md5sum
 from luxon.utils.objects import orderdict
+from operator import itemgetter
 
 
 def cache(expire, func, *args, **kwargs):
@@ -43,14 +44,22 @@ def cache(expire, func, *args, **kwargs):
     # mem args used to build reference id for cache.
     mem_args = [object_name(func), ]
 
+    # Handle Kwargs - sort them etc.
+    scan_args = list(kwargs.items())
+    scan_args = sorted(scan_args, key=itemgetter(0))
+    scan_args = list([item for sublist in scan_args for item in sublist])
+
+    # Handle Args
+    scan_args += list(args)
+    
+
     # NOTE(cfrademan): This is important, we dont want object address,
     # types etc inside of the cache reference. We cannot memoize based
     # on args, kwargsargs provided to function containing objects other than
     # str, int, float, bytes,
-    scan_args = list(args) + list(orderdict(kwargs).items())
     for arg in scan_args:
-        if not isinstance(arg, (str, int, float, bytes,)):
-            mem_args.append(object_name(arg))
+        if isinstance(arg, (str, int, float, bytes,)):
+            mem_args.append(arg)
         else:
             raise ValueError("Cache 'callable' not possible with" +
                              " args/kwargsargs containing values with types" +
@@ -64,7 +73,6 @@ def cache(expire, func, *args, **kwargs):
     if cached is not None:
         return cached
 
-    print(args)
     result = func(*args, **kwargs)
     _cache_engine.store(key, result, expire)
 

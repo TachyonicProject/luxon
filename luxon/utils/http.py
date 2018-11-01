@@ -525,12 +525,14 @@ class Response(object):
     @property
     def json(self):
         if self._cached_json is None:
-            if self.encoding is not None and self.encoding != 'UTF-8':
-                raise HTTPClientContentDecodingError(
-                    'JSON requires UTF-8 Encoding') from None
 
             try:
                 if self.status_code != 204:
+
+                    if self.encoding is not None and self.encoding != 'UTF-8':
+                        raise HTTPClientContentDecodingError(
+                            'JSON requires UTF-8 Encoding') from None
+
                     self._cached_json = js.loads(self.content)
                 else:
                     self._cached_json = None
@@ -558,9 +560,18 @@ class Response(object):
     def close(self):
         self._result.close()
 
+def append_to_error(e, value):
+    e = str(e)
+    if value is not None:
+        e = "%s (%s)" % (e, value,)
+    return e
 
 def request(client, method, url, params={},
-            data=None, headers={}, stream=False, **kwargs):
+            data=None, headers={}, stream=False, endpoint=None,
+            **kwargs):
+
+    if endpoint is None:
+        endpoint = url
 
     with Timer() as elapsed:
         method = method.upper()
@@ -677,12 +688,23 @@ def request(client, method, url, params={},
                         try:
                             title = error.get('title')
                             description = error.get('description')
+                            if endpoint is not None:
+                                title += " (%s)" % endpoint
                         except AttributeError:
-                            pass
+                            if endpoint is not None:
+                                description = " Endpoint: %s" % endpoint
+                    else:
+                        if endpoint is not None:
+                            description = " Endpoint: %s" % endpoint
 
                     raise HTTPError(response.status_code, description, title)
                 except HTTPClientContentDecodingError:
-                    raise HTTPError(response.status_code) from None
+                    if endpoint is not None:
+                        description = 'Endpoint: %s'
+                        raise HTTPError(response.status_code,
+                                        description=description) from None
+                    else:
+                        raise HTTPError(response.status_code) from None
 
             if _cache_engine and stream is False and method == 'GET':
                 if response.status_code == 200:
@@ -697,26 +719,37 @@ def request(client, method, url, params={},
                         _cache_engine.store(cache_key, response, 604800)
 
         except requests.exceptions.InvalidHeader as e:
+            e = append_to_error(e, endpoint)
             raise HTTPClientInvalidHeader(e)
         except requests.exceptions.InvalidURL as e:
+            e = append_to_error(e, endpoint)
             raise HTTPClientInvalidURL(e)
         except requests.exceptions.InvalidSchema as e:
+            e = append_to_error(e, endpoint)
             raise HTTPClientInvalidSchema(e)
         except requests.exceptions.MissingSchema as e:
+            e = append_to_error(e, endpoint)
             raise HTTPClientMissingSchema(e)
         except requests.exceptions.ConnectionError as e:
+            e = append_to_error(e, endpoint)
             raise HTTPClientConnectionError(e)
         except requests.exceptions.ProxyError as e:
+            e = append_to_error(e, endpoint)
             raise HTTPClientProxyError(e)
         except requests.exceptions.SSLError as e:
+            e = append_to_error(e, endpoint)
             raise HTTPClientSSLError(e)
         except requests.exceptions.Timeout as e:
+            e = append_to_error(e, endpoint)
             raise HTTPClientTimeoutError(e)
         except requests.exceptions.ConnectTimeout as e:
+            e = append_to_error(e, endpoint)
             raise HTTPClientConnectTimeoutError(e)
         except requests.exceptions.ReadTimeout as e:
+            e = append_to_error(e, endpoint)
             raise HTTPClientReadTimeoutError(e)
         except requests.exceptions.HTTPError as e:
+            e = append_to_error(e, endpoint)
             raise HTTPError(e.response.status_code, e)
 
         if stream is True:
@@ -857,15 +890,22 @@ class Client(object):
                       **kwargs)
 
     def execute(self, method, uri, params=None,
-                data=None, headers=None, endpoint=None, **kwargs):
+                data=None, headers=None, endpoint=None,
+                default_endpoint_name=None, **kwargs):
         params = params or {}
         headers = headers or {}
+
+        if endpoint is None:
+            endpoint_name = default_endpoint_name
+        else:
+            endpoint_name = endpoint
 
         return request(self, method, self._build_url(uri, endpoint),
                        params=params,
                        data=data,
                        headers=headers,
                        stream=False,
+                       endpoint=endpoint_name,
                        **kwargs)
 
     def __setitem__(self, header, value):

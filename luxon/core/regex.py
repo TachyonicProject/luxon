@@ -34,9 +34,10 @@ IP4_EXPR = r'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
 FQDN_EXPR = r'([0-9a-z]+\.?)+'
 IP6_EXPR = r'([0-9a-f]{1,4}::?){1,8}'
 
-EMAIL_RE = re.compile(r'[^@]+@[^@]+\.[^@]+', re.IGNORECASE)
+EMAIL_RE = re.compile(r'^[a-z\.]+[a-z0-9\.]@[a-z\.]+[a-z0-9\.]$', re.IGNORECASE)
 WORD_RE = re.compile(r'^[a-z]+[a-z0-9]+$',re.IGNORECASE)
-USERNAME_RE = re.compile(r'^[a-z]+[a-z0-9.]+$',re.IGNORECASE)
+USERNAME_RE = re.compile(r'^([a-z\.]+[a-z0-9\.]+@[a-z\.]+[a-z0-9\.]+$' +
+           r'|^[a-z\.]+[a-z0-9\.]+)$', re.IGNORECASE)
 URI_RE = re.compile(r'^(?:http|ftp)s?://'
                     r'(' +
                     FQDN_EXPR +
