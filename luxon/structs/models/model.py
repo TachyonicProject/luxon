@@ -89,15 +89,20 @@ class Model(BaseFields, BlobFields, IntFields, TextFields):
 
     def __setitem__(self, key, value):
         try:
-            if (self.fields[key].readonly is True and
-                    self._transaction[key] is not None):
-                raise ValidationError(
-                    "Model %s:" % self.model_name +
-                    " readonly field '%s'" % key) from None
+            if ((value is None and self.fields[key].ignore_null is not True) or
+                    value is not None):
+                value = self.fields[key]._parse(value)
         except KeyError:
             raise ValidationError(
                 "Model %s:" % self.model_name +
                 " No such field '%s'" % key) from None
+
+        if (self.fields[key].readonly is True and
+                self._transaction[key] is not None and
+                self._transaction[key] != value):
+            raise ValidationError(
+                "Model %s:" % self.model_name +
+                " readonly field '%s'" % key) from None
 
         if (self.primary_key is not None and
                 self[key] is not None and
@@ -106,9 +111,8 @@ class Model(BaseFields, BlobFields, IntFields, TextFields):
                              " Cannot alter primary key '%s'"
                              % key) from None
 
-        if ((value is None and self.fields[key].ignore_null is not True) or
-                value is not None):
-            self._new[key] = self.fields[key]._parse(value)
+        self._new[key] = value
+
         self._updated = True
 
     def __delitem__(self, key):
@@ -182,6 +186,9 @@ class Model(BaseFields, BlobFields, IntFields, TextFields):
 
         return cls._fields
 
+    def __contains__(self, key):
+        return key in self.fields
+
     @property
     def json(self):
         """Return as serialized JSON.
@@ -200,10 +207,6 @@ class Model(BaseFields, BlobFields, IntFields, TextFields):
         Rollback to previous state before commit.
         """
         self._new.clear()
-
-        if isinstance(self._current, list):
-            for model in self._transaction:
-                model.rollback()
 
         self._created = False
         self._updated = False
@@ -241,48 +244,18 @@ class Model(BaseFields, BlobFields, IntFields, TextFields):
     def commit(self):
         """Commit transaction.
         """
-        if (isinstance(self._current, dict)):
-            self._current = self._pre_commit()[0]
-        else:
-            self._current = self._transaction
+        self._current = self._pre_commit()[0]
 
         self._created = False
         self._updated = False
 
-        if isinstance(self._current, list):
-            for model in self._transaction:
-                model.commit()
-
-    def new(self):
-        """Create new row.
-
-        Creates a new row and returns row model.
-        """
-        if isinstance(self._current, list):
-            NewModel = type(self.model_name, (self.__class__,), {})
-            NewModel._sql = self._sql
-            NewModel.primary_key = self.primary_key
-            NewModel._fields = self.fields
-            model = NewModel(model=dict, hide=self._hide)
-            self._new.append(model)
-            self._created = True
-            return model
-        else:
-            raise NotImplementedError()
-
     def update(self, obj):
         """Update Models.
 
-        Append (list) or Update (obj) object to columns.
+        Update (obj) object to columns.
 
         Args:
             obj (list/dict): List / Dict Object.
         """
-        if isinstance(self._current, list):
-            for row in obj:
-                new = self.new()
-                for column in row:
-                    new[column] = row[column]
-        else:
-            for column in obj:
-                self[column] = obj[column]
+        for column in obj:
+            self[column] = obj[column]

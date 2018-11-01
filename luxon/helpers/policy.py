@@ -33,6 +33,7 @@ from luxon.core.policy.policy import Policy
 from luxon.utils.files import is_file
 from luxon.utils import js
 from luxon.exceptions import JSONDecodeError
+from luxon.utils.pkg import Module
 
 _cached_compiled = None
 
@@ -46,15 +47,26 @@ def policy(**kwargs):
     global _cached_compiled
 
     if _cached_compiled is None:
-        policy_file = g.app.path + '/policy.json'
-        if is_file(policy_file):
-            with open(policy_file, 'r') as rule_set:
+        override_file = g.app.path + '/policy.json'
+        luxon = Module('luxon')
+        policy = luxon.read('policy.json')
+        try:
+            policy = js.loads(policy)
+        except JSONDecodeError as exception:
+            raise JSONDecodeError("Invalid Luxon 'policy.json' %s" %
+                                  exception)
+        if is_file(override_file):
+            with open(override_file, 'r') as override:
+                override = override.read()
                 try:
-                    _cached_compiled = compiler(js.loads(rule_set.read()))
+                    override = js.loads(override)
                 except JSONDecodeError as exception:
-                    raise JSONDecodeError("Invalid 'policy.json' %s" %
+                    raise JSONDecodeError("Invalid Override 'policy.json' %s" %
                                           exception)
         else:
-            raise FileNotFoundError(policy_file)
+            override = {}
+
+        policy.update(override)
+        _cached_compiled = compiler(policy)
 
     return Policy(_cached_compiled, **kwargs)

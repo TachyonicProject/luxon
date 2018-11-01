@@ -132,7 +132,10 @@ def args_to(query, args, to='qmark', cast=None):
             else:
                 raise ValueError("Unknown type '%s'" % type) from None
         except KeyError:
-            raise KeyError("Field '%s' value not in" % column +
+            raise KeyError("DB Query: Field '%s' value not in" % column +
                            " dictionary provided") from None
+        except IndexError:
+            raise IndexError("DB Query: Not all field" +
+                             " values provided") from None
 
     return (query, new_args)

@@ -79,7 +79,7 @@ class BaseFields(object):
             enum (list): List of possible values. Only for ENUM.
         """
         __slots__ = ('length', 'min_length', 'max_length', 'null', 'default',
-                     'db', 'label', 'placeholder', 'readonly', 'prefix',
+                     'db', '_label', 'placeholder', 'readonly', 'prefix',
                      'suffix', 'columns' ,'hidden', 'enum', '_field_name', '_table',
                      '_value', '_creation_counter', 'm', 'd', 'on_update',
                      'password', 'signed', 'ignore_null')
@@ -89,7 +89,8 @@ class BaseFields(object):
                      placeholder=None, readonly=False, prefix=None,
                      suffix=None, columns=None, hidden=False,
                      enum=[], on_update=None, password=False,
-                     signed=True, internal=False, ignore_null=False):
+                     signed=True, internal=False, ignore_null=False,
+                     lower=False, upper=False):
             self._creation_counter = global_counter()
             self._value = None
 
@@ -104,7 +105,7 @@ class BaseFields(object):
             self.default = default
             self.on_update = on_update
             self.db = db
-            self.label = label
+            self._label = label
             self.placeholder = placeholder
             self.readonly = readonly
             self.prefix = prefix
@@ -115,10 +116,19 @@ class BaseFields(object):
             self.password = password
             self.internal = internal
             self.ignore_null = False
+            self.lower = lower
+            self.upper = upper
 
         @property
         def name(self):
             return self._field_name
+
+        @property
+        def label(self):
+            if self._label:
+                return self._label
+            else:
+                return self.name.title().replace('_', ' ')
 
         def error(self, msg, value=None):
             raise FieldError(self.name, self.label, msg, value)
@@ -182,6 +192,10 @@ class BaseFields(object):
             if not isinstance(value, str):
                 self.error('Text/String value required) %s' % value, value)
             value = super().parse(value)
+            if self.lower:
+                value = value.lower()
+            if self.upper:
+                value = value.upper()
             return value
 
     class Float(BaseField):

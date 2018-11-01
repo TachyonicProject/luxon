@@ -901,9 +901,6 @@ class Request(RequestBase):
     def user_token(self, value):
         self._user_token = value
 
-        # if value is None:
-        #     value = ''
-
         self.session['token'] = value
         self.session.save()
 
@@ -921,42 +918,59 @@ class Request(RequestBase):
     def scope_token(self, value):
         self._scope_token = value
 
-        # if value is None:
-        #     value = ''
-
         self.session['scoped'] = value
         self.session.save()
 
     @property
-    def context_region(self):
-        if self.get_header('X-Region'):
-            return self.get_header('X-Region')
+    def proxy_context(self):
+        """Return context headers.
+        """
+        headers = {}
+        if self.context_region is not None:
+            headers['X-Region'] = self.context_region
 
-        elif self.host in self.cookies and 'region' in self.session:
-            return self.session.get('region')
+        if self.context_interface is not None:
+            headers['X-Interface'] = self.context_interface
 
-        return g.app.config.get('identity', 'region', fallback=None)
+        if self.context_domain is not None:
+            headers['X-Domain'] = self.context_domain
+
+        if self.context_tenant_id is not None:
+            headers['X-Tenant-Id'] = self.context_tenant_id
+
+        return headers
 
     @property
-    def context_interface(self):
-        if self.get_header('X-Interface'):
-            return self.get_header('X-Interface')
+    def context_region(self):
+        region = g.app.config.get('identity', 'region', fallback=None)
+        if region:
+            return region
+        else:
+            if self.get_header('X-Region'):
+                return self.get_header('X-Region')
 
-        elif self.host in self.cookies and 'interface' in self.session:
-            return self.session.get('interface')
+            elif self.host in self.cookies and 'region' in self.session:
+                return self.session.get('region')
 
-        return g.app.config.get('identity', 'interface', fallback='public')
+
+    @context_region.setter
+    def context_region(self, region):
+        self.session['region'] = region
+        self.session.save()
 
     @property
     def context_domain(self):
-        if self.get_header('X-Domain'):
-            return self.get_header('X-Domain')
+        domain = g.app.config.get('identity', 'domain', fallback=None)
+        if domain:
+            return domain
+        else:
+            if self.get_header('X-Domain'):
+                return self.get_header('X-Domain')
 
-        elif self.host in self.cookies and 'domain' in self.session:
-            return self.session.get('domain')
-
-        return g.app.config.get('identity', 'domain',
-                                fallback=self.credentials.domain)
+            elif self.host in self.cookies and 'domain' in self.session:
+                return self.session.get('domain')
+            else:
+                return self.credentials.domain
 
     @property
     def context_tenant_id(self):

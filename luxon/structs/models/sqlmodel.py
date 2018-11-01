@@ -33,6 +33,7 @@ from luxon.structs.models.model import Model
 from luxon.structs.models.fields.sqlfields import SQLFields
 from luxon import exceptions
 from luxon.utils.imports import get_class
+from luxon.utils.sql import build_where
 
 
 class SQLModel(Model, SQLFields):
@@ -97,29 +98,36 @@ class SQLModel(Model, SQLFields):
 
         transaction = self._pre_commit()[1]
 
+
         try:
             conn = db()
             for field in self.fields:
                 if isinstance(self.fields[field], SQLModel.UniqueIndex):
-                    index_fields = []
-                    index_values = []
-                    query = "SELECT count(*) as no FROM %s WHERE " % name
+                    index_fields = {}
+                    error_fields = []
+                    query = "SELECT count(id) as no FROM %s WHERE " % name
                     if key_id in self._transaction:
                         query += " %s != " % key_id
-                        query += "%s AND "
-                        index_values.append(self._transaction[key_id])
+                        query += "%s"
+                        oid = [self._transaction[key_id]]
+                    else:
+                        oid = []
+
                     for index_field in self.fields[field]._index:
                         if index_field.name in self._transaction:
-                            index_fields.append(index_field.name + ' = %s')
-                            index_values.append(
-                                self._transaction[index_field.name])
-                    query += ' AND '.join(index_fields)
-                    crsr = conn.execute(query, index_values)
+                            if self._transaction[index_field.name]:
+                                error_fields.append(index_field.label) 
+                            index_fields[index_field.name] = self._transaction[index_field.name]
+                    where, values = build_where(**index_fields)
+                    if oid and values:
+                        query += " AND " + where
+                    crsr = conn.execute(query, oid + values)
                     res = crsr.fetchone()
                     if res['no'] > 0:
                         raise exceptions.ValidationError(
-                            "Model %s:" % name +
-                            " Duplicate Entry") from None
+                            " Duplicate Entry" +
+                            " (%s)" % ", ".join(error_fields)) from None
+
                 if isinstance(self.fields[field], SQLModel.ForeignKey):
                     fk = self.fields[field]
                     if (fk._on_update == 'NO ACTION' or
@@ -133,7 +141,7 @@ class SQLModel(Model, SQLFields):
                                     self._transaction[fk_field.name])
                                 table = self._transaction[fk_field._table]
 
-                        query = "SELECT count(*) as no FROM %s WHERE " % table
+                        query = "SELECT count(id) as no FROM %s WHERE " % table
                         query += ' AND '.join(index_fields)
                         crsr = conn.execute(query, index_values)
                         if res['no'] > 0:
@@ -173,8 +181,9 @@ class SQLModel(Model, SQLFields):
                 args = []
                 for field in self._new:
                     if self.primary_key.name != field:
-                        if self.fields[field].readonly:
-                            self._new[field].error('readonly value')
+                        # We already check this on setitem
+                        #if self.fields[field].readonly:
+                        #    self._new[field].error('readonly value')
                         if self.fields[field].db:
                             sets.append('%s' % field +
                                         ' = %s')

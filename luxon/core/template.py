@@ -107,6 +107,9 @@ class TachyonicLoader(BaseLoader):
             raise TemplateNotFound("'importerror' " +
                                    package +
                                    '/' + template) from None
+        except TemplateNotFound:
+            raise TemplateNotFound(package +
+                                   '/' + template) from None
 
     def list_overrides(self):
         """Returns a list of overiding templates for this environment.

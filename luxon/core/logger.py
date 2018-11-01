@@ -81,7 +81,7 @@ def log_formatted(logger_facility, message, prepend=None, append=None,
             # There is resrictions on message sizes.
             # https://tools.ietf.org/html/rfc3164
             # https://tools.ietf.org/html/rfc5426
-            message += split_by_n(line, 500)
+            message += split_by_n(line, 300)
 
         if len(message) > 1:
             if log_id is None:
