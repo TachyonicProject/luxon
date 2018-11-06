@@ -143,7 +143,7 @@ class SQLFields(object):
 
             self._foreign_keys = to_tuple(foreign_keys)
             self._reference_fields = to_tuple(reference_fields)
-            self._on_delete = on_delete.upper()
-            self._on_update = on_update.upper()
+            self._on_delete = on_delete
+            self._on_update = on_update
             super().__init__()
             self.internal = True

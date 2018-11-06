@@ -42,6 +42,7 @@ from luxon.utils.timezone import TimezoneUTC
 from luxon.core.regex import (EMAIL_RE,
                               WORD_RE,
                               USERNAME_RE,
+                              PASSWORD_RE,
                               URI_RE,
                               FQDN_RE,
                               IP4_RE,
@@ -154,20 +155,6 @@ class BaseFields(object):
             if value is not None:
                 return self.parse(value)
 
-    class Confirm(BaseField):
-        def __init__(self, field):
-            self.field = field
-            super().__init__()
-            self.db = False
-            self.min_length = self.field.min_length
-            self.max_length = self.field.max_length
-            self.length = self.field.length
-            self.readonly = self.field.readonly
-            self.password = self.field.password
-
-        def parse(self, value):
-            return self.field.parse(value)
-
     class String(BaseField):
         """String Field.
 
@@ -196,6 +183,13 @@ class BaseFields(object):
                 value = value.lower()
             if self.upper:
                 value = value.upper()
+            return value
+
+    class Password(String):
+        def parse(self, value):
+            value = super().parse(value)
+            if not PASSWORD_RE.match(value):
+                self.error("invalid")
             return value
 
     class Float(BaseField):

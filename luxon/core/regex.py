@@ -30,6 +30,7 @@
 
 import re
 
+PASSWORD_RE = re.compile(r'^[^\s]+$', re.IGNORECASE)
 IP4_EXPR = r'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
 FQDN_EXPR = r'([0-9a-z]+\.?)+'
 IP6_EXPR = r'([0-9a-f]{1,4}::?){1,8}'

@@ -111,9 +111,13 @@ class Model(BaseFields, BlobFields, IntFields, TextFields):
                              " Cannot alter primary key '%s'"
                              % key) from None
 
-        self._new[key] = value
-
-        self._updated = True
+        if isinstance(self.fields[key], Model.Password):
+            if value is not None:
+                self._new[key] = value
+                self._updated = True
+        else:
+            self._new[key] = value
+            self._updated = True
 
     def __delitem__(self, key):
         raise NotImplementedError('Model delete field not implemented')
@@ -139,8 +143,6 @@ class Model(BaseFields, BlobFields, IntFields, TextFields):
         elif isinstance(self._current, dict):
             transaction = {**self._current, **self._new}
             for field in transaction.copy():
-                if isinstance(self.fields[field], Model.Confirm):
-                    del transaction[field]
                 if field in self._hide:
                     del transaction[field]
             return transaction
@@ -228,14 +230,7 @@ class Model(BaseFields, BlobFields, IntFields, TextFields):
                      self._transaction[field] is None)):
                 self.fields[field].error('required')
 
-            if isinstance(self.fields[field], Model.Confirm):
-                confirm_field = self.fields[field].field.name
-                value1 = self._transaction.get(confirm_field)
-                value2 = self._transaction.get(field)
-                if value1 != value2:
-                    raise Exception('boom')
-
-            elif (field in self._transaction and
+            if (field in self._transaction and
                     self.fields[field].db):
                 transaction[field] = self._transaction[field]
 

@@ -335,7 +335,7 @@ def field_password(field, value=None, id=None, readonly=False,
                    disabled=False, label=None, placeholder=None,
                    required=False):
     group = field_group()
-    group.append(label(field, label))
+    group.append(field_label(field, label))
 
     io = group.create_element('input')
     io.set_attribute('type', 'password')
@@ -414,6 +414,13 @@ def form(model, values=None, readonly=False):
                                        attrs={'data-boolean': None}))
         elif isinstance(obj, (Model.LongText, Model.MediumText)):
             html.append(field_textarea(field, value=value,
+                                       readonly=field_readonly,
+                                       disabled=field_readonly,
+                                       required=required,
+                                       placeholder=obj.placeholder,
+                                       label=label))
+        elif isinstance(obj, Model.Password):
+            html.append(field_password(field, value=value,
                                        readonly=field_readonly,
                                        disabled=field_readonly,
                                        required=required,
