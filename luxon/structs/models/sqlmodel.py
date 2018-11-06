@@ -34,6 +34,7 @@ from luxon.structs.models.fields.sqlfields import SQLFields
 from luxon import exceptions
 from luxon.utils.imports import get_class
 from luxon.utils.sql import build_where
+from luxon.exceptions import SQLIntegrityError, ValidationError
 
 
 class SQLModel(Model, SQLFields):
@@ -102,6 +103,8 @@ class SQLModel(Model, SQLFields):
         try:
             conn = db()
             for field in self.fields:
+                # Another laggy bit of code to process.
+                # However needed to check for duplicates with None values...
                 if isinstance(self.fields[field], SQLModel.UniqueIndex):
                     index_fields = {}
                     error_fields = []
@@ -128,35 +131,17 @@ class SQLModel(Model, SQLFields):
                             " Duplicate Entry" +
                             " (%s)" % ", ".join(error_fields)) from None
 
-                if isinstance(self.fields[field], SQLModel.ForeignKey):
-                    fk = self.fields[field]
-                    if (fk._on_update == 'NO ACTION' or
-                            fk._on_update == 'RESTRICT'):
-                        for no, fk_field in enumerate(
-                                self.fields[field]._foreign_keys):
-                            if fk_field.name in self._transaction:
-                                ref = fk_field._reference_fields[no]
-                                index_fields.append(ref.name + ' = %s')
-                                index_values.append(
-                                    self._transaction[fk_field.name])
-                                table = self._transaction[fk_field._table]
-
-                        query = "SELECT count(id) as no FROM %s WHERE " % table
-                        query += ' AND '.join(index_fields)
-                        crsr = conn.execute(query, index_values)
-                        if res['no'] > 0:
-                            raise exceptions.ValidationError(
-                                "Model %s:" % name +
-                                " Object referenced.") from None
-
             if self._deleted:
-                delete_id = transaction[key_id]
-                sql = "DELETE FROM %s WHERE %s" % (self.model_name, key_id,)
-                sql += " = %s"
-                conn.execute(sql, delete_id)
-                self._deleted = False
-                self._created = True
-                self._updated = False
+                try:
+                    delete_id = transaction[key_id]
+                    sql = "DELETE FROM %s WHERE %s" % (self.model_name, key_id,)
+                    sql += " = %s"
+                    conn.execute(sql, delete_id)
+                    self._deleted = False
+                    self._created = True
+                    self._updated = False
+                except SQLIntegrityError:
+                    raise ValidationError('In use by reference')
             elif self._created:
                 query = "INSERT INTO %s (" % name
                 query += ','.join(transaction.keys())
@@ -191,11 +176,14 @@ class SQLModel(Model, SQLFields):
 
                 if len(sets) > 0:
                     sets = ", ".join(sets)
-                    conn.execute('UPDATE %s' % name +
-                                 ' SET %s' % sets +
-                                 ' WHERE %s' % key_id +
-                                 ' = %s',
-                                 args + [update_id, ])
+                    try:
+                        conn.execute('UPDATE %s' % name +
+                                     ' SET %s' % sets +
+                                     ' WHERE %s' % key_id +
+                                     ' = %s',
+                                     args + [update_id, ])
+                    except SQLIntegrityError:
+                        raise ValidationError('In use by reference')
                 self._created = False
                 self._updated = False
                 self._deleted = False
