@@ -65,12 +65,12 @@ def hash(password, algo=const.BLOWFISH, rounds=12):
     # PASSLIB slow to import... so only when neccessary.
     import passlib.hash
 
-    if (rounds < 5000 and
+    if (rounds < 656000 and
             (algo == const.SHA256 or
              algo == const.SHA512 or
              algo == const.LDAP_SHA256 or
              algo == const.LDAP_SHA512)):
-        rounds = 5000
+        rounds = 656000
 
     if algo == const.BLOWFISH:
         hashed = passlib.hash.bcrypt.encrypt(password, rounds=rounds)
