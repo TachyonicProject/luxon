@@ -849,7 +849,7 @@ class Client(object):
         adapter = requests.adapters.HTTPAdapter(pool_connections=1000, max_retries=3)
         self._s.mount('http://', adapter)
         self._s.mount('https://', adapter)
-        self._s.headers.update({'User-Agent': __identity__})
+        self._headers = {'User-Agent': __identity__}
 
         if auth:
             self._s.auth = auth
@@ -881,17 +881,24 @@ class Client(object):
         return url
 
     def stream(self, method, uri, params={},
-               data=None, headers={}, endpoint=None, **kwargs):
+               data=None, headers=None, endpoint=None, **kwargs):
+
+        if headers is False:
+            headers = {}
+        elif headers:
+            headers.update(self._headers)
+        else:
+            headers = self._headers
 
         return Stream(self, method, self._build_url(uri, endpoint),
                       params,
                       data,
-                      headers,
+                      self._headers,
                       **kwargs)
 
     def execute(self, method, uri, params=None,
                 data=None, headers=None, endpoint=None,
-                default_endpoint_name=None, **kwargs):
+                default_endpoint_name=None, no_token=False, **kwargs):
         params = params or {}
         headers = headers or {}
 
@@ -899,6 +906,13 @@ class Client(object):
             endpoint_name = default_endpoint_name
         else:
             endpoint_name = endpoint
+
+        if headers is False:
+            headers = {}
+        elif headers:
+            headers.update(self._headers)
+        else:
+            headers = self._headers
 
         return request(self, method, self._build_url(uri, endpoint),
                        params=params,
@@ -911,17 +925,17 @@ class Client(object):
     def __setitem__(self, header, value):
         if self._s is None:
             raise ValueError('Not within context')
-        self._s.headers.update({header: value})
+        self._headers.update({header: value})
 
     def __delitem__(self, header):
         if self._s is None:
             raise ValueError('Not within context')
-        del self._s.headers[header]
+        del self._headers[header]
 
     def __contains__(self, header):
         if self._s is None:
             raise ValueError('Not within context')
-        if header in self._s.headers:
+        if header in self._headers:
             return True
         else:
             return False

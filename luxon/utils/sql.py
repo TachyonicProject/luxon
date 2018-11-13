@@ -29,7 +29,7 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 
 
-def build_where(**kwargs):
+def build_where(operator='AND', **kwargs):
     """Generates an SQL WHERE string.
 
     Will replace None's with IS NULL's.
@@ -54,7 +54,7 @@ def build_where(**kwargs):
             query.append(k + " = ?")
             vals.append(kwargs[k])
 
-    return (" AND ".join(query), vals)
+    return ((" %s " % operator).join(query), vals)
 
 
 def build_like(operator="AND", **kwargs):

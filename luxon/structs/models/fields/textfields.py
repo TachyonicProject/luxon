@@ -89,7 +89,7 @@ class TextFields(object):
             hidden (bool): To hide field from forms.
         """
 
-        def __init__(self, length=None, min_length=None, max_length=None,
+        def __init__(self, length=65535, min_length=None, max_length=None,
                      null=True, default=None, db=True, label=None,
                      placeholder=None, readonly=False, prefix=None,
                      suffix=None, columns=None, hidden=False,
@@ -130,7 +130,7 @@ class TextFields(object):
             hidden (bool): To hide field from forms.
         """
 
-        def __init__(self, length=None,
+        def __init__(self, length=255,
                      min_length=None, max_length=None,
                      null=True, default=None, db=True, label=None,
                      placeholder=None, readonly=False, prefix=None,
@@ -142,6 +142,8 @@ class TextFields(object):
                                                               max_length,
                                                               0,
                                                               255)
+                if length is None:
+                    length = 255
             except ValueError as e:
                 self.error(e)
 
@@ -173,7 +175,7 @@ class TextFields(object):
             hidden (bool): To hide field from forms.
         """
 
-        def __init__(self, length=None, min_length=None, max_length=None,
+        def __init__(self, length=16777215, min_length=None, max_length=None,
                      null=True, default=None, db=True, label=None,
                      placeholder=None, readonly=False, prefix=None,
                      suffix=None, columns=None, hidden=False,
@@ -215,7 +217,7 @@ class TextFields(object):
             hidden (bool): To hide field from forms.
         """
 
-        def __init__(self, length=None, min_length=None, max_length=None,
+        def __init__(self, length=4294967295, min_length=None, max_length=None,
                      null=True, default=None, db=True, label=None,
                      placeholder=None, readonly=False, prefix=None,
                      suffix=None, columns=None, hidden=False,

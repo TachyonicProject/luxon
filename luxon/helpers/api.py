@@ -42,23 +42,38 @@ from luxon import GetLogger
 
 log = GetLogger(__name__)
 
-def raw_list(req, data, limit=None, rows=None, context=True):
+def search_params(req):
+    searches = to_list(req.query_params.get('search'))
+    for search in searches:
+        try:
+            search_field, value = search.split(':')
+        except (TypeError, ValueError):
+            raise ValueError("Invalid field search field value." +
+                             " Expecting 'field:value'")
+
+        yield (search_field, value,)
+
+def raw_list(req, data, limit=None, context=True, sql=False):
     # Step 1 Build Pages
     if limit is None:
         limit = int(req.query_params.get('limit', 10))
 
     page = int(req.query_params.get('page', 1)) - 1
-    if rows is None:
+    if sql is True:
+        start = 0
+        end = limit
+        rows = len(data) + (page * limit)
+    else:
         start = page * limit
-        end = start + 10
+        end = start + limit
+        rows = len(data)
 
-    searches = to_list(req.query_params.get('search'))
 
     # Step 2 Build Data Payload
     result = []
     search_query = ''
     for row in data:
-        if context:
+        if context is True:
             if ('domain' in row and
                     req.context_domain is not None):
                 if row['domain'] != req.context_domain:
@@ -67,19 +82,20 @@ def raw_list(req, data, limit=None, rows=None, context=True):
                     req.context_tenant_id is not None):
                 if row['tenant_id'] != req.context_tenant_id:
                     continue
-        if searches:
-            for search in searches:
-                search_query += '&search=%s' % search
+        if sql is False and to_list(req.query_params.get('search')):
+            for search_field, value in search_params(req):
+                search_query += '&search=%s:%s' % (search_field, value,)
                 try:
-                    search_field, value = search.split(':')
-                except (TypeError, ValueError):
-                    raise ValueError("Invalid field search field value." +
-                                     " Expecting 'field:value'")
-                try:
-                    row_search_field = str(row[search_field]).lower()
-                    if value.lower() not in row_search_field:
+                    if isinstance(row, (str, bytes),):
+                        row_search_field = str(row).lower()
+                        row_field = row
+                    else: 
+                        row_search_field = str(row[search_field]).lower()
+                        row_field = row[search_field]
+
+                    if not row_search_field.startswith(value.lower()):
                         continue
-                    elif row[search_field]:
+                    elif row_field:
                         result.append(row)
                         break
                 except KeyError:
@@ -116,8 +132,9 @@ def raw_list(req, data, limit=None, rows=None, context=True):
                 raise ValueError('Bad order for sort provided')
 
     # Step 4 Limit rows based on pages.
-    if limit > 0 and rows is None:
-        result = result[start:end]
+    if limit > 0:
+        if len(result) > limit:
+            result = result[start:end]
 
     # Step 5 Build links next &/ /previous
     links = {}
@@ -154,12 +171,13 @@ def raw_list(req, data, limit=None, rows=None, context=True):
             "pages": pages,
             "per_page": limit,
             "sort": sort,
-            "search": searches,
+            "search": to_list(req.query_params.get('search')),
         }
     }
 
 
-def sql_list(req, table, sql_fields, limit=None, group_by=None, where=None, **kwargs):
+def sql_list(req, table, sql_fields, limit=None, group_by=None, where=None,
+             ordering=True,  **kwargs):
     #  Build Fields, support fields as in tuple/list
     fields = {}
     count_field = None
@@ -175,25 +193,26 @@ def sql_list(req, table, sql_fields, limit=None, group_by=None, where=None, **kw
 
     # Step 1 Build sort
     sort_range_query = None
-    sort = to_list(req.query_params.get('sort'))
-    if len(sort) > 0:
-        ordering = []
-        for order in sort:
-            try:
-                order_field, order_type = order.split(':')
-            except (TypeError, ValueError):
-                raise ValueError("Invalid field sort field value." +
-                                 " Expecting 'field:desc' or 'field:asc'")
-            order_type = order_type.lower()
-            if order_type != "asc" and order_type != "desc":
-                raise ValueError('Bad order for sort provided')
-            if order_field not in fields:
-                raise ValueError("Unknown field '%s' in sort" %
-                                 order_field)
-            order_field = fields[order_field]
-            ordering.append("%s %s" % (order_field, order_type))
+    if ordering:
+        sort = to_list(req.query_params.get('sort'))
+        if len(sort) > 0:
+            ordering = []
+            for order in sort:
+                try:
+                    order_field, order_type = order.split(':')
+                except (TypeError, ValueError):
+                    raise ValueError("Invalid field sort field value." +
+                                     " Expecting 'field:desc' or 'field:asc'")
+                order_type = order_type.lower()
+                if order_type != "asc" and order_type != "desc":
+                    raise ValueError('Bad order for sort provided')
+                if order_field not in fields:
+                    raise ValueError("Unknown field '%s' in sort" %
+                                     order_field)
+                order_field = fields[order_field]
+                ordering.append("%s %s" % (order_field, order_type))
 
-        sort_range_query = " ORDER BY %s" % ','.join(ordering)
+            sort_range_query = " ORDER BY %s" % ','.join(ordering)
 
     # Step 2 Build Pages
     if limit is None:
@@ -205,7 +224,7 @@ def sql_list(req, table, sql_fields, limit=None, group_by=None, where=None, **kw
     if limit <= 0:
         limit_range_query = ""
     else:
-        limit_range_query = " LIMIT %s, %s" % (start, limit,)
+        limit_range_query = " LIMIT %s, %s" % (start, limit * 2,)
 
     # Step 3 Search
     search_query = {}
@@ -251,31 +270,6 @@ def sql_list(req, table, sql_fields, limit=None, group_by=None, where=None, **kw
         search_where, search_values = build_like(**search_query,
                                                  operator='OR')
 
-        # Step 5 we get the total_rows
-        sql = 'SELECT count(%s) as total FROM %s' % (count_field, table,)
-
-        if where != '' or search_where != '':
-            sql += " WHERE "
-
-        if where != '':
-            sql += " " + where
-
-        if where != '' and search_where != '':
-            sql += " AND "
-
-        if search_where != '':
-            sql += " " + search_where
-
-        if group_by:
-            sql += " GROUP BY " + group_by
-
-        result = conn.execute(sql,
-                              values + search_values).fetchone()
-        if result:
-            rows = result['total']
-        else:
-            rows = 0
-
         # Step 6 we get the data
         sql = 'SELECT %s FROM %s' % (fields_str, table,)
 
@@ -303,7 +297,7 @@ def sql_list(req, table, sql_fields, limit=None, group_by=None, where=None, **kw
                               values + search_values).fetchall()
 
     # Step 7 we pass it to standard list output provider
-    return raw_list(req, result, limit=limit, rows=rows)
+    return raw_list(req, result, limit=limit, sql=True)
 
 
 def obj(req, ModelClass, sql_id=None, hide=None, tag=None):
