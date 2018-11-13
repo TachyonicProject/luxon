@@ -368,6 +368,18 @@ def field_select(field, enum, value=None, id=None, readonly=False,
     return group
 
 
+def field_uuid(field, data_url, value=None, id=None, readonly=False,
+                 disabled=False, label=None, placeholder=None):
+    group = field_group()
+    group.append(field_label(field, label))
+
+    group.append(html_select(field, None, value,
+                             readonly=readonly,
+                             data_url=data_url))
+
+    return group
+
+
 def form(model, values=None, readonly=False):
     html = HTMLDoc()
     fields = model.fields
@@ -378,7 +390,10 @@ def form(model, values=None, readonly=False):
 
     def html_field(field):
         if obj.readonly is True:
-            field_readonly = True
+            if value is None:
+                field_readonly = False
+            else:
+                field_readonly = True
         else:
             field_readonly = readonly
 
@@ -426,6 +441,13 @@ def form(model, values=None, readonly=False):
                                        required=required,
                                        placeholder=obj.placeholder,
                                        label=label))
+        elif isinstance(obj, Model.Uuid):
+            html.append(field_uuid(field, obj.data_url,
+                                   value=value,
+                                   readonly=field_readonly,
+                                   disabled=field_readonly,
+                                   placeholder=obj.placeholder,
+                                   label=label))
         elif isinstance(obj, (Model.Decimal, Model.Double,
                               Model.Float, Model.String, Model.Integer)):
             html.append(field_text(field, value=value,
