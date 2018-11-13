@@ -35,7 +35,7 @@ from luxon.utils.timer import Timer
 log = GetLogger(__name__)
 
 
-def _log(cursor, msg, elapsed=0):
+def _log(cursor, msg, elapsed=0, values=None):
     """Debug Log Function
 
     Function to log in the case where debugging
@@ -46,10 +46,13 @@ def _log(cursor, msg, elapsed=0):
         msg (str): Log message.
         elapsed (float): Time elapsed.
     """
-    log_msg = msg + " (%s)" % cursor
+    #if values is not None:
+    #    log_msg = msg % values
+    #else:
+    log_msg = msg + " (%s) (%s)" % (values, cursor,)
 
     if elapsed is not None and elapsed > 0.1:
-        log_msg = " !!!SLOW!!!" + log_msg
+        log_msg = " !!!SLOW!!! " + log_msg
     log.info(log_msg, timer=elapsed)
 
 class Cursor(BaseExeptions):
@@ -201,6 +204,7 @@ class Cursor(BaseExeptions):
 
                 query, args = args_to(query, args, self._conn.DEST_FORMAT,
                                       self._conn.CAST_MAP)
+                _log(self, "Start " + query, elapsed(), values=args)
                 if args is not None:
                     self._crsr.execute(query, args)
                     self._uncommited = True
@@ -212,7 +216,7 @@ class Cursor(BaseExeptions):
             except Exception as e:
                 self._error_handler(self, e, self._conn.ERROR_MAP)
             finally:
-                _log(self, query, elapsed())
+                _log(self, "Completed " + query, elapsed(), values=args)
 
     def executemany(self, query, params):
         """Pepare and Execute Many.

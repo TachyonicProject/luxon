@@ -135,16 +135,16 @@ class Mysql(object):
                     sql_field = " %s LongBlob" % column
 
                 elif isinstance(model_fields[field], self._model.TinyText):
-                    sql_field = " %s TinyText " % column
+                    sql_field = " %s TinyText" % (column,)
 
                 elif isinstance(model_fields[field], self._model.Text):
-                    sql_field = " %s Text" % column
+                    sql_field = " %s Text" % (column,)
 
                 elif isinstance(model_fields[field], self._model.MediumText):
-                    sql_field = " %s MediumText" % column
+                    sql_field = " %s MediumText" % (column,)
 
                 elif isinstance(model_fields[field], self._model.LongText):
-                    sql_field = " %s LongText" % column
+                    sql_field = " %s LongText" % (column,)
 
                 elif isinstance(model_fields[field], self._model.String):
                     if max_length is None:
