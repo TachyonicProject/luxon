@@ -300,7 +300,7 @@ def sql_list(req, table, sql_fields, limit=None, group_by=None, where=None,
     return raw_list(req, result, limit=limit, sql=True)
 
 
-def obj(req, ModelClass, sql_id=None, hide=None, tag=None):
+def obj(req, ModelClass, sql_id=None, hide=None):
     if not issubclass(ModelClass, SQLModel):
         raise ValueError('Expecting SQL Model')
 
@@ -309,11 +309,11 @@ def obj(req, ModelClass, sql_id=None, hide=None, tag=None):
     if sql_id:
         model.sql_id(sql_id)
 
-        validate_access(req, model, tag=tag)
+        validate_access(req, model)
 
     if req.method in ['POST', 'PATCH', 'PUT']:
         model.update(req.json)
-        validate_set_scope(req, model, tag=tag)
+        validate_set_scope(req, model)
     elif (req.method == 'DELETE' and
             issubclass(ModelClass, SQLModel) and
             sql_id):

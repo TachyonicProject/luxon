@@ -91,7 +91,8 @@ class BaseFields(object):
                      suffix=None, columns=None, hidden=False,
                      enum=[], on_update=None, password=False,
                      signed=True, internal=False, ignore_null=False,
-                     lower=False, upper=False, data_url=None):
+                     lower=False, upper=False, data_url=None,
+                     data_endpoint=None):
             self._creation_counter = global_counter()
             self._value = None
 
@@ -120,6 +121,7 @@ class BaseFields(object):
             self.lower = lower
             self.upper = upper
             self.data_url = data_url
+            self.data_endpoint = data_endpoint
 
         @property
         def name(self):

@@ -101,11 +101,23 @@ class Mysql(object):
                     else:
                         sql_field = " %s tinyint(%s)" % (column, max_length)
 
+                    if signed is False:
+                        sql_field += ' UNSIGNED'
+
+                    if self._model.primary_key and self._model.primary_key.name == field:
+                        sql_field += " auto_increment"
+
                 elif isinstance(model_fields[field], self._model.SmallInt):
                     if max_length is None:
                         sql_field = " %s smallint" % column
                     else:
                         sql_field = " %s smallint(%s)" % (column, max_length)
+
+                    if signed is False:
+                        sql_field += ' UNSIGNED'
+
+                    if self._model.primary_key and self._model.primary_key.name == field:
+                        sql_field += " auto_increment"
 
                 elif isinstance(model_fields[field], self._model.MediumInt):
                     if max_length is None:
@@ -113,11 +125,23 @@ class Mysql(object):
                     else:
                         sql_field = " %s mediumint(%s)" % (column, max_length)
 
+                    if signed is False:
+                        sql_field += ' UNSIGNED'
+
+                    if self._model.primary_key and self._model.primary_key.name == field:
+                        sql_field += " auto_increment"
+
                 elif isinstance(model_fields[field], self._model.BigInt):
                     if max_length is None:
                         sql_field = " %s bigint" % column
                     else:
                         sql_field = " %s bigint(%s)" % (column, max_length)
+
+                    if signed is False:
+                        sql_field += ' UNSIGNED'
+
+                    if self._model.primary_key and self._model.primary_key.name == field:
+                        sql_field += " auto_increment"
 
                 elif isinstance(model_fields[field], self._model.DateTime):
                     sql_field = " %s datetime" % column

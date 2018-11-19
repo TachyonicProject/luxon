@@ -28,6 +28,9 @@ redis
 # do not remove hiredis - performance
 hiredis
 
+# RabbitMQ
+pika
+
 # Python
 # NOTE(cfradema): required by utils.venv
 virtualenv

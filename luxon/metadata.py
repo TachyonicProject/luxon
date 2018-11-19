@@ -8,7 +8,7 @@ Information describing the project.
 package = 'luxon'
 
 # Please follow https://www.python.org/dev/peps/pep-0440/
-version = '0.0.0'
+version = '1.0.0'
 
 author = "Myria Solutions (PTY) Ltd"
 email = 'project@tachyonic.org'
@@ -34,6 +34,7 @@ classifiers = [
     'Natural Language :: English',
     'Operating System :: POSIX :: Linux',
     'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
     'Topic :: Software Development',
     'Topic :: Software Development :: Libraries',
     'Topic :: Software Development :: Libraries :: Python Modules',
