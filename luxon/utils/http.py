@@ -697,6 +697,12 @@ def request(client, method, url, params={},
                         if endpoint is not None:
                             description = " Endpoint: %s" % endpoint
 
+                    if stream is True:
+                        _debug(method, url, params, data, headers, response.headers,
+                               None, response.status_code, elapsed())
+                    else:
+                        _debug(method, url, params, data, headers, response.headers,
+                               response.content, response.status_code, elapsed())
                     raise HTTPError(response.status_code, description, title)
                 except HTTPClientContentDecodingError:
                     if endpoint is not None:

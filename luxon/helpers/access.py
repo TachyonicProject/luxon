@@ -30,7 +30,7 @@
 
 from luxon.exceptions import AccessDeniedError
 
-def validate_access(req, obj_dict, tag=None):
+def validate_access(req, obj_dict):
     if ('domain' in obj_dict and
             req.credentials.domain and
             req.credentials.domain != obj_dict['domain']):
@@ -44,15 +44,10 @@ def validate_access(req, obj_dict, tag=None):
         raise AccessDeniedError('object not in context tenant "%s"' %
                                 req.credentials.tenant_id)
 
-    if ('tag' in obj_dict and 
-            tag and 
-            tag != obj_dict['tag']):
-        raise AccessDeniedError('object not in context tag')
-
     return True
 
 
-def validate_set_scope(req, obj_dict, tag=None):
+def validate_set_scope(req, obj_dict):
     if 'domain' in obj_dict:
         if (req.credentials.domain == req.context_domain or
                 req.credentials.domain is None):
@@ -72,6 +67,3 @@ def validate_set_scope(req, obj_dict, tag=None):
         else:
             raise AccessDeniedError(
                 "Token not scoped for Tenant '%s'" % req.context_tenant_id)
-
-    if tag is not None:
-        obj_dict.update({"tag": tag})

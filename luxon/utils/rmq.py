@@ -27,30 +27,19 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-from luxon.core.handlers.request import RequestBase
+import pika
+
+from luxon import g
 
 
-class Request(RequestBase):
-    """Represents a Minion request.
-    """
+def connect(host='127.0.0.1', port=5672, virtualhost='/', username=None, password=None):
+    params = [host, port, virtualhost]
+    
+    #if username:
+    #    params.append(pika.PlainCredentials(username, password))
 
-    __slots__ = (
-        'tag',
-        'method',
-        'route',
-        'route_kwargs',
-        'response',
-        'log',
-    )
+    params = pika.ConnectionParameters(*params)
 
-    def __init__(self, method, route):
-        super().__init__()
-        # Response Object for Request
-        self.response = None
+    connection = pika.BlockingConnection(params)
 
-        # Set HTTP Request Method - Router uses this.
-        self.method = method
-
-        self.route = route or '/'
-
-        self.log = {}
+    return connection.channel()

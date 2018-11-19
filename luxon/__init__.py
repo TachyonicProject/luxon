@@ -51,6 +51,7 @@ from luxon.helpers.db import db
 from luxon.helpers.policy import policy
 from luxon.helpers.sendmail import sendmail
 from luxon.helpers.memoize import memoize
+from luxon.helpers.rmq import rmq
 
 from luxon.structs.models.model import Model
 from luxon.structs.models.sqlmodel import SQLModel

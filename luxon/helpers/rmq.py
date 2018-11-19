@@ -27,19 +27,17 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+import redis
 
+from luxon import g
+from luxon.utils.rmq import connect
 
-class Response(object):
-    """Represents an Minion response to a client request.
-    """
-    def __init__(self):
-        pass
+def rmq():
+    global _cached_rmq
 
-    def __repr__(self):
-        return '<%s>' % (self.__class__.__name__)
-
-    def __str__(self):
-        return '<%s>' % (self.__class__.__name__)
-
-    def __call__(self):
-        pass
+    try:
+        return _cached_rmq
+    except NameError:
+        kwargs = g.app.config.kwargs('rmq')
+        _cached_rmq = connect(**kwargs)
+        return _cached_rmq
