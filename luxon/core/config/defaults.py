@@ -63,6 +63,8 @@ defaults = {
     'redis': {
         'db': '0',
     },
+    'rmq': {
+    },
     'cache': {
         'backend': 'luxon.core.cache:Memory',
         'max_objects': '5000',

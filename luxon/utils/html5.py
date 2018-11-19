@@ -58,7 +58,7 @@ def strip_tags(html):
 
 
 def select(name, options, selected, empty=False, cls=None, onchange=None,
-           disabled=False, readonly=False, data_url=None):
+           disabled=False, readonly=False, data_url=None, data_endpoint=None):
     html = HTMLDoc()
 
     if disabled or readonly:
@@ -77,6 +77,8 @@ def select(name, options, selected, empty=False, cls=None, onchange=None,
     select.set_attribute('id', name)
     if data_url:
         select.set_attribute('data-url', data_url)
+    if data_endpoint:
+        select.set_attribute('data-endpoint', data_endpoint)
 
 
     if onchange is not None:

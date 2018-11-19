@@ -368,14 +368,16 @@ def field_select(field, enum, value=None, id=None, readonly=False,
     return group
 
 
-def field_uuid(field, data_url, value=None, id=None, readonly=False,
-                 disabled=False, label=None, placeholder=None):
+def field_uuid(field, data_url, data_endpoint=None,
+               value=None, id=None, readonly=False,
+               disabled=False, label=None, placeholder=None):
     group = field_group()
     group.append(field_label(field, label))
 
     group.append(html_select(field, None, value,
                              readonly=readonly,
-                             data_url=data_url))
+                             data_url=data_url,
+                             data_endpoint=data_endpoint))
 
     return group
 
@@ -443,6 +445,7 @@ def form(model, values=None, readonly=False):
                                        label=label))
         elif isinstance(obj, Model.Uuid):
             html.append(field_uuid(field, obj.data_url,
+                                   data_endpoint=obj.data_endpoint,
                                    value=value,
                                    readonly=field_readonly,
                                    disabled=field_readonly,
