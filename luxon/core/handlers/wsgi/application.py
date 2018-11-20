@@ -96,6 +96,15 @@ class Application(object):
                 # Request Object.
                 request = g.current_request = Request(*args,
                                                       **kwargs)
+                request.env['SCRIPT_NAME'] = g.app.config.get(
+                    'application',
+                    'script',
+                    fallback=request.env['SCRIPT_NAME'])
+
+                script_name = request.get_header('X-Script-Name')
+                if script_name:
+                    request.env['SCRIPT_NAME'] = script_name
+
 
                 # Response Object.
                 response = Response(*args,
