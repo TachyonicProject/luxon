@@ -268,7 +268,7 @@ def field_datetime(field, value=None, id=None, readonly=False,
     io.set_attribute('id', field)
     io.set_attribute('name', field)
 
-    if value:
+    if value is not None:
         io.set_attribute('value', value)
     if readonly is True:
         io.set_attribute('readonly')
@@ -294,7 +294,7 @@ def field_text(field, value=None, id=None, readonly=False,
     io.set_attribute('id', field)
     io.set_attribute('name', field)
 
-    if value:
+    if value is not None:
         io.set_attribute('value', value)
     if readonly is True:
         io.set_attribute('readonly')
@@ -318,7 +318,7 @@ def field_textarea(field, value=None, id=None, readonly=False,
     io.set_attribute('id', field)
     io.set_attribute('name', field)
 
-    if value:
+    if value is not None:
         io.contents = value
     if readonly is True:
         io.set_attribute('readonly')
@@ -343,7 +343,7 @@ def field_password(field, value=None, id=None, readonly=False,
     io.set_attribute('id', field)
     io.set_attribute('name', field)
 
-    if value:
+    if value is not None:
         io.set_attribute('value', value)
     if readonly is True:
         io.set_attribute('readonly')

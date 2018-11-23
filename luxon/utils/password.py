@@ -73,33 +73,31 @@ def hash(password, algo=const.BLOWFISH, rounds=12):
         rounds = 656000
 
     if algo == const.BLOWFISH:
-        hashed = passlib.hash.bcrypt.encrypt(password, rounds=rounds)
+        hashed = passlib.hash.bcrypt.using(rounds=rounds).hash(password)
     elif algo == const.CLEARTEXT:
-        hashed = passlib.hash.plaintext.encrypt(password)
+        hashed = passlib.hash.plaintext.hash(password)
     elif algo == const.MD5:
         hashed = passlib.hash.md5_crypt.encrypt(password)
     elif algo == const.SHA256:
-        hashed = passlib.hash.sha256_crypt.encrypt(password, rounds=rounds)
+        hashed = passlib.hash.sha256_crypt.using(rounds=rounds).hash(password)
     elif algo == const.SHA512:
-        hashed = passlib.hash.sha512_crypt.encrypt(password, rounds=rounds)
+        hashed = passlib.hash.sha512_crypt.using(rounds=rounds).hash(password)
     elif algo == const.LDAP_MD5:
-        hashed = passlib.hash.ldap_md5.encrypt(password)
+        hashed = passlib.hash.ldap_md5.hash(password)
     elif algo == const.LDAP_SMD5:
-        hashed = passlib.hash.ldap_salted_md5.encrypt(password)
+        hashed = passlib.hash.ldap_salted_md5.hash(password)
     elif algo == const.LDAP_SHA1:
-        hashed = passlib.hash.ldap_sha1.encrypt(password)
+        hashed = passlib.hash.ldap_sha1.hash(password)
     elif algo == const.LDAP_SSHA1:
-        hashed = passlib.hash.ldap_salted_sha1.encrypt(password)
+        hashed = passlib.hash.ldap_salted_sha1.hash(password)
     elif algo == const.LDAP_CLEARTEXT:
-        hashed = passlib.hash.ldap_plaintext.encrypt(password)
+        hashed = passlib.hash.ldap_plaintext.hash(password)
     elif algo == const.LDAP_BLOWFISH:
-        hashed = passlib.hash.ldap_bcrypt.encrypt(password, rounds=rounds)
+        hashed = passlib.hash.ldap_bcrypt.using(rounds=rounds).hash(password)
     elif algo == const.LDAP_SHA256:
-        hashed = passlib.hash.ldap_sha256_crypt.encrypt(password,
-                                                        rounds=rounds)
+        hashed = passlib.hash.ldap_sha256_crypt.using(rounds=rounds).hash(password)
     elif algo == const.LDAP_SHA512:
-        hashed = passlib.hash.ldap_sha512_crypt.encrypt(password,
-                                                        rounds=rounds)
+        hashed = passlib.hash.ldap_sha512_crypt.using(rounds=rounds).hash(password)
     else:
         raise Error('Invalid hash specified %s' % algo)
     return hashed

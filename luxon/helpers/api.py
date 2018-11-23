@@ -273,16 +273,16 @@ def sql_list(req, table, sql_fields, limit=None, group_by=None, where=None,
         # Step 6 we get the data
         sql = 'SELECT %s FROM %s' % (fields_str, table,)
 
-        if where != '' or search_where != '':
+        if where or search_where:
             sql += " WHERE "
 
-        if where != '':
+        if where:
             sql += " " + where
 
-        if where != '' and search_where != '':
+        if where and search_where:
             sql += " AND "
 
-        if search_where != '':
+        if search_where:
             sql += " " + search_where
 
         if group_by:
@@ -292,6 +292,8 @@ def sql_list(req, table, sql_fields, limit=None, group_by=None, where=None,
             sql += sort_range_query
 
         sql += limit_range_query
+
+
 
         result = conn.execute(sql,
                               values + search_values).fetchall()

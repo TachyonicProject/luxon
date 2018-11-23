@@ -29,7 +29,7 @@ redis
 hiredis
 
 # RabbitMQ
-pika
+pika==0.12.0
 
 # Python
 # NOTE(cfradema): required by utils.venv
