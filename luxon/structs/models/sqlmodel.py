@@ -34,7 +34,7 @@ from luxon.structs.models.fields.sqlfields import SQLFields
 from luxon import exceptions
 from luxon.utils.imports import get_class
 from luxon.utils.sql import build_where
-from luxon.exceptions import SQLIntegrityError, ValidationError
+from luxon.exceptions import SQLIntegrityError, ValidationError, FieldError
 
 
 class SQLModel(Model, SQLFields):
@@ -55,8 +55,12 @@ class SQLModel(Model, SQLFields):
             row = result[0]
             for field in row.keys():
                 if row[field] is not None:
-                    val = self.fields[field]._parse(row[field])
-                    self._current[field] = val
+                    if field in self.fields:
+                        try:
+                            val = self.fields[field]._parse(row[field])
+                            self._current[field] = val
+                        except FieldError:
+                            self._current[field] = row[field]
             self._created = False
             self._updated = False
             self._new.clear()

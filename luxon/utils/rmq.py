@@ -32,14 +32,27 @@ import pika
 from luxon import g
 
 
-def connect(host='127.0.0.1', port=5672, virtualhost='/', username=None, password=None):
-    params = [host, port, virtualhost]
-    
-    #if username:
-    #    params.append(pika.PlainCredentials(username, password))
+class Rmq(object):
+    def __init__(self, host='127.0.0.1', port=5672, virtualhost='/', username=None, password=None):
 
-    params = pika.ConnectionParameters(*params)
+        params = [host, port, virtualhost]
+        
+        if username:
+            params.append(pika.PlainCredentials(username, password))
 
-    connection = pika.BlockingConnection(params)
+        params = pika.ConnectionParameters(*params)
 
-    return connection.channel()
+        self.connection = pika.BlockingConnection(params)
+
+    @property
+    def channel(self):
+        return self.connection.channel
+
+    def close(self):
+        self.connection.close()
+
+    def __enter__(self):
+        return self.channel
+
+    def __exit__(self, type, value, traceback):
+        self.close()

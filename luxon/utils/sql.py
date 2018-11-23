@@ -54,8 +54,10 @@ def build_where(operator='AND', **kwargs):
             query.append(k + " = ?")
             vals.append(kwargs[k])
 
-    return ((" %s " % operator).join(query), vals)
-
+    if query:
+        return ((" %s " % operator).join(query), vals)
+    else:
+        return (None, [])
 
 def build_like(operator="AND", **kwargs):
     """Generates an SQL WHERE string.
@@ -82,4 +84,7 @@ def build_like(operator="AND", **kwargs):
             query.append(k + " LIKE ?")
             vals.append(kwargs[k] + '%')
 
-    return ((" %s " % operator).join(query), vals)
+    if query:
+        return ((" %s " % operator).join(query), vals)
+    else:
+        return (None, [])

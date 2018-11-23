@@ -46,7 +46,7 @@ def test_wsgi_cookies(client):
         return req.cookies['test']
 
     result = client.get(path='/set_cookie')
-    assert result.status_code == 200
+    assert result.status_code == 204
     assert result.cookies['test'].value == '123'
 
     headers = {}

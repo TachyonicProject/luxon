@@ -31,5 +31,3 @@ The project will also have authentication and access control features:
     api
     wsgi_web
     cmd
-    minion
-    
