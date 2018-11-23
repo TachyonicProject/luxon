@@ -23,7 +23,6 @@ luxon/core/db                             Luxon Databases.
 luxon/core/handlers                       Application Handlers.
 luxon/core/handlers/wsgi                  WSGI Interface handlers.
 luxon/core/handlers/cmd			  Command Line Handler.
-luxon/core/handlers/minion		  Minion Handler.
 luxon/core/policy                         Policy RBAC Rule-Set Engine.
 luxon/core/servers                        Luxon servers.
 luxon/core/session                        Luxon session manager.
@@ -115,43 +114,5 @@ Tests
 ========================================= ==============================================
 /luxon/tests                              Directory housing all Unit Tests.
 ========================================= ==============================================
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

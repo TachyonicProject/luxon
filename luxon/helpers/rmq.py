@@ -27,17 +27,9 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import redis
-
 from luxon import g
-from luxon.utils.rmq import connect
+from luxon.utils.rmq import Rmq
 
 def rmq():
-    global _cached_rmq
-
-    try:
-        return _cached_rmq
-    except NameError:
-        kwargs = g.app.config.kwargs('rmq')
-        _cached_rmq = connect(**kwargs)
-        return _cached_rmq
+    kwargs = g.app.config.kwargs('rmq')
+    return Rmq(**kwargs)

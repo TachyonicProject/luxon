@@ -783,7 +783,8 @@ class Request(RequestBase):
                     if prop not in json_safe_object:
                         json_safe_object[prop] = []
                     if item.filename:
-                        data = base64.encodestring(item.file.read())
+                        # Encodestring was changed to encodebytes... ?!?
+                        data = base64.encodebytes(item.file.read())
                         file_obj = {'name': item.filename,
                                     'type': item.type,
                                     'base64': data}
@@ -794,7 +795,8 @@ class Request(RequestBase):
                             )
             else:
                 if field.filename:
-                    data = base64.encodestring(field.file.read())
+                    # Encodestring was changed to encodebytes... ?!?
+                    data = base64.encodebytes(field.file.read())
                     file_obj = {'name': field.filename,
                                 'type': field.type,
                                 'base64': data}
