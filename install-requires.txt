@@ -34,3 +34,6 @@ pika==0.12.0
 # Python
 # NOTE(cfradema): required by utils.venv
 virtualenv
+
+# Virtualization
+docker

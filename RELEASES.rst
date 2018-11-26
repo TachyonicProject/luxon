@@ -44,3 +44,11 @@ Releases
      Passlib updated interfaces for utils/password.py.
      Fixed Cookie testing, when empty body is received we expect 204 status code.
    * RabbitMQ Interface utility / helper tested functional.
+
+1.2.0 = BETA Release (2018/11/26)
+---------------------------------
+
+   * Added Docker utilities utils/dk.py
+   * Updated pkg.py Module. 
+     Added file method to return file like object.
+
