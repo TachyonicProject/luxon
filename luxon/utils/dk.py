@@ -32,7 +32,7 @@ from luxon.utils.pkg import Module
 
 client = docker.from_env()
 
-def start(name, image, ports=None, links=None, **env):
+def start(name, image, volumes=None, ports=None, links=None, **env):
     try:
         container = client.containers.get(name)
         if container.status in ('running', 'restarting'):
@@ -47,11 +47,18 @@ def start(name, image, ports=None, links=None, **env):
         if links:
             for link in links:
                 parsed_links[link] = link
+
+        parsed_volumes = {}
+        if volumes:
+            for volume in volumes:
+                parsed_volumes[volume] = {'bind': volumes[volume], 'mode': 'rw'}
+            
         client.containers.run(image, name=name,
                               ports=ports,
                               environment=env,
                               detach=True,
-                              links=parsed_links)
+                              links=parsed_links,
+                              volumes=parsed_volumes)
 
 def restart(name):
     container = client.containers.get(name)
@@ -64,6 +71,9 @@ def stop(name):
 def build(name, fileobj):
     return client.images.build(tag=name, fileobj=fileobj)
 
-def remove(name):
+def remove_image(name):
     client.images.remove(image=name)
 
+def remove_container(name):
+    container = client.containers.get(name)
+    container.remove()
