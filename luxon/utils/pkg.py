@@ -104,6 +104,20 @@ class Module(object):
         except ImportError:
             raise ImportError(self._module) from None
 
+
+    def file(self, path):
+        """Returns resource as a string
+
+        Args:
+            path (str): resource location
+        """
+        try:
+            self.exists(path, True)
+            return resource_stream(self._module,
+                                   path)
+        except ImportError:
+            raise ImportError(self._module) from None
+
     def list(self, path):
         """List directories in the resource
 
