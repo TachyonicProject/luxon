@@ -609,6 +609,7 @@ class Request(RequestBase):
     def host(self):
         try:
             host_header = self.env['HTTP_HOST']
+            host_header = host_header.split(',')[0]
             host, port = parse_host(host_header)
         except KeyError:
             # According to PEP-3333, this header
