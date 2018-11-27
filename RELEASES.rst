@@ -52,3 +52,7 @@ Releases
    * Updated pkg.py Module. 
      Added file method to return file like object.
 
+1.2.1 = BETA Release (2018/11/27)
+---------------------------------
+
+   * Fixed minor unexpected behaviour when two host headers is received.
