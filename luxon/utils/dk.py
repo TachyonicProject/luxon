@@ -77,3 +77,7 @@ def remove_image(name):
 def remove_container(name):
     container = client.containers.get(name)
     container.remove()
+
+def exec(name, command):
+    container = client.containers.get(name)
+    return container.exec_run(command, detach=False)
