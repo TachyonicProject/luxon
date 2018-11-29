@@ -285,7 +285,8 @@ setup_dict = dict(
         'console_scripts': [
             'luxon = luxon.main:entry_point'
         ],
-    }
+    },
+    python_requires='>=3.6'
 )
 
 
