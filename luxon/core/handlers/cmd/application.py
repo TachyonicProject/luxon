@@ -113,12 +113,12 @@ class Application(object):
         subparsers.required = True
 
         methods = router.methods
-        for method in methods:
-            method = method.lower()
-            sub = subparsers.add_parser(method,
+        for m in methods:
+            m = m.lower()
+            sub = subparsers.add_parser(m,
                                         help='%s resources'
-                                        % method)
-            sub.set_defaults(method=method.upper())
+                                        % m)
+            sub.set_defaults(method=m.upper())
             sub.add_argument('route',
                              nargs='?',
                              default=None,
@@ -136,7 +136,7 @@ class Application(object):
             print('\nroutes for %s:' % args.method)
             index = router.routes
             for route in index:
-                if route[1] == method.upper():
+                if route[1] == args.method.upper():
                     print("\t/%s" % route[0])
             exit()
 

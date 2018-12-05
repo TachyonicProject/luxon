@@ -56,3 +56,9 @@ Releases
 ---------------------------------
 
    * Fixed minor unexpected behaviour when two host headers is received.
+
+1.3.0 = BETA Release (2018/11/30)
+---------------------------------
+
+   * Added distribute and receiver methods high level interfaces for
+     rabbitmq utilities.

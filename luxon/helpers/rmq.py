@@ -31,5 +31,5 @@ from luxon import g
 from luxon.utils.rmq import Rmq
 
 def rmq():
-    kwargs = g.app.config.kwargs('rmq')
+    kwargs = g.app.config.kwargs('rabbitmq')
     return Rmq(**kwargs)
