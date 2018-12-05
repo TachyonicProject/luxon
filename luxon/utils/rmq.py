@@ -30,7 +30,7 @@
 import pika
 
 from luxon import g
-
+from luxon import js
 
 class Rmq(object):
     def __init__(self, host='127.0.0.1', port=5672, virtualhost='/', username=None, password=None):
@@ -51,8 +51,35 @@ class Rmq(object):
     def close(self):
         self.connection.close()
 
+    def distribute(self, queue, **kwargs):
+        message = js.dumps(kwargs)
+        channel = self.channel()
+        channel.queue_declare(queue=queue, durable=True)
+        channel.basic_publish(exchange='',
+                              routing_key=queue,
+                              body=message,
+                              properties=pika.BasicProperties(
+                                 delivery_mode = 2, # make message persistent
+                                 content_type='application/json',
+                                 content_encoding='utf-8'
+                              ))
+
+    def receiver(self, queue, callback):
+        def callback_wrapper(ch, method, properties, body):
+            message = js.loads(body)
+            callback(ch, method, properties, message)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+
+        channel = self.channel()
+        channel.queue_declare(queue=queue, durable=True)
+        channel.basic_qos(prefetch_count=1)
+        channel.basic_consume(callback_wrapper,
+                                   queue=queue)
+        channel.start_consuming()
+
+
     def __enter__(self):
-        return self.channel
+        return self
 
     def __exit__(self, type, value, traceback):
         self.close()
