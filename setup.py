@@ -34,8 +34,8 @@ import glob
 import shutil
 from distutils import cmd
 
-if not sys.version_info >= (3, 5):
-    print('Requires python version 3.5 or higher')
+if not sys.version_info >= (3, 6):
+    print('Requires python version 3.6 or higher')
     exit()
 try:
     from setuptools import setup, Extension, find_packages

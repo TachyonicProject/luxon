@@ -17,7 +17,7 @@ project = "Luxon Framework"
 project_no_spaces = project.replace(' ', '')
 description = 'Luxon Application Framework'
 license = 'BSD3-Clause'
-copyright = "2016-2018 " + author
+copyright = "2016-2019 " + author
 url = 'http://www.tachyonic.org'
 
 identity = project + ' v' + version

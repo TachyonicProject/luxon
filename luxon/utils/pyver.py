@@ -29,5 +29,5 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 import sys
 
-if not sys.version_info >= (3,5):
-    raise RuntimeError('Requires python version 3.5 or higher')
+if not sys.version_info >= (3,6):
+    raise RuntimeError('Requires python version 3.6 or higher')
