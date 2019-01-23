@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,8 @@ import glob
 import shutil
 from distutils import cmd
 
-if not sys.version_info >= (3, 5):
-    print('Requires python version 3.5 or higher')
+if not sys.version_info >= (3, 6):
+    print('Requires python version 3.6 or higher')
     exit()
 try:
     from setuptools import setup, Extension, find_packages
