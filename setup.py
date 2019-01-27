@@ -27,16 +27,20 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+
+
 import os
 import sys
-import imp
-import glob
-import shutil
-from distutils import cmd
 
 if not sys.version_info >= (3, 6):
     print('Requires python version 3.6 or higher')
     exit()
+
+import glob
+import shutil
+from distutils import cmd
+from importlib.machinery import SourceFileLoader
+
 try:
     from setuptools import setup, Extension, find_packages
     from setuptools.command.test import test as TestCommand
@@ -63,8 +67,9 @@ PYTEST_FLAGS = ['--doctest-modules']
 sys.path.insert(0, MYDIR)
 
 # Load Metadata from PACKAGE
-metadata = imp.load_source(
-    'metadata', os.path.join(MYDIR, CODE_DIRECTORY, 'metadata.py'))
+metadata = SourceFileLoader(
+    'metadata', os.path.join(MYDIR, CODE_DIRECTORY,
+                             'metadata.py')).load_module()
 
 
 # Miscellaneous helper functions
@@ -132,107 +137,6 @@ class PyTestCommand(TestCommand):
 
 cmdclass['test'] = PyTestCommand
 
-
-class CleanCommand(cmd.Command):
-    """A custom command to run Pylint on all Python source files."""
-
-    description = 'run source clean-up'
-    user_options = []
-
-    def initialize_options(self):
-        """Set default values for options."""
-        pass
-
-    def finalize_options(self):
-        """Post-process options."""
-        pass
-
-    def run(self):
-        """Run command."""
-        if os.path.exists(os.path.join(MYDIR, 'build')):
-            print("Removing Build")
-            shutil.rmtree(os.path.join(MYDIR, 'build'))
-
-        if os.path.exists(os.path.join(MYDIR, '.eggs')):
-            print("Removing .eggs")
-            shutil.rmtree(os.path.join(MYDIR, '.eggs'))
-
-        def clean(diretory, files):
-            # __pyc__
-            filenames = glob.glob(os.path.join(directory, '%s' %
-                                               (files,)))
-            for filename in filenames:
-                print("Removing %s" % filename)
-                if os.path.isdir(filename):
-                    shutil.rmtree(filename)
-                else:
-                    os.remove(filename)
-
-        for directory, directories, files in os.walk(os.path.join(MYDIR,
-                                                                  PACKAGE)):
-            clean(directory, '__pycache__')
-            clean(directory, '*.pyc')
-            clean(directory, '*.so')
-
-
-# Add Clean command
-cmdclass['clean'] = CleanCommand
-
-
-class CythonizeCommand(cmd.Command):
-    """A custom command to run Pylint on all Python source files."""
-
-    description = 'build cython source c files'
-    user_options = []
-
-    def initialize_options(self):
-        """Set default values for options."""
-        pass
-
-    def finalize_options(self):
-        """Post-process options."""
-        pass
-
-    def run(self):
-        """Run command."""
-        try:
-            from Cython.Build import cythonize
-            files = []
-            for package in list_packages(PACKAGE):
-                for module in list_modules(os.path.join(MYDIR,
-                                                        *package.split('.'))):
-                    files.append(os.path.join(*(package.split('.') +
-                                                [module + '.py'])))
-
-            cythonize(files)
-
-        except ImportError:
-            print('No Cython installed')
-
-
-# Add Clean command
-cmdclass['cythonize'] = CythonizeCommand
-
-# CYTHON / C sources compile
-try:
-    from Cython.Distutils import build_ext
-
-    ext_modules = [
-        Extension(
-            package + '.' + module,
-            [os.path.join(*(package.split('.') + [module + '.py']))]
-        )
-        for package in list_packages(PACKAGE)
-        for module in list_modules(os.path.join(MYDIR, *package.split('.')))
-    ]
-
-    cmdclass['build_ext'] = build_ext
-except ImportError:
-    ext_modules = []
-    print('\nNOTE: Cython not installed. '
-          'Luxon will still work fine, but may run '
-          'slower.\n')
-
 # define install_requires for specific Python versions
 python_version_specific_requires = []
 
@@ -279,7 +183,6 @@ setup_dict = dict(
     # Allow tests to be run with `python setup.py test'.
     tests_require=install_requires + tests_requires,
     cmdclass=cmdclass,
-    ext_modules=ext_modules,
     zip_safe=False,  # don't use eggs
     entry_points={
         'console_scripts': [

@@ -57,8 +57,12 @@ Releases
 
    * Fixed minor unexpected behaviour when two host headers is received.
 
-1.3.0 = BETA Release (2018/11/30)
+1.3.0 = BETA Release (2019/01/27)
 ---------------------------------
 
    * Added distribute and receiver methods high level interfaces for
      rabbitmq utilities.
+   * setup.py removed cython support.
+   * setup.py replaced imp with importlib.
+   * update documentation README.rst
+
