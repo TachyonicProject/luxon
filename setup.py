@@ -27,16 +27,20 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+
+
 import os
 import sys
-import imp
-import glob
-import shutil
-from distutils import cmd
 
 if not sys.version_info >= (3, 6):
     print('Requires python version 3.6 or higher')
     exit()
+
+import glob
+import shutil
+from distutils import cmd
+from importlib.machinery import SourceFileLoader
+
 try:
     from setuptools import setup, Extension, find_packages
     from setuptools.command.test import test as TestCommand
@@ -63,8 +67,9 @@ PYTEST_FLAGS = ['--doctest-modules']
 sys.path.insert(0, MYDIR)
 
 # Load Metadata from PACKAGE
-metadata = imp.load_source(
-    'metadata', os.path.join(MYDIR, CODE_DIRECTORY, 'metadata.py'))
+metadata = SourceFileLoader(
+    'metadata', os.path.join(MYDIR, CODE_DIRECTORY,
+                             'metadata.py')).load_module()
 
 
 # Miscellaneous helper functions
