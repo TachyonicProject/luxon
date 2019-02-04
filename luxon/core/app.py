@@ -43,18 +43,30 @@ log = GetLogger(__name__)
 
 
 class App(object):
-    """Initialises application
+    """Initialises application.
 
-    Loads the app config from the *settings.ini* file or
-    from a given file
+    Loads the app config from the *settings.ini* file or from a
+    given file.
 
-    Configures the logger for the app
+    Configures all application environment and related dependencies.
+        * Loads configuration.
+        * Log facility.
+        * Jinja Templating Engine.
 
     Args:
         name (str): Application name.
+
+    Keyword Arguments:
         path (str): Application root path.
         ini (file obj): Configuration file provided.
         defaults (bool): Load default configuration
+
+    Attributes:
+        name (str): Application name.
+        path (str): Application path.
+        debug (bool): Debug mode.
+        config (luxon.core.config.Config): Configuration.
+        templating (luxon.core.template.Environment): Jinja Engine.
     """
 
     __slots__ = ('_name', '_path', '_debug', '_config', '_jinja')
@@ -88,8 +100,8 @@ class App(object):
             # __name__ = __main__, but allowing settings.ini to specify
             # a better name for the application.
             if self._config.has_section('application') and self.config.get(
-                'application', 'name') and name == "__main__":
-                self._name = self.config.get('application','name')
+                    'application', 'name') and name == "__main__":
+                self._name = self.config.get('application', 'name')
 
         # Configure Logger.
         log.configure(self.config)
@@ -105,16 +117,16 @@ class App(object):
         g.app = self
 
     @property
-    def templating(self):
-        return self._jinja
-
-    @property
     def name(self):
         return self._name
 
     @property
     def path(self):
         return self._path
+
+    @property
+    def templating(self):
+        return self._jinja
 
     @property
     def debug(self):

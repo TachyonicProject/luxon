@@ -4,7 +4,6 @@ Framework Guide
 .. toctree::
     :maxdepth: 2
 
-    structure
     command
     globals
     routing

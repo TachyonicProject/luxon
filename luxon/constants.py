@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -105,19 +105,19 @@ HTTP_505 = '505 HTTP Version not supported'
 HTTP_511 = '511 Network Authentication Required'
 
 HTTP_STATUS_CODES = {100: 'Continue',
-                      101: 'Switching Protocols',
-                      200: 'OK',
-                      201: 'Created',
-                      202: 'Accepted',
-                      203: 'Non-Authoritative Information',
-                      204: 'No Content',
-                      205: 'Reset Content',
-                      206: 'Partial Content',
-                      226: 'IM Used',
-                      300: 'Multiple Choices',
-                      301: 'Moved Permanently',
-                      302: 'Found',
-                      303: 'See Other',
+                     101: 'Switching Protocols',
+                     200: 'OK',
+                     201: 'Created',
+                     202: 'Accepted',
+                     203: 'Non-Authoritative Information',
+                     204: 'No Content',
+                     205: 'Reset Content',
+                     206: 'Partial Content',
+                     226: 'IM Used',
+                     300: 'Multiple Choices',
+                     301: 'Moved Permanently',
+                     302: 'Found',
+                     303: 'See Other',
                      304: 'Not Modified',
                      305: 'Use Proxy',
                      306: 'Switch Proxy',
