@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,13 +28,11 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 from luxon.structs.models.fields.basefields import BaseFields
-from luxon.structs.models.utils import defined_length_check
 
 
 class BlobFields(object):
     """Blob Fields outer class"""
     __slots__ = ()
-
 
     class BaseBlob(BaseFields.BaseField):
         """Blob Field.
@@ -106,7 +104,6 @@ class BlobFields(object):
             value = super().parse(value)
             return value
 
-
     class TinyBlob(BaseBlob):
         """Tiny Blob Field.
 
@@ -138,7 +135,6 @@ class BlobFields(object):
                              placeholder=None, readonly=False, prefix=None,
                              suffix=None, columns=None, hidden=False,
                              enum=[], on_update=None, password=False)
-
 
     class MediumBlob(BaseBlob):
         """Medium Blob Field.
@@ -172,7 +168,6 @@ class BlobFields(object):
                              placeholder=None, readonly=False, prefix=None,
                              suffix=None, columns=None, hidden=False,
                              enum=[], on_update=None, password=False)
-
 
     class LongBlob(BaseBlob):
         """Long Blob Field.

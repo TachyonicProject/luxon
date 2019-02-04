@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,6 @@ from decimal import Decimal as PyDecimal
 import phonenumbers
 
 from luxon.utils.global_counter import global_counter
-from luxon.utils.cast import to_tuple
 from luxon.utils.encoding import if_bytes_to_unicode
 from luxon.exceptions import FieldError
 from luxon.utils.timezone import to_utc
@@ -44,13 +43,9 @@ from luxon.core.regex import (EMAIL_RE,
                               USERNAME_RE,
                               PASSWORD_RE,
                               URI_RE,
-                              FQDN_RE,
-                              IP4_RE,
-                              IP6_RE,
-                              IP4_PREFIX_RE,
-                              IP6_PREFIX_RE)
-from luxon.structs.models.utils import defined_length_check
+                              FQDN_RE)
 from luxon import js
+
 
 class BaseFields(object):
     """Base Fields outer class"""
@@ -64,7 +59,7 @@ class BaseFields(object):
         Keyword Args:
             length (int): Length of field value.
             min_length (int): Minimum Length of field value.
-            max_length (int): Maximum Length of field value others length value.
+            max_length (int): Maximum Length of field value.
             signed (bool): If Integer value is signed or un-signed.
             null (bool): If value is allowed to NULL.
             default: Default value for field.
@@ -81,9 +76,9 @@ class BaseFields(object):
         """
         __slots__ = ('length', 'min_length', 'max_length', 'null', 'default',
                      'db', '_label', 'placeholder', 'readonly', 'prefix',
-                     'suffix', 'columns' ,'hidden', 'enum', '_field_name', '_table',
-                     '_value', '_creation_counter', 'm', 'd', 'on_update',
-                     'password', 'signed', 'ignore_null')
+                     'suffix', 'columns', 'hidden', 'enum', '_field_name',
+                     '_table', '_value', '_creation_counter', 'm', 'd',
+                     'on_update', 'password', 'signed', 'ignore_null')
 
         def __init__(self, length=None, min_length=None, max_length=None,
                      null=True, default=None, db=True, label=None,
@@ -93,6 +88,7 @@ class BaseFields(object):
                      signed=True, internal=False, ignore_null=False,
                      lower=False, upper=False, data_url=None,
                      data_endpoint=None):
+
             self._creation_counter = global_counter()
             self._value = None
 
@@ -138,19 +134,27 @@ class BaseFields(object):
             raise FieldError(self.name, self.label, msg, value)
 
         def parse(self, value):
-            if self.null is False and (value is None or str(value).strip() == ''):
+            if (self.null is False and
+                    (value is None or str(value).strip() == '')):
                 self.error('Empty field value (required)', value)
 
             if isinstance(value, (int, float, PyDecimal,)):
-                if self.min_length is not None and value < self.min_length:
+                if (self.min_length is not None and
+                        value < self.min_length):
                     self.error("Minimum value '%s'" % self.min_length, value)
-                if self.max_length is not None and value > self.max_length:
-                    self.error("Exceeded max value '%s'" % self.max_length, value)
+                if (self.max_length is not None and
+                        value > self.max_length):
+                    self.error("Exceeded max value '%s'"
+                               % self.max_length, value)
             elif hasattr(value, '__len__'):
-                if self.min_length is not None and len(value) < self.min_length:
-                    self.error("Minimum length '%s'" % self.min_length, value)
-                if self.max_length is not None and len(value) > self.max_length:
-                    self.error("Exceeded max length '%s'" % self.max_length, value)
+                if (self.min_length is not None and
+                        len(value) < self.min_length):
+                    self.error("Minimum length '%s'"
+                               % self.min_length, value)
+                if (self.max_length is not None and
+                        len(value) > self.max_length):
+                    self.error("Exceeded max length '%s'"
+                               % self.max_length, value)
 
             return value
 
@@ -164,7 +168,7 @@ class BaseFields(object):
         Keyword Args:
             length (int): Length of field value.
             min_length (int): Minimum Length of field value.
-            max_length (int): Maximum Length of field value others length value.
+            max_length (int): Maximum Length of field value.
             columns (int): Number of columns to display for text field.
             null (bool): If value is allowed to NULL.
             default: Default value for field.

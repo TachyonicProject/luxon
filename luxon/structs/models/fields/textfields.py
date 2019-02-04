@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,7 @@ class TextFields(object):
                              min_length=min_length, max_length=max_length,
                              null=null, default=default, db=db, label=label,
                              placeholder=placeholder, readonly=readonly,
-                             prefix=prefix, suffix=suffix, columns=columns, 
+                             prefix=prefix, suffix=suffix, columns=columns,
                              hidden=hidden, enum=enum, on_update=on_update,
                              password=password)
 
@@ -107,7 +107,7 @@ class TextFields(object):
                              min_length=min_length, max_length=max_length,
                              null=null, default=default, db=db, label=label,
                              placeholder=placeholder, readonly=readonly,
-                             prefix=prefix, suffix=suffix, columns=columns, 
+                             prefix=prefix, suffix=suffix, columns=columns,
                              hidden=hidden, enum=enum, on_update=on_update,
                              password=password)
 
@@ -151,7 +151,7 @@ class TextFields(object):
                              min_length=min_length, max_length=max_length,
                              null=null, default=default, db=db, label=label,
                              placeholder=placeholder, readonly=readonly,
-                             prefix=prefix, suffix=suffix, columns=columns, 
+                             prefix=prefix, suffix=suffix, columns=columns,
                              hidden=hidden, enum=enum, on_update=on_update,
                              password=password)
 
@@ -193,7 +193,7 @@ class TextFields(object):
                              min_length=min_length, max_length=max_length,
                              null=null, default=default, db=db, label=label,
                              placeholder=placeholder, readonly=readonly,
-                             prefix=prefix, suffix=suffix, columns=columns, 
+                             prefix=prefix, suffix=suffix, columns=columns,
                              hidden=hidden, enum=enum, on_update=on_update,
                              password=password)
 
@@ -235,6 +235,6 @@ class TextFields(object):
                              min_length=min_length, max_length=max_length,
                              null=null, default=default, db=db, label=label,
                              placeholder=placeholder, readonly=readonly,
-                             prefix=prefix, suffix=suffix, columns=columns, 
+                             prefix=prefix, suffix=suffix, columns=columns,
                              hidden=hidden, enum=enum, on_update=on_update,
                              password=password)

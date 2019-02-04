@@ -70,4 +70,4 @@ Releases
 ---------------------------------
 
    * In progress Clean up code/documentation - https://github.com/TachyonicProject/luxon/issues/11
-   * Added encrypt data backend database store function for models.
+   * Crypto helper added.

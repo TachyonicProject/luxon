@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -103,7 +103,6 @@ class SQLModel(Model, SQLFields):
 
         transaction = self._pre_commit()[1]
 
-
         try:
             conn = db()
             for field in self.fields:
@@ -123,8 +122,9 @@ class SQLModel(Model, SQLFields):
                     for index_field in self.fields[field]._index:
                         if index_field.name in self._transaction:
                             if self._transaction[index_field.name]:
-                                error_fields.append(index_field.label) 
-                            index_fields[index_field.name] = self._transaction[index_field.name]
+                                error_fields.append(index_field.label)
+                            index_fields[index_field.name] = \
+                                self._transaction[index_field.name]
                     where, values = build_where(**index_fields)
                     if oid and values:
                         query += " AND " + where
@@ -138,7 +138,8 @@ class SQLModel(Model, SQLFields):
             if self._deleted:
                 try:
                     delete_id = transaction[key_id]
-                    sql = "DELETE FROM %s WHERE %s" % (self.model_name, key_id,)
+                    sql = "DELETE FROM %s WHERE %s" % (self.model_name,
+                                                       key_id,)
                     sql += " = %s"
                     conn.execute(sql, delete_id)
                     self._deleted = False
@@ -171,7 +172,7 @@ class SQLModel(Model, SQLFields):
                 for field in self._new:
                     if self.primary_key.name != field:
                         # We already check this on setitem
-                        #if self.fields[field].readonly:
+                        # if self.fields[field].readonly:
                         #    self._new[field].error('readonly value')
                         if self.fields[field].db:
                             sets.append('%s' % field +
@@ -202,9 +203,9 @@ class SQLModel(Model, SQLFields):
     def create_table(cls):
         # NOTE(cfrademan):
         # This should not be a dependancy any more for models.
-        #if cls.primary_key is None:
-        #    raise KeyError("Model %s:" % cls.model_name +
-        #                   " No primary key") from None
+        # if cls.primary_key is None:
+        #     raise KeyError("Model %s:" % cls.model_name +
+        #                    " No primary key") from None
 
         api = g.app.config.get('database', 'type')
         driver_cls = api.title()
