@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan, Dave Kruger.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,22 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+from luxon import g
+from luxon.utils.singleton import Singleton
+from luxon.utils.crypto import Crypto as CryptoLuxon
 
-from luxon.core.handlers.wsgi import Wsgi
 
-application = Wsgi(__name__)
+class Crypto(CryptoLuxon, metaclass=Singleton):
+    """Helper wrapper for Crypto Luxon utility.
+
+    Used for signing/encryption of secret data using 'credentials.key'
+    """
+    def __init__(self):
+        super().__init__()
+        with open(g.app.path.rstrip('/') + '/credentials.key',
+                  'rb') as key_file:
+            key_str = key_file.read()
+            key = key_str[0:32]
+            iv = key_str[32:48]
+            self.load_key(key)
+            self.load_iv(iv)

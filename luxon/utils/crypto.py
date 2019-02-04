@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan, Dave Kruger.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan, Dave Kruger.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@ from math import floor
 
 from luxon.utils.encoding import (if_unicode_to_bytes,
                                   if_bytes_to_unicode)
+
 
 class Crypto(object):
     """Utility class to work with cryptography symmetrical keys.
@@ -100,7 +101,6 @@ class Crypto(object):
 
         return self._iv
 
-
     def load_key(self, key):
         """Method to load the binary key.
 
@@ -159,7 +159,6 @@ class Crypto(object):
         _ct = _encryptor.update(padded_data) + _encryptor.finalize()
 
         return if_bytes_to_unicode(base64.b64encode(_ct))
-
 
     def decrypt(self, message):
         """Method to decrypt a message with the secret Key.

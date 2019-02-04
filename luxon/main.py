@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan, Dave Kruger
+# Copyright (c) 2018-2019 Christiaan Frans Rademan, Dave Kruger
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -98,6 +98,7 @@ def rsa(args):
     with Open(args.path.rstrip('/') + '/public.pem', 'w') as f:
         f.write(rsakey.public_key)
 
+
 def gen_key(args):
     """Generates a new AES symmetrical key and iv in *credentials.key*"""
     print("Generating new AES key and initialization "
@@ -111,6 +112,7 @@ def gen_key(args):
             f.write(key + iv)
     else:
         print("Key already exists, not overwriting")
+
 
 def clean_sessions(args):
     """Removes all expired session files"""
@@ -193,7 +195,8 @@ def main(argv):
                        dest='funcs',
                        action='append_const',
                        const=server,
-                       help='Start Internal Testing Server (requires gunicorn)')
+                       help='Start Internal Testing Server' +
+                            ' (requires gunicorn)')
 
     group.add_argument('-c',
                        dest='funcs',
@@ -214,12 +217,12 @@ def main(argv):
                        help='Generate Symmetrical Encryption Key')
 
     parser.add_argument('--password',
-                       help='RSA Private Key Password',
-                       default=None)
+                        help='RSA Private Key Password',
+                        default=None)
 
     parser.add_argument('--ip',
-                       help='Binding IP Address (127.0.0.1)',
-                       default='127.0.0.1')
+                        help='Binding IP Address (127.0.0.1)',
+                        default='127.0.0.1')
 
     parser.add_argument('--port',
                         help='Binding Port (8080)',
@@ -229,8 +232,8 @@ def main(argv):
     args.path = os.path.abspath(args.path)
 
     # NOTE(cfrademan): Only add this path to sites. If someone is trying
-    # to start server from path using the sources/package instead of the install path
-    # then we don't want it to work... (BECAREFUL)
+    # to start server from path using the sources/package instead of the
+    # install path then we don't want it to work... (BECAREFUL)
     site.addsitedir(os.path.abspath(args.path))
     sys.path.insert(0, os.path.abspath(args.path))
     os.chdir(args.path)
@@ -241,6 +244,7 @@ def main(argv):
 
     if args.pkg is not None:
         setup(args)
+
 
 def entry_point():
     """Zero-argument entry point for use with setuptools/distribute."""

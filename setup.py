@@ -37,7 +37,6 @@ if not sys.version_info >= (3, 6):
     exit()
 
 import glob
-import shutil
 from distutils import cmd
 from importlib.machinery import SourceFileLoader
 
