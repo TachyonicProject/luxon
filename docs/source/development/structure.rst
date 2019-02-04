@@ -16,49 +16,52 @@ Luxon Core
 --------------
 
 ========================================= ==============================================
-luxon/core				                  Core Modules.
-luxon/core/cache			  Memory caching classes.
-luxon/core/config                         Luxon Config Parser.
-luxon/core/db                             Luxon Databases.
+luxon/core                                Core Modules.
+luxon/core/cache			  Caching classes.
+luxon/core/config                         Config parser.
+luxon/core/db                             Database API(s).
 luxon/core/handlers                       Application Handlers.
-luxon/core/handlers/wsgi                  WSGI Interface handlers.
+luxon/core/handlers/wsgi                  WSGI interface handlers.
 luxon/core/handlers/cmd			  Command Line Handler.
 luxon/core/policy                         Policy RBAC Rule-Set Engine.
-luxon/core/servers                        Luxon servers.
-luxon/core/session                        Luxon session manager.
-luxon/core/utils                          Core utilities.
-
-luxon/core/app.py			  Application Launch.
-luxon/core/auth.py                        PKI Authentication.
+luxon/core/servers                        Servers for running application.
+luxon/core/session                        Session manager.
+luxon/core/utils                          Internal core utilities.
+luxon/core/app.py			  Application launch.
+luxon/core/auth.py                        Token authentication.
 luxon/core/globals.py                     Global 'g' class.
 luxon/core/logger.py                      Logging service, for debugging etc...
 luxon/core/regex.py                       Regex patterns.
 luxon/core/register.py                    Class of views/registration functions.
 luxon/core/router.py                      Router Interface.
-luxon/core/template.py                    Luxon wrapper for Jinja2 Template Environment.
+luxon/core/template.py                    Wrapper for Jinja2 Template Environment.
 ========================================= ==============================================
 
 External Code
 ----------------
 
 ========================================= ==============================================
-luxon/ext/falcon                          Routing converters and compilers.
+luxon/ext/falcon                          Application Routing Engine.
 ========================================= ==============================================
 
-Helpers
------------
+Helpers / Utilities
+--------------------
 
 ========================================= ==============================================
-luxon/helpers                             Various helper functions.
-luxon/helpers/cache.py			  Caching helper.
-luxon/helpers/db.py                       Database helper.
-luxon/helpers/memoize.py		  Memoize function.
-luxon/helper/menu.py			  Menu tool helper.
+luxon/helpers                             Various helpers.
+luxon/helpers/access.py			  API access validator helpers.
+luxon/helpers/api.py			  API Request/Response helpers.
+luxon/helpers/cache.py			  Caching helpers.
+luxon/helpers/crypto.py                   Crypto helpers.
+luxon/helpers/db.py                       Database helpers.
+luxon/helpers/memoize.py		  Memoize helper.
+luxon/helper/menu.py			  HTML Menu generator helper.
 luxon/helpers/policy.py                   Policy engine helper.
 luxon/helpers/rd.py                       Redis helper.
+luxon/helpers/rmq.py                      RabbitMQ Helper.
 luxon/helpers/sendmail.py                 Send Mail helper.
-luxon/helpers/template.py		  Redis template helper.
-
+luxon/helpers/template.py		  Template helper.
+luxon/utils                               All and sundry Luxon utilities.
 ========================================= ==============================================
 
 Resources
@@ -89,13 +92,6 @@ Testing
 luxon/testing/wsgi                        Stubs for internal testing the WSGI interface.
 ========================================= ==============================================
 
-Utilities
----------
-
-========================================= ==============================================
-luxon/utils                               All and sundry Luxon utilities.
-========================================= ==============================================
-
 Ancillary code
 --------------
 
@@ -104,7 +100,7 @@ luxon/constants.py                        Predefined constants used by Luxon.
 luxon/exceptions.py                       Custom raisable exceptions.
 luxon/main.py                             Main entrypoint to Luxon.
 luxon/metadata.py                         Luxon metadata.
-luxon/wsgi.py                             WSGI launcher.
+luxon/wsgi.py                             WSGI launcher example.
 ========================================= ==============================================
 
 
@@ -112,7 +108,7 @@ Tests
 -----
 
 ========================================= ==============================================
-/luxon/tests                              Directory housing all Unit Tests.
+luxon/tests                               Directory housing all Unit Tests.
 ========================================= ==============================================
 
 

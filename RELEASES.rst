@@ -66,3 +66,8 @@ Releases
    * setup.py replaced imp with importlib.
    * update documentation README.rst
 
+1.4.0 = BETA Release (2019/02/04)
+---------------------------------
+
+   * In progress Clean up code/documentation - https://github.com/TachyonicProject/luxon/issues/11
+   * Added encrypt data backend database store function for models.
