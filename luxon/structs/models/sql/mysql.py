@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -104,7 +104,8 @@ class Mysql(object):
                     if signed is False:
                         sql_field += ' UNSIGNED'
 
-                    if self._model.primary_key and self._model.primary_key.name == field:
+                    if (self._model.primary_key and
+                            self._model.primary_key.name == field):
                         sql_field += " auto_increment"
 
                 elif isinstance(model_fields[field], self._model.SmallInt):
@@ -116,7 +117,8 @@ class Mysql(object):
                     if signed is False:
                         sql_field += ' UNSIGNED'
 
-                    if self._model.primary_key and self._model.primary_key.name == field:
+                    if (self._model.primary_key and
+                            self._model.primary_key.name == field):
                         sql_field += " auto_increment"
 
                 elif isinstance(model_fields[field], self._model.MediumInt):
@@ -128,7 +130,8 @@ class Mysql(object):
                     if signed is False:
                         sql_field += ' UNSIGNED'
 
-                    if self._model.primary_key and self._model.primary_key.name == field:
+                    if (self._model.primary_key and
+                            self._model.primary_key.name == field):
                         sql_field += " auto_increment"
 
                 elif isinstance(model_fields[field], self._model.BigInt):
@@ -140,7 +143,8 @@ class Mysql(object):
                     if signed is False:
                         sql_field += ' UNSIGNED'
 
-                    if self._model.primary_key and self._model.primary_key.name == field:
+                    if (self._model.primary_key and
+                            self._model.primary_key.name == field):
                         sql_field += " auto_increment"
 
                 elif isinstance(model_fields[field], self._model.DateTime):
@@ -184,7 +188,8 @@ class Mysql(object):
                     if signed is False:
                         sql_field += ' UNSIGNED'
 
-                    if self._model.primary_key and self._model.primary_key.name == field:
+                    if (self._model.primary_key and
+                            self._model.primary_key.name == field):
                         sql_field += " auto_increment"
 
                 if null is False:

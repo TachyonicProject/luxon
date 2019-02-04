@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,9 +29,6 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 from luxon.utils.encoding import if_bytes_to_unicode
 from luxon.structs.models.fields.basefields import BaseFields
-from luxon.structs.models.utils import defined_length_check
-
-
 
 
 class IntFields(object):
@@ -44,7 +41,7 @@ class IntFields(object):
         Keyword Args:
             length (int): Length of field value.
             min_length (int): Minimum Length of field value.
-            max_length (int): Maximum Length of field value others length value.
+            max_length (int): Maximum Length of field value.
             signed (bool): If Integer value is signed or un-signed.
             null (bool): If value is allowed to NULL.
             default: Default value for field.
@@ -80,7 +77,6 @@ class IntFields(object):
                 self.error('Integer value required)', value)
             value = super().parse(value)
             return value
-
 
     class Integer(BaseInteger):
         """Integer Field.
@@ -280,7 +276,7 @@ class IntFields(object):
         Keyword Args:
             length (int): Length of field value.
             min_length (int): Minimum Length of field value.
-            max_length (int): Maximum Length of field value others length value.
+            max_length (int): Maximum Length of field value.
             signed (bool): If Integer value is signed or un-signed.
             null (bool): If value is allowed to NULL.
             default: Default value for field.
