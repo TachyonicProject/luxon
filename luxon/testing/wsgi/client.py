@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,7 @@ import os
 
 from luxon.core.handlers.wsgi import Wsgi
 from luxon.testing.wsgi.request import request
+
 
 class Client(object):
     __slots__ = ('app',

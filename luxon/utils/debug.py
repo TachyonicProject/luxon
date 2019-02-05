@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,13 +31,14 @@ import sys
 import inspect
 from luxon.utils.imports import import_module
 
+
 def profile_objects(root=None, include_obj=True):
     usage = []
     modules = sys.modules.keys()
     for module in modules:
         module = module.split('.')
         if ((root is not None and module[0] == root) or
-             root is None):
+                root is None):
             module = ".".join(module)
             py_mod = import_module(module)
             for obj, py_obj in inspect.getmembers(py_mod):
@@ -52,6 +53,7 @@ def profile_objects(root=None, include_obj=True):
                                       sys.getsizeof(py_obj),
                                       str(type(py_obj))))
     return usage
+
 
 def profile_mem(root=None):
     objs = profile_objects(root)

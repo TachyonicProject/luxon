@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Dave Kruger.
+# Copyright (c) 2018-2019 Dave Kruger.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,12 +29,12 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 
 import threading
-import math
 
 from luxon import GetLogger
 from luxon.utils.objects import object_name
 
 log = GetLogger(__name__)
+
 
 def thread_balance(per_thread, func, items):
     if isinstance(items, dict):

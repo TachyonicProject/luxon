@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -104,7 +104,6 @@ class Application(object):
                 script_name = request.get_header('X-Script-Name')
                 if script_name:
                     request.env['SCRIPT_NAME'] = script_name
-
 
                 # Response Object.
                 response = Response(*args,

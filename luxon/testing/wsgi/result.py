@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@ from http.cookies import SimpleCookie
 from luxon.structs.cidict import CiDict
 from luxon.utils.http import content_type_encoding
 from luxon.testing.wsgi.cookie import Cookie
+
 
 class Result(object):
     """Result of a WSGI request.
@@ -76,7 +77,8 @@ class Result(object):
             for morsel in cookies.values()
         )
 
-        self._encoding = content_type_encoding(self._headers.get('content-type'))
+        self._encoding = content_type_encoding(
+            self._headers.get('content-type'))
 
     @property
     def status(self):

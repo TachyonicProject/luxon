@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,10 +27,10 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-
 import threading
 
 from luxon.utils.objects import object_name
+
 
 class ThreadList(object):
     """List for Threads
@@ -38,8 +38,8 @@ class ThreadList(object):
     Allows thread safe and mutable iterations and unique sequence set of values
     per thread. Context for sequence of values being the thread id.
 
-    Define globally for process and not within thread to take advantage of unique
-    content functionality.
+    Define globally for process and not within thread to take advantage of
+    unique content functionality.
     """
     def __init__(self):
         self._thread_local = threading.local()
@@ -63,7 +63,6 @@ class ThreadList(object):
         self._thread_local._contains.clear()
         return self
 
-
     def append(self, value):
         """Appends object obj to list
 
@@ -74,7 +73,6 @@ class ThreadList(object):
 
     def remove(self, value):
         self._contains().remove(value)
-
 
     def __setitem__(self, item, value):
         """Update value of item

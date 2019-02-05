@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -560,11 +560,13 @@ class Response(object):
     def close(self):
         self._result.close()
 
+
 def append_to_error(e, value):
     e = str(e)
     if value is not None:
         e = "%s (%s)" % (e, value,)
     return e
+
 
 def request(client, method, url, params={},
             data=None, headers={}, stream=False, endpoint=None,
@@ -683,7 +685,7 @@ def request(client, method, url, params={},
                     title = None
                     description = None
                     if ('json' in response.content_type.lower() and
-                        'error' in response.json):
+                            'error' in response.json):
                         error = response.json['error']
                         try:
                             title = error.get('title')
@@ -698,11 +700,15 @@ def request(client, method, url, params={},
                             description = " Endpoint: %s" % endpoint
 
                     if stream is True:
-                        _debug(method, url, params, data, headers, response.headers,
-                               None, response.status_code, elapsed())
+                        _debug(method, url, params, data,
+                               headers, response.headers,
+                               None, response.status_code,
+                               elapsed())
                     else:
-                        _debug(method, url, params, data, headers, response.headers,
-                               response.content, response.status_code, elapsed())
+                        _debug(method, url, params, data,
+                               headers, response.headers,
+                               response.content, response.status_code,
+                               elapsed())
                     raise HTTPError(response.status_code, description, title)
                 except HTTPClientContentDecodingError:
                     if endpoint is not None:
@@ -782,10 +788,6 @@ class Stream(object):
         self._iterator = None
 
     def __enter__(self):
-        # NOTE(cfrademan): Not fanatstic idea...
-        #if self._response is not None:
-        #    raise HTTPClientError('Stream already open')
-
         self.open()
 
         return self._response
@@ -837,7 +839,6 @@ class Stream(object):
 
         return self._response.status_code
 
-
     def close(self):
         if self._response is None:
             raise HTTPClientError('Stream not open')
@@ -852,7 +853,8 @@ class Client(object):
 
         self._url = url
         self._s = requests.Session()
-        adapter = requests.adapters.HTTPAdapter(pool_connections=1000, max_retries=3)
+        adapter = requests.adapters.HTTPAdapter(pool_connections=1000,
+                                                max_retries=3)
         self._s.mount('http://', adapter)
         self._s.mount('https://', adapter)
         self._headers = {'User-Agent': __identity__}

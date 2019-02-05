@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,18 +35,23 @@ IP4_EXPR = r'[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
 FQDN_EXPR = r'([0-9a-z]+\.?)+'
 IP6_EXPR = r'([0-9a-f]{1,4}::?){1,8}'
 
-EMAIL_RE = re.compile(r'^[a-z\.]+[a-z0-9\.]@[a-z\.]+[a-z0-9\.]$', re.IGNORECASE)
-WORD_RE = re.compile(r'^[a-z]+[a-z0-9]+$',re.IGNORECASE)
+EMAIL_RE = re.compile(r'^[a-z\.]+[a-z0-9\.]@[a-z\.]+[a-z0-9\.]$',
+                      re.IGNORECASE)
+
+WORD_RE = re.compile(r'^[a-z]+[a-z0-9]+$', re.IGNORECASE)
+
 USERNAME_RE = re.compile(r'^([a-z\.]+[a-z0-9\.]+@[a-z\.]+[a-z0-9\.]+$' +
-           r'|^[a-z0-9\.]+)$', re.IGNORECASE)
+                         r'|^[a-z0-9\.]+)$', re.IGNORECASE)
+
 URI_RE = re.compile(r'^(?:http|ftp)s?://'
                     r'(' +
                     FQDN_EXPR +
                     r'|' +
                     IP6_EXPR +
-                    r')'
-                    r'(?::\d+)?' # optional port
+                    r')' +
+                    r'(?::\d+)?' +  # optional port
                     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
 FQDN_RE = re.compile(r'^' + FQDN_EXPR + r'$', re.IGNORECASE)
 IP4_RE = re.compile(r'^' + IP4_EXPR + r'$')
 SUBNETMASK = IP4_RE

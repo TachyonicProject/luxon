@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,11 +28,12 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 import docker
-from luxon.utils.pkg import Module
 
 client = docker.from_env()
 
-def start(name, image, volumes=None, ports=None, links=None, hostname=None, **env):
+
+def start(name, image, volumes=None, ports=None,
+          links=None, hostname=None, **env):
     try:
         container = client.containers.get(name)
         if container.status in ('running', 'restarting'):
@@ -51,8 +52,9 @@ def start(name, image, volumes=None, ports=None, links=None, hostname=None, **en
         parsed_volumes = {}
         if volumes:
             for volume in volumes:
-                parsed_volumes[volume] = {'bind': volumes[volume], 'mode': 'rw'}
-            
+                parsed_volumes[volume] = {'bind': volumes[volume],
+                                          'mode': 'rw'}
+
         client.containers.run(image, name=name,
                               ports=ports,
                               environment=env,
@@ -61,23 +63,29 @@ def start(name, image, volumes=None, ports=None, links=None, hostname=None, **en
                               volumes=parsed_volumes,
                               hostname=hostname)
 
+
 def restart(name):
     container = client.containers.get(name)
     container.restart()
+
 
 def stop(name):
     container = client.containers.get(name)
     container.stop()
 
+
 def build(name, fileobj):
     return client.images.build(tag=name, fileobj=fileobj, forcerm=True)
+
 
 def remove_image(name):
     client.images.remove(image=name)
 
+
 def remove_container(name):
     container = client.containers.get(name)
     container.remove()
+
 
 def exec(name, command):
     container = client.containers.get(name)

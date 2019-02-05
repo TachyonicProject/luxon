@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018, Christiaan Frans Rademan.
+# Copyright (c) 2018-2019, Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -46,14 +46,12 @@ def _log(cursor, msg, elapsed=0, values=None):
         msg (str): Log message.
         elapsed (float): Time elapsed.
     """
-    #if values is not None:
-    #    log_msg = msg % values
-    #else:
     log_msg = msg + " (%s) (%s)" % (values, cursor,)
 
     if elapsed is not None and elapsed > 0.1:
         log_msg = " !!!SLOW!!! " + log_msg
     log.info(log_msg, timer=elapsed)
+
 
 class Cursor(BaseExeptions):
     def __init__(self, conn):
@@ -109,7 +107,7 @@ class Cursor(BaseExeptions):
 
         Reference PEP-0249
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
     @property
     def messages(self):
@@ -137,7 +135,7 @@ class Cursor(BaseExeptions):
 
         Reference PEP-0249
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def next(self):
         """Return the next row.
@@ -200,7 +198,7 @@ class Cursor(BaseExeptions):
                 if args is not None and not isinstance(args, (dict,
                                                               list,
                                                               tuple)):
-                    args = [ args ]
+                    args = [args]
 
                 query, args = args_to(query, args, self._conn.DEST_FORMAT,
                                       self._conn.CAST_MAP)
@@ -237,13 +235,14 @@ class Cursor(BaseExeptions):
         permitted (but not required) to raise an exception when it detects that
         a result set has been created by an invocation of the operation.
 
-        The same comments as for .execute() also apply accordingly to this method.
+        The same comments as for .execute() also apply accordingly to this
+        method.
 
         Return values are not defined.
 
         Reference PEP-0249
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def fetchone(self):
         """Fetch row.
@@ -262,7 +261,7 @@ class Cursor(BaseExeptions):
             row = dict(self._crsr.fetchone())
             self._rownumber += 1
             return row
-        except TypeError as e:
+        except TypeError:
             return None
 
     def fetchmany(self, size=None):
@@ -333,7 +332,7 @@ class Cursor(BaseExeptions):
 
         Reference PEP-0249
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def setinputsize(self, size):
         """Predefine memory areas for operations.
@@ -358,7 +357,7 @@ class Cursor(BaseExeptions):
 
         Reference PEP-0249
         """
-        pass
+        raise NotImplementedError()
 
     def setoutputsize(self, size, columns=None):
         """Set output size for fetches of large columns.
@@ -378,7 +377,7 @@ class Cursor(BaseExeptions):
 
         Reference PEP-0249
         """
-        pass
+        raise NotImplementedError()
 
     def clean_up(self):
         """Cleanup server Session.
@@ -432,7 +431,6 @@ class Cursor(BaseExeptions):
                 except AttributeError:
                     self._conn._conn.rollback()
             _log(self, "Rollback", elapsed())
-
 
     def insert(self, table, data):
         """Insert data into table.

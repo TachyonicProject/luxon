@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -222,12 +222,12 @@ class Config(configparser.ConfigParser):
                 return fallback
             elif val.strip() == '':
                 raise configparser.NoSectionError(section) from None
-        except configparser.NoSectionError as e:
+        except configparser.NoSectionError:
             if fallback is not None:
                 return fallback
             else:
                 raise configparser.NoSectionError(section) from None
-        except configparser.NoOptionError as e:
+        except configparser.NoOptionError:
             if fallback is not None:
                 return fallback
             else:
@@ -267,12 +267,12 @@ class Config(configparser.ConfigParser):
             if val.strip() == '':
                 return []
             val = val.replace('\n', '').replace('\r', '').split(',')
-        except configparser.NoSectionError as e:
+        except configparser.NoSectionError:
             if fallback is not None:
                 val = fallback
             else:
                 raise configparser.NoSectionError(section) from None
-        except configparser.NoOptionError as e:
+        except configparser.NoOptionError:
             if fallback is not None:
                 val = fallback
             else:

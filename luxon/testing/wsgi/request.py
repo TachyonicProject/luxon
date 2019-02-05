@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ from luxon.utils.encoding import if_unicode_to_bytes
 
 from luxon.testing.wsgi.mock import StartResponseMock
 from luxon.testing.wsgi.result import Result
+
 
 def request(app, method='GET', path='/', query_string='',
             headers={}, body=None, file_wrapper=None,
