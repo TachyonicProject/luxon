@@ -8,7 +8,7 @@ Information describing the project.
 package = 'luxon'
 
 # Please follow https://www.python.org/dev/peps/pep-0440/
-version = '1.3.0'
+version = '1.4.0'
 
 author = "Myria Solutions (PTY) Ltd"
 email = 'project@tachyonic.org'
