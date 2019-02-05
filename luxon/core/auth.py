@@ -48,22 +48,28 @@ log = GetLogger(__name__)
 class Auth(object):
     """Authentication class.
 
-    Luxon auth tokens use PKI. Its required to have the private key to sign
-    new tokens on the tachyonic api. Endpoints will require the public key
-    to validate token authenticity.
+    Luxon token / authentication provider. Uses RSA private keys to sign
+    tokens. Endpoints will require the public key to validate token
+    authenticity.
 
     The keys should be stored in the application root. Usually where the
     wsgi file is located.
 
-    Create RSA Privat Key with 2048 bits
-        openssl genrsa -des3 -out private.pem 2048
+    Generate RSA Private/Public Key pairs:
+        luxon -r
 
-    Export the RSA Public Key to a File
-        openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+    Args:
+        expire (int): Token life-span in seconds. (default 60 seconds)
 
-    The Luxon command line tool can generate both of these with
-        luxon -r app_root/
-
+    Attributes:
+        authenticated (bool): Wether authenticated.
+        token (str): Token.
+        json (str): Token in JSON.
+        roles (tuple): Roles applied.
+        user_id (str): User ID.
+        user_domain (str): Login domain.
+        tenant_id (str): Scope tenant context.
+        domain (str): Scope domain context.
     """
     __slots__ = ('_token_expire',
                  '_credentials',
@@ -90,6 +96,7 @@ class Auth(object):
                                            '/public.pem')
 
     def clear(self):
+        """Clear authentication."""
         self._credentials = {}
 
     @property
@@ -100,12 +107,10 @@ class Auth(object):
 
     @property
     def token(self):
-        # Return serialized token.
         if not self.authenticated:
             raise TokenMissingError()
 
-        utc_expire = utc(self._credentials['expire'])
-        if now() > utc_expire:
+        if now() > utc(self._credentials['expire']):
             raise TokenExpiredError()
 
         bytes_token = if_unicode_to_bytes(js.dumps(self._credentials,
@@ -121,7 +126,6 @@ class Auth(object):
 
     @token.setter
     def token(self, token):
-        # Load exisiting token
         token = if_unicode_to_bytes(token)
         signature, b64_token = token.split(b'!!!!')
 
@@ -140,7 +144,6 @@ class Auth(object):
 
     @property
     def json(self):
-        # Return json token.
         if not self.authenticated:
             raise TokenMissingError()
 
@@ -164,6 +167,14 @@ class Auth(object):
 
     def new(self, user_id, username=None, domain=None,
             roles=None):
+        """New Authentication token.
+
+        Args:
+            user_id (str): Unique user identifier.
+            username (str): Username (optional).
+            domain (str): Domain (optional).
+            roles (list): List of roles (optional).
+        """
 
         self.clear()
 
@@ -243,6 +254,7 @@ class Auth(object):
         self._credentials['domain'] = value
 
     def validate(self):
+        """Vaidate current token."""
         if not self.authenticated:
             raise TokenMissingError() from None
         elif 'expire' in self._credentials:

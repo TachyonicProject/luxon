@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@ import time
 import atexit
 from signal import SIGTERM
 
+
 class Daemon(object):
     """Generic Daemon class.
 
@@ -67,7 +68,8 @@ class Daemon(object):
                 sys.exit(0)
 
         except OSError as e:
-            sys.stderr.write("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
+            sys.stderr.write("fork #1 failed: %d (%s)\n"
+                             % (e.errno, e.strerror))
             sys.exit(1)
 
         # Decouple from parent environment
@@ -83,7 +85,8 @@ class Daemon(object):
                 sys.exit(0)
 
         except OSError as e:
-            sys.stderr.write("fork #2 failed: %d (%s)\n" % (e.errno, e.strerror))
+            sys.stderr.write("fork #2 failed: %d (%s)\n"
+                             % (e.errno, e.strerror))
             sys.exit(1)
 
         # Redirect standard file descriptors
@@ -102,7 +105,7 @@ class Daemon(object):
         # Write PID File
         atexit.register(self.delete_pid)
         pid = str(os.getpid())
-        open(self.pidfile,'w+').write("%s\n" % pid)
+        open(self.pidfile, 'w+').write("%s\n" % pid)
 
     def delete_pid(self):
         try:
@@ -115,7 +118,7 @@ class Daemon(object):
         """
         # Check for a Pid File to see if the daemon is already running.
         try:
-            pf = open(self.pidfile,'r')
+            pf = open(self.pidfile, 'r')
             pid = int(pf.read().strip())
             pf.close()
         except IOError:
@@ -153,7 +156,7 @@ class Daemon(object):
         """
         # Get the pid from the Pid File.
         try:
-            pf = open(self.pidfile,'r')
+            pf = open(self.pidfile, 'r')
             pid = int(pf.read().strip())
             pf.close()
         except IOError:
@@ -181,7 +184,7 @@ class Daemon(object):
     @property
     def running(self):
         try:
-            pf = open(self.pidfile,'r')
+            pf = open(self.pidfile, 'r')
             pid = int(pf.read().strip())
             pf.close()
         except IOError:
@@ -197,7 +200,7 @@ class Daemon(object):
     def get_pid(self):
         if self.running:
             try:
-                pf = open(self.pidfile,'r')
+                pf = open(self.pidfile, 'r')
                 pid = int(pf.read().strip())
                 pf.close()
                 return pid

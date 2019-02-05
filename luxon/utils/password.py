@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -95,9 +95,11 @@ def hash(password, algo=const.BLOWFISH, rounds=12):
     elif algo == const.LDAP_BLOWFISH:
         hashed = passlib.hash.ldap_bcrypt.using(rounds=rounds).hash(password)
     elif algo == const.LDAP_SHA256:
-        hashed = passlib.hash.ldap_sha256_crypt.using(rounds=rounds).hash(password)
+        hashed = passlib.hash.ldap_sha256_crypt.using(
+            rounds=rounds).hash(password)
     elif algo == const.LDAP_SHA512:
-        hashed = passlib.hash.ldap_sha512_crypt.using(rounds=rounds).hash(password)
+        hashed = passlib.hash.ldap_sha512_crypt.using(
+            rounds=rounds).hash(password)
     else:
         raise Error('Invalid hash specified %s' % algo)
     return hashed

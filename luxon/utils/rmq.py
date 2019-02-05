@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,14 +29,15 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 import pika
 
-from luxon import g
 from luxon import js
 
+
 class Rmq(object):
-    def __init__(self, host='127.0.0.1', port=5672, virtualhost='/', username=None, password=None):
+    def __init__(self, host='127.0.0.1', port=5672,
+                 virtualhost='/', username=None, password=None):
 
         params = [host, port, virtualhost]
-        
+
         if username:
             params.append(pika.PlainCredentials(username, password))
 
@@ -59,7 +60,7 @@ class Rmq(object):
                               routing_key=queue,
                               body=message,
                               properties=pika.BasicProperties(
-                                 delivery_mode = 2, # make message persistent
+                                 delivery_mode=2,  # makes message persistent
                                  content_type='application/json',
                                  content_encoding='utf-8'
                               ))
@@ -74,9 +75,8 @@ class Rmq(object):
         channel.queue_declare(queue=queue, durable=True)
         channel.basic_qos(prefetch_count=1)
         channel.basic_consume(callback_wrapper,
-                                   queue=queue)
+                              queue=queue)
         channel.start_consuming()
-
 
     def __enter__(self):
         return self

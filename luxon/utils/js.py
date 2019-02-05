@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,14 +36,15 @@ from luxon.exceptions import JSONDecodeError
 
 
 class _JsonEncoder(json.JSONEncoder):
-    """Custom encoder
+    """Custom encoder.
 
-    Overwrites default json.JSONEncoder to support luxon functionality
+    Overwrites default json.JSONEncoder to support luxon functionality.
     """
 
     def default(self, o):
         """
-        parses data into usable form or encodes it using JSONEncoder.default if it is valid
+        parses data into usable form or encodes it using
+        JSONEncoder.default if it is valid.
 
         Args:
             o(obj): data to be parsed/encoded
@@ -67,13 +68,13 @@ class _JsonEncoder(json.JSONEncoder):
 
 
 def loads(json_text, **kwargs):
-    """Deserializes a json document to a python object
+    """Deserializes a json document to a python object.
 
     Args:
-        json_text (str/bytes): document to be deserialized
+        json_text (str/bytes): document to be deserialized.
 
     Returns:
-        python object
+        python object.
 
     """
     if isinstance(json_text, bytes):
@@ -86,12 +87,12 @@ def loads(json_text, **kwargs):
 
 
 def dumps(obj, indent=4):
-    """Serializes an object as a JSON formatted stream (indented)
+    """Serializes an object as a JSON formatted stream.
 
     Args:
-        obj(obj): object to be serialized
+        obj(obj): object to be serialized.
 
     Returns:
-        JSON formatted stream
+        JSON formatted stream.
     """
     return json.dumps(obj, indent=indent, cls=_JsonEncoder)

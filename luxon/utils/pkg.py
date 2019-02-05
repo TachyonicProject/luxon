@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -54,12 +54,11 @@ class EntryPoints(metaclass=NamedSingleton):
         try:
             return self.named_objects[name]
         except KeyError:
-            raise Error("Adapter/Driver/Entry Point/Interface '%s' not found" % name) from None
-
+            raise Error("Adapter/Driver/Entry Point/Interface '%s' not found"
+                        % name) from None
 
     def __iter__(self):
         return iter(self.named_objects)
-
 
 
 class Module(object):
@@ -103,7 +102,6 @@ class Module(object):
                 return res.read()
         except ImportError:
             raise ImportError(self._module) from None
-
 
     def file(self, path):
         """Returns resource as a string

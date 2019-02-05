@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 
 from hashlib import md5
 from luxon.utils.encoding import if_unicode_to_bytes
+
 
 def md5sum(val):
     """Returns an md5 hash as a hex digest

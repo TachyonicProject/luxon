@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018, Christiaan Frans Rademan.
+# Copyright (c) 2018-2019, Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,6 @@
 import sqlite3
 from decimal import Decimal as PyDecimal
 
-from luxon import exceptions
 from luxon.core.db.base.connection import Connection as BaseConnection
 
 # LOCALIZE Exceptions to Module as pep-0249
@@ -47,7 +46,8 @@ from luxon.core.db.base.exceptions import (Error, Warning,
 # Globals as per pep-0249
 #########################
 # String constant stating the supported DB API level.
-# Currently only the strings "1.0" and "2.0" are allowed. If not given, a DB-API 1.0 level interface should be assumed.
+# Currently only the strings "1.0" and "2.0" are allowed. If not given,
+# a DB-API 1.0 level interface should be assumed.
 apilevel = "2.0"
 #
 # threadsafety
@@ -90,7 +90,7 @@ class Connection(BaseConnection):
     DB_API = sqlite3
     ERROR_MAP = error_map
     CAST_MAP = cast_map
-    DEST_FORMAT='qmark'
+    DEST_FORMAT = 'qmark'
     THREADSAFETY = threadsafety
 
     def __init__(self, db):
@@ -102,6 +102,7 @@ class Connection(BaseConnection):
 
     def __str__(self):
         return "SQLite3 Database '%s'" % self._db
+
 
 def connect(*args, **kwargs):
     """Constructor for creating a connection to the database.

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -51,6 +51,7 @@ log_format = logging.Formatter('%(asctime)s%(app_name)s' +
 simple_format = logging.Formatter('%(name)s' +
                                   '[%(process)d]' +
                                   ' <%(levelname)s>: %(message)s')
+
 
 def log_formatted(logger_facility, message, prepend=None, append=None,
                   timer=None, log_id=None):

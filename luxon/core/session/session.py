@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
 
 
 class Session(object):
-    """ Session Base Class.
+    """Session Base Class.
 
     Luxon provides full support for anonymous sessions. The session framework
     lets you store and retrieve arbitrary data on a per-site-visitor basis. It

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -79,7 +79,6 @@ def select(name, options, selected, empty=False, cls=None, onchange=None,
         select.set_attribute('data-url', data_url)
     if data_endpoint:
         select.set_attribute('data-endpoint', data_endpoint)
-
 
     if onchange is not None:
         select.set_attribute('onchange', onchange)

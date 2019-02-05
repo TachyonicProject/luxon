@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -84,5 +84,3 @@ def static(req, resp):
         raise FileNotFoundError(
             "No such file or directory: '%s'" % sfile_path
         )
-    # except Exception as e:
-    #    return "Error %s" % (e,)

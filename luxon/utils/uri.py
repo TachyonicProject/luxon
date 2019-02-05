@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -90,7 +90,8 @@ def clean_uri(uri):
     Formatted uri str.
     """
     parsed = list(parse.urlparse(uri))
-    parsed[2] = re.sub("/{2,}", "/", parsed[2]).strip('/')  # replace two or more / with one
+    parsed[2] = re.sub("/{2,}", "/",
+                       parsed[2]).strip('/')  # replace two or more / with one
 
     cleaned = parse.urlunparse(parsed)
 
@@ -201,6 +202,7 @@ def build_qs(params, uri=None):
         uri += '?' + '&'.join(qs)
 
     return uri
+
 
 def uri(location, proto='http', path=None, params=None):
     uri = proto + '://' + location.strip(' ').strip('/')

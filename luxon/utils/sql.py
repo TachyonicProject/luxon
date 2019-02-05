@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -58,6 +58,7 @@ def build_where(operator='AND', **kwargs):
         return ((" %s " % operator).join(query), vals)
     else:
         return (None, [])
+
 
 def build_like(operator="AND", **kwargs):
     """Generates an SQL WHERE string.
