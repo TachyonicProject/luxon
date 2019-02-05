@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,9 @@ import re
 
 from luxon.utils.timer import Timer
 from luxon.core.logger import GetLogger
-from luxon.utils.singleton import Singleton
 
 log = GetLogger(__name__)
+
 
 def compiler(dict_rule_set):
     """Policy Rules Compiler.
@@ -70,13 +70,13 @@ def compiler(dict_rule_set):
             # Validate Rules.
             if ' ' in rule:
                 log.error("Error in rule name '" + rule +
-                          "' skipping. (expected value with no spaces)" )
+                          "' skipping. (expected value with no spaces)")
                 continue
 
             log.info('Build rule %s = %s' % (rule, dict_rule_set[rule]))
             condition = dict_rule_set[rule]
 
-            build_rule = ('def ' + rule.replace(':','_') +
+            build_rule = ('def ' + rule.replace(':', '_') +
                           '():\n    return ' +
                           condition + '\n')
 
@@ -94,7 +94,7 @@ def compiler(dict_rule_set):
                                                 '()')
 
             # Add Rule to _rules dictionary for validation to select rule.
-            build_rule += "_rules['" + rule + "'] = " + rule.replace(':','_')
+            build_rule += "_rules['" + rule + "'] = " + rule.replace(':', '_')
             build_rule += '\n\n'
 
             rule_set += build_rule
@@ -105,9 +105,8 @@ def compiler(dict_rule_set):
         try:
             compiled = compile(rule_set, 'policy.json.compiled', 'exec')
             log.info('%s Rules compile completed.' % len(dict_rule_set),
-                      timer=elapsed())
+                     timer=elapsed())
 
             return (compiled, dict_rule_set)
         except Exception:
             raise ValueError("Failed compiling rule_set")
-

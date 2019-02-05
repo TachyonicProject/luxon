@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,7 @@ def _render_template(template, **kwargs):
     template = jinja.from_string(template)
     return template.render(**kwargs)
 
+
 def parse_attachment(message_part):
     """Function to parse attachment from MIME message part.
 
@@ -85,7 +86,7 @@ def parse_attachment(message_part):
             attachment.id = content_id
 
             for param in dispositions[1:]:
-                name,value = param.strip().split("=")
+                name, value = param.strip().split("=")
                 name = name.lower()
                 value = value.replace('"', "")
                 value = value.replace("'", "")
@@ -93,14 +94,15 @@ def parse_attachment(message_part):
                 if name == "filename":
                     attachment.name = value
                 elif name == "create-date":
-                    attachment.create_date = value  #TODO: datetime
+                    attachment.create_date = value  # TODO: datetime
                 elif name == "modification-date":
-                    attachment.mod_date = value #TODO: datetime
+                    attachment.mod_date = value  # TODO: datetime
                 elif name == "read-date":
-                    attachment.read_date = value #TODO: datetime
+                    attachment.read_date = value  # TODO: datetime
             return attachment
 
     return None
+
 
 class ParseContent(object):
     """Utility Class to Parse the content of a MIME message.
@@ -125,14 +127,15 @@ class ParseContent(object):
                 if attachment:
                     self._attachments.append(attachment)
                 else:
-                    body = part.get_payload(decode=True) # decode
+                    body = part.get_payload(decode=True)  # decode
                     if body is not None:
                         if 'html' in part.get_content_type():
                             self._html = if_bytes_to_unicode(body)
                         elif 'text/plain' in part.get_content_type():
                             self._text = if_bytes_to_unicode(body)
 
-        # not multipart - i.e. plain text, no attachments, keeping fingers crossed
+        # not multipart - i.e. plain text, no attachments,
+        # keeping fingers crossed
         else:
             if 'text/html' == msg.get_content_type():
                 self._html = if_bytes_to_unicode(msg.get_payload(decode=True))
@@ -181,6 +184,7 @@ class ParseContent(object):
                             body=self._text,
                             **kwargs)
 
+
 def new_message(subject=None, email_from=None, email_to=None, old_msg=None,
                 multipart=True):
     """Utility function to generate an email message.
@@ -220,6 +224,7 @@ def new_message(subject=None, email_from=None, email_to=None, old_msg=None,
         new_msg['Subject'] = old_msg['Subject']
 
     return new_msg
+
 
 def format_msg(msg, html_template=None, text_template=None,
                subject=None,
@@ -367,7 +372,6 @@ class SMTPClient(object):
 
         if body is not None:
             msg.set_content(body)
-
 
         try:
             self.smtp.send_message(msg)

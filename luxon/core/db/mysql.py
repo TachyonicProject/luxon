@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018, Christiaan Frans Rademan.
+# Copyright (c) 2018-2019, Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,18 @@
 import pymysql
 from pymysql.constants import COMMAND
 
-from luxon import exceptions
 from luxon.core.db.base.connection import Connection as BaseConnection
+
+# LOCALIZE Exceptions to Module as pep-0249
+from luxon.core.db.base.exceptions import (Error, Warning,
+                                           InterfaceError,
+                                           DatabaseError,
+                                           DataError,
+                                           OperationalError,
+                                           IntegrityError,
+                                           InternalError,
+                                           ProgrammingError,
+                                           NotSupportedError)
 
 # MAP Python PyMYSQL Exceptions to Luxon.
 error_map = (
@@ -47,21 +57,12 @@ error_map = (
 cast_map = (
 )
 
-# LOCALIZE Exceptions to Module as pep-0249
-from luxon.core.db.base.exceptions import (Error, Warning,
-                                           InterfaceError,
-                                           DatabaseError,
-                                           DataError,
-                                           OperationalError,
-                                           IntegrityError,
-                                           InternalError,
-                                           ProgrammingError,
-                                           NotSupportedError)
 
 # Globals as per pep-0249
 #########################
 # String constant stating the supported DB API level.
-# Currently only the strings "1.0" and "2.0" are allowed. If not given, a DB-API 1.0 level interface should be assumed.
+# Currently only the strings "1.0" and "2.0" are allowed. If not given,
+# a DB-API 1.0 level interface should be assumed.
 apilevel = "2.0"
 #
 # threadsafety
@@ -85,14 +86,16 @@ paramstyle = "format"
 # format        ANSI C printf format codes, e.g. ...WHERE name=%s
 # pyformat      Python extended format codes, e.g. ...WHERE name=%(name)s
 
+
 def error_handler(self, e):
     raise
+
 
 class Connection(BaseConnection):
     DB_API = pymysql
     ERROR_MAP = error_map
     CAST_MAP = cast_map
-    DEST_FORMAT='format'
+    DEST_FORMAT = 'format'
     THREADSAFETY = threadsafety
 
     def __init__(self, host, username, password, database):
@@ -100,7 +103,7 @@ class Connection(BaseConnection):
         self._db = database
         super().__init__(host, username, password, database)
         self._crsr_cls = pymysql.cursors.DictCursor
-        self._crsr_cls_args = [ self._conn ]
+        self._crsr_cls_args = [self._conn]
         self.execute('SET time_zone = %s', '+00:00')
 
     def __str__(self):

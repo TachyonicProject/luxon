@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,11 +30,16 @@
 
 import collections
 
+
 class CiDict(collections.MutableMapping):
     """A case-insensitive ``dict``-like object.
 
     Args:
-        data (dict): Dictionary to be used in obj initialization.
+        data (dict): Dictionary to be used in CiDict initialization.
+
+    Keyword Arguements:
+        Dictionary initialized with the name=value pairs.
+        For example:  dict(one=1, two=2)
     """
     def __init__(self, data=None, **kwargs):
         self._store = dict()

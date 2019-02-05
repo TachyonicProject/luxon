@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 from luxon.structs.cidict import CiDict
 
+
 class StartResponseMock(object):
     """Mock object for WSGI 'start_response'.
 
@@ -37,7 +38,7 @@ class StartResponseMock(object):
         headers_dict (CiDict): Case-insensitive dictionary.
         exc_info: exc_info
     """
-    __slots__ = ( '_status', '_headers', '_exc_info', '_called' )
+    __slots__ = ('_status', '_headers', '_exc_info', '_called')
 
     def __init__(self):
         self._called = False

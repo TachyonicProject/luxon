@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -105,7 +105,7 @@ class RequestBase(object):
                     else:
                         self.credentials.token = self.user_token
                     self.log['USER-ID'] = self._cached_auth.user_id
-                except AccessDeniedError as e:
+                except AccessDeniedError:
                     self.user_token = None
                     self.scope_token = None
                     self.session.clear()

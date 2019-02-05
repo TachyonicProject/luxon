@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,7 @@ _ajax_error_template = None
 g.javascripts = []
 g.stylesheets = []
 g.dashboards = []
+
 
 class Register(object):
     __slots__ = ()
@@ -107,13 +108,10 @@ class Register(object):
         _ajax_error_template = template
 
     def javascript(self, javascript):
-        javascript = javascript.strip('/')
-        g.javascripts.append(javascript)
+        g.javascripts.append(javascript.strip('/'))
 
     def stylesheet(self, stylesheet):
-        sylesheet = stylesheet.strip('/')
-        g.stylesheets.append(stylesheet)
+        g.stylesheets.append(stylesheet.strip('/'))
 
     def dashboard(self, heading, dashboard):
         g.dashboards.append((heading, dashboard))
-

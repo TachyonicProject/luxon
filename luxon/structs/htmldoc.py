@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -94,7 +94,8 @@ class HTMLDoc(object):
             value (str): text such as 'Goodbye World'
         """
         if self.element in html5_void_elements:
-            raise exceptions.Error("DOM: Appending on void element %s" % (self.element,))
+            raise exceptions.Error(
+                "DOM: Appending on void element %s" % (self.element,))
         else:
             self.contents.append(value)
 
@@ -168,6 +169,7 @@ class HTMLDoc(object):
 
     def __repr__(self):
         return self.get()
+
 
 class _Parse(HTMLParser):
     def __init__(self, dom, html):

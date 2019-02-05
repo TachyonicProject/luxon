@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 
 from luxon.structs.threaddict import ThreadDict
 
+
 class ThreadSingleton(type):
     """Singleton MetaClass
 
@@ -40,12 +41,14 @@ class ThreadSingleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(ThreadSingleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super(
+                ThreadSingleton, cls).__call__(*args, **kwargs)
 
         if hasattr(cls._instances[cls], '_singleton_init'):
             cls._instances[cls]._singleton_init
 
         return cls._instances[cls]
+
 
 class NamedSingleton(type):
     """Singleton MetaClass
@@ -64,23 +67,27 @@ class NamedSingleton(type):
             cls._instances[name] = {}
 
         if cls not in cls._instances[name]:
-            cls._instances[name][cls] = super(NamedSingleton, cls).__call__(*args, **kwargs)
+            cls._instances[name][cls] = super(
+                NamedSingleton, cls).__call__(*args, **kwargs)
 
         if hasattr(cls._instances[name][cls], '_singleton_init'):
             cls._instances[name][cls]._singleton_init
 
         return cls._instances[name][cls]
 
+
 class Singleton(type):
     """Singleton MetaClass
 
-    Ensure class is not duplicated and always references initial instantiated object.
+    Ensure class is not duplicated and always references
+    initial instantiated object.
     """
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super(
+                Singleton, cls).__call__(*args, **kwargs)
 
         if hasattr(cls._instances[cls], '_singleton_init'):
             cls._instances[cls]._singleton_init

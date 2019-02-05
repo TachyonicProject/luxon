@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -77,4 +77,4 @@ class Redis(object):
         return self._redis.exists(key)
 
     def __iter__(self):
-        raise NotImplemented()
+        raise NotImplementedError()

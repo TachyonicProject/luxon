@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -85,8 +85,8 @@ class Policy(object):
             return val
 
         # Import bit, ensures save environment...
-        exec_globals = { '__builtins__': {} }
-        exec_globals = { '_validate_rule': rule }
+        exec_globals = {'__builtins__': {}}
+        exec_globals = {'_validate_rule': rule}
 
         # Add Policy environment Kwargs to be referenced in rule_set.
         exec_globals.update(self._kwargs)
@@ -98,10 +98,10 @@ class Policy(object):
                 # Value from compiled code.
                 val = exec_globals['_validate_result']
             log.info('Rule %s validated to %s.' % (rule, val),
-                      timer=elapsed())
+                     timer=elapsed())
         except AccessDeniedError:
             raise
         except Exception as e:
             log.error("Failed validating '%s' %s:%s" %
-                              (rule, e.__class__.__name__, e))
+                      (rule, e.__class__.__name__, e))
         return val

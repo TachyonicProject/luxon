@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,13 +38,10 @@ def if_unicode_to_bytes(string, codec='UTF-8'):
     Returns:
         UTF8 encoded string
     """
-    # NOTE(cfrademan): if is slow...
-    #if isinstance(string, str):
     try:
         return string.encode(codec)
-    #else:
     except Exception:
-       return string
+        return string
 
 
 def if_bytes_to_unicode(string, codec='UTF-8'):
@@ -56,11 +53,8 @@ def if_bytes_to_unicode(string, codec='UTF-8'):
     Returns:
         Unicode string
     """
-    # NOTE(cfrademan): if is slow...
-    #if isinstance(string, bytes):
     try:
         return string.decode(codec)
-    #else:
     except AttributeError:
         return string
 

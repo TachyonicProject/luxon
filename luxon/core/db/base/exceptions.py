@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018, Christiaan Frans Rademan.
+# Copyright (c) 2018-2019, Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,8 +27,8 @@
 # STRICT LIABILITY,OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 # WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
-
 from luxon import exceptions
+
 
 class Error(exceptions.SQLError):
     """Exception related to operation with MySQL."""
@@ -87,6 +87,7 @@ class NotSupportedError(exceptions.SQLNotSupportedError):
     .rollback() on a connection that does not support transaction or
     has transactions turned off."""
 
+
 class Exceptions(object):
     def _error_handler(self, obj, e, error_map):
         for error_mapping in error_map:
@@ -99,27 +100,22 @@ class Exceptions(object):
     class Error(Error):
         """Exception related to operation with MySQL."""
 
-
     class Warning(Warning):
         """Exception raised for important warnings like data truncations
         while inserting, etc."""
-
 
     class InterfaceError(InterfaceError):
         """Exception raised for errors that are related to the database
         interface rather than the database itself."""
 
-
     class DatabaseError(DatabaseError):
         """Exception raised for errors that are related to the
         database."""
-
 
     class DataError(DataError):
         """Exception raised for errors that are due to problems with the
         processed data like division by zero, numeric value out of range,
         etc."""
-
 
     class OperationalError(OperationalError):
         """Exception raised for errors that are related to the database's
@@ -128,24 +124,20 @@ class Exceptions(object):
         found, a transaction could not be processed, a memory allocation
         error occurred during processing, etc."""
 
-
     class IntegrityError(IntegrityError):
         """Exception raised when the relational integrity of the database
         is affected, e.g. a foreign key check fails, duplicate key,
         etc."""
-
 
     class InternalError(InternalError):
         """Exception raised when the database encounters an internal
         error, e.g. the cursor is not valid anymore, the transaction is
         out of sync, etc."""
 
-
     class ProgrammingError(ProgrammingError):
         """Exception raised for programming errors, e.g. table not found
         or already exists, syntax error in the SQL statement, wrong number
         of parameters specified, etc."""
-
 
     class NotSupportedError(NotSupportedError):
         """Exception raised in case a method or database API was used

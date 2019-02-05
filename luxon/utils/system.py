@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -190,7 +190,7 @@ def execute(*args, check=True, virtualenv=False):
         log.error(if_bytes_to_unicode(logerr.read()), log_id=log_id)
         loginfo.seek(0)
         return if_bytes_to_unicode(loginfo.read())
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         logerr.seek(0)
         if check is True:
             cmd = " ".join(*args)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Dave Kruger.
+# Copyright (c) 2018-2019 Dave Kruger.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 
+
 class Itemgetter:
     """itemgetter that caters for items that are 'None'
 
@@ -44,15 +45,19 @@ class Itemgetter:
     def __init__(self, item, *items):
         if not items:
             self._items = (item,)
+
             def func(obj):
                 if not obj[item]:
                     return ""
                 return obj[item]
+
             self._call = func
         else:
             self._items = items = (item,) + items
+
             def func(obj):
                 return tuple((obj[i] or "") for i in items)
+
             self._call = func
 
     def __call__(self, obj):

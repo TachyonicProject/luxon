@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 from uuid import UUID
 
+
 def validate_uuid4(uuid_string):
     """
     Validate that a UUID string is in
@@ -43,13 +44,13 @@ def validate_uuid4(uuid_string):
     try:
         val = UUID(uuid_string, version=4)
     except ValueError:
-        # If it's a value error, then the string 
+        # If it's a value error, then the string
         # is not a valid hex code for a UUID.
         return False
 
-    # If the uuid_string is a valid hex code, 
+    # If the uuid_string is a valid hex code,
     # but an invalid uuid4,
-    # the UUID.__init__ will convert it to a 
+    # the UUID.__init__ will convert it to a
     # valid uuid4. This is bad for validation purposes.
     if (val.hex.upper() == uuid_string.upper() or
             str(val).upper() == uuid_string.upper()):

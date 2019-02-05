@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,6 @@ from jinja2.exceptions import TemplateNotFound
 from jinja2 import Environment as Jinja2Environment
 from jinja2.loaders import BaseLoader, FileSystemLoader, PackageLoader
 
-from luxon import g
 from luxon.core.logger import GetLogger
 
 log = GetLogger(__name__)

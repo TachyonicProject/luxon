@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -75,7 +75,6 @@ class Sqlite3(object):
                     if signed is False:
                         sql_field += ' UNSIGNED'
 
-
                 elif isinstance(model_fields[field], self._model.DateTime):
                     sql_field = " %s INTEGER" % column
 
@@ -85,7 +84,8 @@ class Sqlite3(object):
                 if null is False:
                     sql_field += ' NOT NULL'
 
-                if self._model.primary_key and self._model.primary_key.name == column:
+                if (self._model.primary_key and
+                        self._model.primary_key.name == column):
                     sql_field += ' PRIMARY KEY'
 
                 if sql_field is not None:

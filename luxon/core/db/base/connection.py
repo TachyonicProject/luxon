@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018, Christiaan Frans Rademan.
+# Copyright (c) 2018-2019, Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -138,15 +138,15 @@ class Connection(BaseExeptions):
     def messages(self):
         """Cursor.messages except that the list are connection oriented.
 
-        The list is cleared automatically by all standard connection methods calls
-        (prior to executing the call) to avoid excessive memory usage and can also be
-        cleared by executing del connection.messages[:].
+        The list is cleared automatically by all standard connection methods
+        calls (prior to executing the call) to avoid excessive memory usage
+        and can also be cleared by executing del connection.messages[:].
 
         Warning Message: "DB-API extension connection.messages used"
 
         Reference PEP-0249
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def execute(self, *args, **kwargs):
         """Prepare and execute a database operation (query or command).

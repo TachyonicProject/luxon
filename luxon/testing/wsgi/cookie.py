@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 from luxon.utils.timezone import parse_http_date
+
 
 class Cookie(object):
     """Represents a cookie returned by a simulated request.
@@ -88,7 +89,6 @@ class Cookie(object):
     def domain(self):
         return self._domain
 
-
     @property
     def http_only(self):
         return bool(self._httponly)
@@ -96,4 +96,3 @@ class Cookie(object):
     @property
     def secure(self):
         return bool(self._secure)
-
