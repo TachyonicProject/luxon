@@ -72,3 +72,10 @@ Releases
    * In progress Clean up code/documentation - https://github.com/TachyonicProject/luxon/issues/11
    * Crypto helper added.
    * Updated Copyright, and pep8 complaint code clean.
+
+1.4.1 = BETA Release (2019/02/05)
+---------------------------------
+
+   * Added missing copyright notice updates for contributers.
+   * Fixed bug in html select using list to set default/selected value.
+
