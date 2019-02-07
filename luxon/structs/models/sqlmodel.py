@@ -146,7 +146,7 @@ class SQLModel(Model, SQLFields):
                     self._created = True
                     self._updated = False
                 except SQLIntegrityError:
-                    raise ValidationError('In use by reference')
+                    raise ValidationError('In use by reference.')
             elif self._created:
                 query = "INSERT INTO %s (" % name
                 query += ','.join(transaction.keys())
@@ -188,7 +188,7 @@ class SQLModel(Model, SQLFields):
                                      ' = %s',
                                      args + [update_id, ])
                     except SQLIntegrityError:
-                        raise ValidationError('In use by reference')
+                        raise ValidationError('In use by reference.')
                 self._created = False
                 self._updated = False
                 self._deleted = False

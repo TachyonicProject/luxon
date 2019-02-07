@@ -78,4 +78,5 @@ Releases
 
    * Added missing copyright notice updates for contributers.
    * Fixed bug in html select using list to set default/selected value.
+   * Cosmetic change to 'In use by reference error' for ORM.
 
