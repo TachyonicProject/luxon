@@ -99,7 +99,7 @@ def select(name, options, selected, empty=False, cls=None, onchange=None,
                         option = select.create_element('option')
                         option.set_attribute('value', opt[0])
                         option.append(opt[1])
-                        if opt[1] == selected:
+                        if opt[0] == selected:
                             option.set_attribute('selected')
                     except IndexError:
                         raise ValueError('Malformed values for HTML select')
