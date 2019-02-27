@@ -29,9 +29,11 @@
     "tenants:admin": "$staff",
     "tenants:view": "$staff or $customer",
     "infrastructure:admin": "$role:root or $role:ops",
-    "infrastructure:view": "$staff or $services",
+    "infrastructure:view": "$staff or $services or $internal",
     "monitor:admin": "$staff",
     "monitor:view": "$staff or $services",
     "billing:admin": "$role:root or $role:billing",
-    "billing:view": "$staff or $customer"
+    "billing:view": "$staff or $customer",
+    "products:admin": "$role:root or $role:admin",
+    "products:view": "$customer or $role:admin"
 }

@@ -30,7 +30,7 @@
 import sys
 import pickle
 
-from luxon.helpers.rd import strict
+from luxon.helpers.rd import Redis as RedisHelper
 from luxon.core.logger import GetLogger
 
 log = GetLogger(__name__)
@@ -40,7 +40,6 @@ class Redis(object):
     """Caches objects in Redis object store"""
     def __init__(self, max_objs=None, max_obj_size=50):
         self._max_obj_size = 1024 * max_obj_size
-        self.redis = strict()
         log.info('Redis Cache Initialized' +
                  ' max_obj_size=%sKbytes' % (max_obj_size,))
 
@@ -50,9 +49,8 @@ class Redis(object):
         Args:
             key (str): key for required data
         """
-        value = self.redis.get('cache:' + key)
-        if value is not None:
-            return pickle.loads(value)
+        with RedisHelper() as redis:
+            return redis.get('cache:' + key)
 
     def store(self, key, value, expire):
         """Stores data
@@ -63,6 +61,7 @@ class Redis(object):
             expire (int): time to expire (s)
         """
         if sys.getsizeof(value, 0) <= self._max_obj_size:
-            self.redis.set('cache:' + key,
-                           pickle.dumps(value),
-                           ex=expire)
+            with RedisHelper() as redis:
+                redis.set('cache:' + key,
+                          pickle.dumps(value),
+                          ex=expire)

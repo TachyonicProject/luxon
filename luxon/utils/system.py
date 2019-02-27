@@ -192,12 +192,12 @@ def execute(*args, check=True, virtualenv=False):
         return if_bytes_to_unicode(loginfo.read())
     except subprocess.CalledProcessError:
         logerr.seek(0)
+        loginfo.seek(0)
         if check is True:
             cmd = " ".join(*args)
+            log.error(if_bytes_to_unicode(loginfo.read()), log_id=log_id)
             raise ExecuteError(cmd,
                                if_bytes_to_unicode(logerr.read())) from None
-        loginfo.seek(0)
-        logerr.seek(0)
         log.info(if_bytes_to_unicode(loginfo.read()), log_id=log_id)
         log.error(if_bytes_to_unicode(logerr.read()), log_id=log_id)
         logerr.seek(0)

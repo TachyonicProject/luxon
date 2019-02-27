@@ -57,6 +57,8 @@ def if_bytes_to_unicode(string, codec='UTF-8'):
         return string.decode(codec)
     except AttributeError:
         return string
+    except UnicodeDecodeError:
+        return "<non-'%s' encoded data omitted>" % codec
 
 
 def is_text(text):

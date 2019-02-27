@@ -105,6 +105,7 @@ class Connection(BaseConnection):
         self._crsr_cls = pymysql.cursors.DictCursor
         self._crsr_cls_args = [self._conn]
         self.execute('SET time_zone = %s', '+00:00')
+        self.commit()
 
     def __str__(self):
         return "MySQL Server: '%s' Database: '%s'" % (self._host, self._db,)
@@ -117,6 +118,7 @@ class Connection(BaseConnection):
         if self._conn._sock is None:
             self._conn.connect()
             self.execute('SET time_zone = %s', '+00:00')
+            self.commit()
             return False
         else:
             try:
@@ -126,6 +128,7 @@ class Connection(BaseConnection):
             except Exception:
                 self._conn.connect()
                 self.execute('SET time_zone = %s', '+00:00')
+                self.commit()
                 return False
 
 
