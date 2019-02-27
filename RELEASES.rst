@@ -84,8 +84,9 @@ Releases
    * Fixed bug in html select using list to set default/selected value.
    * Fixed Issue when debugging and trying to log non UTF-8 encoded responses.
    * Fixed bug for mysql Decimal, Double and Float fields.
-   * Enabled model fields to define callback for select bootstrap utility.
-   * Cosmetic change to 'In use by reference error' for ORM.
+   * Handle not found config error better and use default config.
+   * Handle not found root path error better and use /tmp when missing.
    * Improved select bootstrap render utility to support callback for options.
    * Improved Redis Helpers.
-   * Handle error better and use default config when defined ini is missing.
+   * Enabled model fields to define callback for select bootstrap utility.
+   * Cosmetic change to 'In use by reference error' for ORM.
