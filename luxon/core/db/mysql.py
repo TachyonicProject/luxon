@@ -98,10 +98,11 @@ class Connection(BaseConnection):
     DEST_FORMAT = 'format'
     THREADSAFETY = threadsafety
 
-    def __init__(self, host, username, password, database):
+    def __init__(self, host, username, password, database, port=3306):
         self._host = host
         self._db = database
-        super().__init__(host, username, password, database)
+        super().__init__(host=host, user=username, passwd=password,
+                         db=database, port=port)
         self._crsr_cls = pymysql.cursors.DictCursor
         self._crsr_cls_args = [self._conn]
         self.execute('SET time_zone = %s', '+00:00')
