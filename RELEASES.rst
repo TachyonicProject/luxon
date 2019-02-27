@@ -73,11 +73,18 @@ Releases
    * Crypto helper added.
    * Updated Copyright, and pep8 complaint code clean.
 
-1.4.1 = BETA Release (2019/02/05)
+1.5.0 = BETA Release (2019/02/27)
 ---------------------------------
-
    * Added missing copyright notice updates for contributers.
-   * Fixed bug in html select using list to set default/selected value.
-   * Cosmetic change to 'In use by reference error' for ORM.
+   * Added Helper for Mysql/MariaDb Write Database. (used in clustering)
+   * Added new time format for datetime values.
+   * Added MessageBus Helpers (front to RabbitMQ)
+   * Added products to policy.json.
    * Updated policy.json to allow 'internal' access to infrastructure:view rule.
-
+   * Fixed bug in html select using list to set default/selected value.
+   * Fixed Issue when debugging and trying to log non UTF-8 encoded responses.
+   * Fixed bug for mysql Decimal, Double and Float fields.
+   * Enabled model fields to define callback for select bootstrap utility.
+   * Cosmetic change to 'In use by reference error' for ORM.
+   * Improved select bootstrap render utility to support callback for options.
+   * Improved Redis Helpers.

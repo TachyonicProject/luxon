@@ -83,8 +83,8 @@ class SQLModel(Model, SQLFields):
                                 " = %s",
                                 primary_id)
             result = crsr.fetchone()
+            crsr.commit()
             if result:
-                crsr.commit()
                 self._sql_parse([result])
             else:
                 raise exceptions.NotFoundError('object not found')

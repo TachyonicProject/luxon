@@ -73,12 +73,14 @@ class BaseFields(object):
             columns (int): Number of columns to display for text field.
             hidden (bool): To hide field from forms.
             enum (list): List of possible values. Only for ENUM.
+            callback (list): Function to populate value and/or options.
         """
         __slots__ = ('length', 'min_length', 'max_length', 'null', 'default',
                      'db', '_label', 'placeholder', 'readonly', 'prefix',
                      'suffix', 'columns', 'hidden', 'enum', '_field_name',
                      '_table', '_value', '_creation_counter', 'm', 'd',
-                     'on_update', 'password', 'signed', 'ignore_null')
+                     'on_update', 'password', 'signed', 'ignore_null',
+                     'callback')
 
         def __init__(self, length=None, min_length=None, max_length=None,
                      null=True, default=None, db=True, label=None,
@@ -87,7 +89,7 @@ class BaseFields(object):
                      enum=[], on_update=None, password=False,
                      signed=True, internal=False, ignore_null=False,
                      lower=False, upper=False, data_url=None,
-                     data_endpoint=None):
+                     data_endpoint=None, callback=None):
 
             self._creation_counter = global_counter()
             self._value = None
@@ -118,6 +120,7 @@ class BaseFields(object):
             self.upper = upper
             self.data_url = data_url
             self.data_endpoint = data_endpoint
+            self.callback = callback
 
         @property
         def name(self):

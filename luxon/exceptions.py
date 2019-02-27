@@ -61,6 +61,16 @@ class ExecuteError(Error):
         self.stderr = self.description = stderr
 
 
+class MessageBusError(Error):
+    """Execute Error.
+
+    Execute of command returned non-zero exit status.
+    """
+    def __init__(self, msg):
+        super().__init__(str(msg))
+        self.title = str(msg)
+
+
 class ValidationError(Error):
     """Validation Error.
 

@@ -27,10 +27,11 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-
 import sys
 import logging
 import logging.handlers
+import multiprocessing
+import traceback
 
 from luxon import g
 from luxon.exceptions import NoContextError
@@ -44,7 +45,7 @@ from luxon.utils.unique import string_id
 
 log_format = logging.Formatter('%(asctime)s%(app_name)s' +
                                ' %(name)s' +
-                               '[%(process)d]' +
+                               '[%(process)d][%(threadName)s]' +
                                ' <%(levelname)s>: %(message)s',
                                datefmt='%b %d %H:%M:%S')
 
@@ -223,6 +224,66 @@ def configure(config, config_section, logger):
             handler.setFormatter(log_format)
             handler.addFilter(_tachyonfilter)
             logger.addHandler(handler)
+
+
+class MPLogger(object):
+    _queue = multiprocessing.Queue(-1)
+
+    def __init__(self, name):
+        self._log_proc = None
+        self._name = name
+        if self._name == "__main__":
+            self._logger = logging.getLogger(name)
+        else:
+            root = logging.getLogger()
+            root.handlers = [logging.handlers.QueueHandler(MPLogger._queue)]
+
+            for logger in logging.Logger.manager.loggerDict:
+                sub_logger = logging.Logger.manager.loggerDict[logger]
+                if isinstance(sub_logger, logging.Logger):
+                    sub_logger.handlers = []
+
+            self._logger = logging.getLogger(name)
+
+    def receive(self):
+        def receiver(queue):
+            try:
+                while True:
+                    record = queue.get()
+                    # Get Logger
+                    logger = logging.getLogger(record.name)
+
+                    # No level or filter logic applied - just do it!
+                    logger.handle(record)
+            except Exception:
+                print('Whoops! Problem:', file=sys.stderr)
+                traceback.print_exc(file=sys.stderr)
+
+        if self._name == "__main__":
+            self._log_proc = multiprocessing.Process(target=receiver,
+                                                     name='Logger',
+                                                     args=(MPLogger._queue,))
+            self._log_proc.start()
+
+    def close(self):
+        if self._name == "__main__":
+            if self._log_proc is not None:
+                self._log_proc.terminate()
+
+    def critical(self, msg):
+        self._logger.critical(msg)
+
+    def error(self, msg):
+        self._logger.error(msg)
+
+    def warning(self, msg):
+        self._logger.warning(msg)
+
+    def info(self, msg):
+        self._logger.info(msg)
+
+    def debug(self, msg):
+        self._logger.debug(msg)
 
 
 class GetLogger(metaclass=NamedSingleton):

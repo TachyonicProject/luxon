@@ -257,7 +257,8 @@ def field_datetime(field, value=None, id=None, readonly=False,
                    required=False):
 
     if value is not None:
-        value = format_datetime(value)
+        value = format_datetime(value).split(" ")
+        value = "%s %s" % (value[0], value[1],)
 
     group = field_group()
     group.append(field_label(field, label))
@@ -360,23 +361,15 @@ def field_password(field, value=None, id=None, readonly=False,
 
 
 def field_select(field, enum, value=None, id=None, readonly=False,
-                 disabled=False, label=None):
+                 disabled=False, label=None, callback=None,
+                 data_url=None, data_endpoint=None):
     group = field_group()
     group.append(field_label(field, label))
+
+    if callback:
+        enum = callback()
 
     group.append(html_select(field, enum, value,
-                             readonly=readonly))
-
-    return group
-
-
-def field_uuid(field, data_url, data_endpoint=None,
-               value=None, id=None, readonly=False,
-               disabled=False, label=None, placeholder=None):
-    group = field_group()
-    group.append(field_label(field, label))
-
-    group.append(html_select(field, None, value,
                              readonly=readonly,
                              data_url=data_url,
                              data_endpoint=data_endpoint))
@@ -412,7 +405,10 @@ def form(model, values=None, readonly=False):
             html.append(field_select(field, obj.enum, value=value,
                                      readonly=field_readonly,
                                      disabled=field_readonly,
-                                     label=label))
+                                     label=label,
+                                     callback=obj.callback,
+                                     data_url=obj.data_url,
+                                     data_endpoint=obj.data_endpoint))
         elif isinstance(obj, Model.DateTime):
             html.append(field_datetime(field, value=value,
                                        readonly=field_readonly,
@@ -446,15 +442,13 @@ def form(model, values=None, readonly=False):
                                        placeholder=obj.placeholder,
                                        label=label))
         elif isinstance(obj, Model.Uuid):
-            html.append(field_uuid(field, obj.data_url,
-                                   data_endpoint=obj.data_endpoint,
-                                   value=value,
-                                   readonly=field_readonly,
-                                   disabled=field_readonly,
-                                   placeholder=obj.placeholder,
-                                   label=label))
+            html.append(field_select(field, None, value=value,
+                                     readonly=field_readonly,
+                                     disabled=field_readonly,
+                                     label=label,
+                                     callback=obj.callback))
         elif isinstance(obj, (Model.Decimal, Model.Double,
-                              Model.Float, Model.String, Model.Integer)):
+                              Model.Float, Model.String, Model.BaseInteger)):
             html.append(field_text(field, value=value,
                                    readonly=field_readonly,
                                    disabled=field_readonly,

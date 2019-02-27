@@ -38,9 +38,9 @@ log = GetLogger(__name__)
 
 
 def _log(msg, obj, pool):
-    log.info('%s: %s (COUNT: %s, MAX_POOL_SIZE: %s, MAX_OVERFLOW %s' %
-             (msg, object_name(obj), pool._count,
-              pool._pool_size, pool._max_overflow))
+    log.debug('%s: %s (COUNT: %s, MAX_POOL_SIZE: %s, MAX_OVERFLOW %s' %
+              (msg, object_name(obj), pool._count,
+               pool._pool_size, pool._max_overflow))
 
 
 class ProxyObject(object):

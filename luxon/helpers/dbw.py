@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Christiaan Frans Rademan.
+# Copyright (c) 2018 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,55 +27,48 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import pickle
+import os
+
+from luxon import g
+from luxon.utils.pool import Pool
+from luxon.core.db.mysql import connect
+
+_cached_pool = None
 
 
-class Redis(object):
-    """Generic Redis object to use redis
+def _get_conn():
+    """_get_conn function for internal use
 
-    Args:
-        connection: redis connection
-
+    Returns a connect object populated with the information under
+    the 'database' section
     """
-    __slots__ = ('_redis')
+    kwargs = g.app.config.kwargs('database')
+    if kwargs.get('type') == 'mysql':
+        return connect(kwargs.get('write', '127.0.0.1'),
+                       kwargs.get('username', 'tachyonic'),
+                       kwargs.get('password', 'password'),
+                       kwargs.get('database', 'tachyonic'))
 
-    def __init__(self, connection):
-        self._redis = connection
 
-    def set(self, attr, value, expire=None):
-        value = pickle.dumps(value)
-        self._redis.set(attr, value, ex=expire)
+def dbw():
+    """Function db - returns a Database Connection object from pool.
 
-    def delete(self, attr, value):
-        return self._redis.delete(attr)
+    A Connection pool is created if one does not exist yet.
 
-    def get(self, attr):
-        value = self._redis.get(attr)
-        if value is not None:
-            return pickle.loads(value)
-        else:
-            return None
+    Database types and parameters obtained from settings.ini file.
 
-    def __setatrr__(self, attr, value):
-        return self.set(attr, value)
+    Write only database connection for MariaDB / MySQL Only.
 
-    def __getattr__(self, attr):
-        return self.get(attr)
-
-    def __delattr__(self, attr):
-        return self.delete(attr)
-
-    def __setitem__(self, key, value):
-        return self.set(key, value)
-
-    def __getitem__(self, key):
-        return self.get(key)
-
-    def __delitem__(self, key):
-        return self.delete(key)
-
-    def __contains__(self, key):
-        return self._redis.exists(key)
-
-    def __iter__(self):
-        raise NotImplementedError()
+    Returns:
+         Database Connection object
+    """
+    kwargs = g.app.config.kwargs('database')
+    global _cached_pool
+    if kwargs.get('type') == 'mysql':
+        if _cached_pool is None:
+            _cached_pool = Pool(_get_conn,
+                                pool_size=kwargs.get('pool_size', 64),
+                                max_overflow=kwargs.get('max_overflow', 0))
+        return _cached_pool()
+    else:
+        raise TypeError('Unknown Database type defined in configuration')

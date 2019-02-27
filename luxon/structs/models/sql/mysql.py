@@ -69,6 +69,7 @@ class Mysql(object):
                 enum = list(model_fields[field].enum)
                 null = model_fields[field].null
                 signed = model_fields[field].signed
+                default = model_fields[field].default
 
                 if isinstance(model_fields[field], self._model.Enum):
                     for no, val in enumerate(enum):
@@ -79,27 +80,24 @@ class Mysql(object):
 
                 elif isinstance(model_fields[field], self._model.Double):
                     if m is not None and d is not None:
-                        sql_field = " %s double(%s,%s)" % (m, d)
+                        sql_field = " %s double(%s,%s)" % (column, m, d,)
                     else:
-                        sql_field = " %s double"
+                        sql_field = " %s double" % column
 
                 elif isinstance(model_fields[field], self._model.Float):
                     if m is not None and d is not None:
-                        sql_field = " %s float(%s,%s)" % (m, d)
+                        sql_field = " %s float(%s,%s)" % (column, m, d,)
                     else:
-                        sql_field = " %s float"
+                        sql_field = " %s float" % column
 
                 elif isinstance(model_fields[field], self._model.Decimal):
                     if m is not None and d is not None:
-                        sql_field = " %s decimal(%s,%s)" % (m, d)
+                        sql_field = " %s decimal(%s,%s)" % (column, m, d,)
                     else:
-                        sql_field = " %s decimal"
+                        sql_field = " %s decimal" % column
 
                 elif isinstance(model_fields[field], self._model.TinyInt):
-                    if max_length is None:
-                        sql_field = " %s tinyint" % column
-                    else:
-                        sql_field = " %s tinyint(%s)" % (column, max_length)
+                    sql_field = " %s tinyint" % column
 
                     if signed is False:
                         sql_field += ' UNSIGNED'
@@ -109,10 +107,7 @@ class Mysql(object):
                         sql_field += " auto_increment"
 
                 elif isinstance(model_fields[field], self._model.SmallInt):
-                    if max_length is None:
-                        sql_field = " %s smallint" % column
-                    else:
-                        sql_field = " %s smallint(%s)" % (column, max_length)
+                    sql_field = " %s smallint" % column
 
                     if signed is False:
                         sql_field += ' UNSIGNED'
@@ -122,10 +117,7 @@ class Mysql(object):
                         sql_field += " auto_increment"
 
                 elif isinstance(model_fields[field], self._model.MediumInt):
-                    if max_length is None:
-                        sql_field = " %s mediumint" % column
-                    else:
-                        sql_field = " %s mediumint(%s)" % (column, max_length)
+                    sql_field = " %s mediumint" % column
 
                     if signed is False:
                         sql_field += ' UNSIGNED'
@@ -135,10 +127,7 @@ class Mysql(object):
                         sql_field += " auto_increment"
 
                 elif isinstance(model_fields[field], self._model.BigInt):
-                    if max_length is None:
-                        sql_field = " %s bigint" % column
-                    else:
-                        sql_field = " %s bigint(%s)" % (column, max_length)
+                    sql_field = " %s bigint" % column
 
                     if signed is False:
                         sql_field += ' UNSIGNED'
@@ -196,6 +185,16 @@ class Mysql(object):
                     sql_field += ' NOT NULL'
 
                 if sql_field is not None:
+                    if (default is not None and
+                            not hasattr(default, '__call__')):
+                        if isinstance(model_fields[field],
+                                      self._model.BaseInteger):
+                            sql_field += ' DEFAULT %s' % default
+                        else:
+                            sql_field += " DEFAULT '%s'" % default
+                    elif default is None and null is True:
+                        sql_field += " DEFAULT NULL"
+
                     sql_fields.append(sql_field)
 
             for field in model_fields:

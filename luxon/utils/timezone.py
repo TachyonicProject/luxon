@@ -27,6 +27,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+import calendar
 from datetime import datetime as py_datetime
 from datetime import tzinfo, timedelta
 
@@ -39,6 +40,7 @@ _cached_time_zone_system = None
 _cached_time_zone_app = None
 
 TIME_FORMATS = (
+    '%Y-%m-%d %H:%M:%S.%f',
     '%Y-%m-%dT%H:%M:%SZ',
     '%Y-%m-%d %H:%M:%S.%f%z',
     '%Y-%m-%d %H:%M:%S%z',
@@ -295,3 +297,42 @@ def format_iso8601(datetime, src=TimezoneUTC()):
 
     return(datetime.strftime('%Y-%m-%dT%H:%M:%SZ') + "(" +
            datetime.tzname() + ")")
+
+
+def add_date(orig_date, days=None, weeks=None, months=None):
+    if days:
+        orig_date = (orig_date + timedelta(days=days))
+
+    if weeks:
+        orig_date = (orig_date + timedelta(weeks=weeks))
+
+    if months:
+        # advance year and month by one month
+        new_year = orig_date.year
+        new_month = orig_date.month + months
+        # note: in datetime.date, months go from 1 to 12
+        if new_month > 12:
+            new_year += months / 12
+            new_month -= (months / 12) * 12
+
+        last_day_of_month = calendar.monthrange(new_year, new_month)[1]
+        new_day = min(orig_date.day, last_day_of_month)
+
+        orig_date = orig_date.replace(year=new_year,
+                                      month=new_month,
+                                      day=new_day)
+
+    return orig_date
+
+
+def calc_next_expire(metric, span, expired):
+    if metric == 'days':
+        new_expire = add_date(expired,
+                              days=span)
+    elif metric == 'weeks':
+        new_expire = add_date(expired,
+                              weeks=span)
+    elif metric == 'months':
+        new_expire = add_date(expired,
+                              months=span)
+    return new_expire
