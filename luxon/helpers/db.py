@@ -47,7 +47,8 @@ def _get_conn():
         return connect(kwargs.get('host', '127.0.0.1'),
                        kwargs.get('username', 'tachyonic'),
                        kwargs.get('password', 'password'),
-                       kwargs.get('database', 'tachyonic'))
+                       kwargs.get('database', 'tachyonic'),
+                       port=int(kwargs.get('port', 3306)))
 
 
 def db():
