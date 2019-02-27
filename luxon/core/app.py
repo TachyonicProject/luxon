@@ -93,7 +93,12 @@ class App(object):
                     luxon_config = Module('luxon').read('settings.ini')
                     self._config.read_string(if_bytes_to_unicode(luxon_config))
             else:
-                self._config.load(ini)
+                if is_file(ini):
+                    self._config.load(ini)
+                else:
+                    log.critical("Unable to load config '%s'" % ini)
+                    luxon_config = Module('luxon').read('settings.ini')
+                    self._config.read_string(if_bytes_to_unicode(luxon_config))
 
             # When application is called directly from another directory,
             # still want to be able to detect the app_root by providing

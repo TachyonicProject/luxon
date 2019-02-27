@@ -88,3 +88,4 @@ Releases
    * Cosmetic change to 'In use by reference error' for ORM.
    * Improved select bootstrap render utility to support callback for options.
    * Improved Redis Helpers.
+   * Handle error better and use default config when defined ini is missing.
