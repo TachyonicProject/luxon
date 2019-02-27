@@ -59,6 +59,5 @@ def determine_app_root(name, app_root=None):
         if exists(app_root) and not os.path.isfile(app_root):
             return abspath(app_root).rstrip('/')
         else:
-            raise FileNotFoundError("Invalid path"
-                                    + " for root '%s'"
-                                    % app_root) from None
+            log.critical("Invalid path for root '%s using '/tmp'" % app_root)
+            return '/tmp'
