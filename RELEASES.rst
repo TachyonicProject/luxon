@@ -72,3 +72,20 @@ Releases
    * In progress Clean up code/documentation - https://github.com/TachyonicProject/luxon/issues/11
    * Crypto helper added.
    * Updated Copyright, and pep8 complaint code clean.
+
+1.5.0 = BETA Release (2019/02/27)
+---------------------------------
+   * Added missing copyright notice updates for contributers.
+   * Added Helper for Mysql/MariaDb Write Database. (used in clustering)
+   * Added new time format for datetime values.
+   * Added MessageBus Helpers (front to RabbitMQ)
+   * Added products to policy.json.
+   * Updated policy.json to allow 'internal' access to infrastructure:view rule.
+   * Fixed bug in html select using list to set default/selected value.
+   * Fixed Issue when debugging and trying to log non UTF-8 encoded responses.
+   * Fixed bug for mysql Decimal, Double and Float fields.
+   * Enabled model fields to define callback for select bootstrap utility.
+   * Cosmetic change to 'In use by reference error' for ORM.
+   * Improved select bootstrap render utility to support callback for options.
+   * Improved Redis Helpers.
+   * Handle error better and use default config when defined ini is missing.

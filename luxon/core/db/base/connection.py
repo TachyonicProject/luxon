@@ -107,7 +107,6 @@ class Connection(BaseExeptions):
             self._conn = self.DB_API.connect(*args, **kwargs)
             self._cached_crsr = None
             self._crsr_cls = None
-            self._uncommited = False
             self._cursors = []
         except Exception as e:
             self._error_handler(self, e, self.ERROR_MAP)
@@ -228,7 +227,9 @@ class Connection(BaseExeptions):
 
         Pool runs this method to ensure new requests start up in clean state.
         """
-        for crsr in self._cursors:
+        self._cached_crsr = None
+        for crsr in self._cursors[:]:
+            self._cursors.remove(crsr)
             crsr.clean_up()
 
     def close(self):
@@ -250,7 +251,7 @@ class Connection(BaseExeptions):
 
         try:
             self._lock.release()
-            self._cached_crsr = self.cursor()
+            self._cached_crsr = None
         except AttributeError:
             # NOTE(cfrademan) Its not got locking so close it..
             # locking objects are singleton object.

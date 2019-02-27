@@ -61,17 +61,6 @@ def select(name, options, selected, empty=False, cls=None, onchange=None,
            disabled=False, readonly=False, data_url=None, data_endpoint=None):
     html = HTMLDoc()
 
-    if disabled or readonly:
-        input = html.create_element('input')
-        input.set_attribute('type', 'text')
-        input.set_attribute('id', name)
-        input.set_attribute('name', name)
-        input.set_attribute('disabled')
-        if selected is not None:
-            input.set_attribute('value', selected)
-        input.set_attribute('class', 'form-control')
-        return input
-
     select = html.create_element('select')
     select.set_attribute('name', name)
     select.set_attribute('id', name)
@@ -99,8 +88,9 @@ def select(name, options, selected, empty=False, cls=None, onchange=None,
                         option = select.create_element('option')
                         option.set_attribute('value', opt[0])
                         option.append(opt[1])
-                        if opt[1] == selected:
+                        if opt[0] == selected:
                             option.set_attribute('selected')
+                            selected = opt[1]
                     except IndexError:
                         raise ValueError('Malformed values for HTML select')
                 else:
@@ -109,13 +99,27 @@ def select(name, options, selected, empty=False, cls=None, onchange=None,
                         option.set_attribute('value', opt)
                         if opt == selected:
                             option.set_attribute('selected')
+                            selected = opt
                         option.append(opt)
             elif isinstance(options, dict):
                     option = select.create_element('option')
                     option.set_attribute('value', opt)
                     if opt == selected:
                         option.set_attribute('selected')
+                        selected = options[opt]
                     option.append(options[opt])
+
+    if disabled or readonly:
+        input = html.create_element('input')
+        input.set_attribute('type', 'text')
+        input.set_attribute('id', name)
+        input.set_attribute('name', name)
+        input.set_attribute('disabled')
+        if selected is not None:
+            input.set_attribute('value', selected)
+        input.set_attribute('class', 'form-control')
+        return input
+
     return html
 
 

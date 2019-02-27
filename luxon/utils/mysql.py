@@ -27,55 +27,37 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import pickle
+import time
+from random import randint
+
+from luxon.exceptions import (SQLError,
+                              SQLProgrammingError)
+from luxon import GetLogger
+
+log = GetLogger(__name__)
 
 
-class Redis(object):
-    """Generic Redis object to use redis
+def retry(retry=10, delay=3, rand_delay=True):
+    def decorator(f):
+        def inner(*args, **kwargs):
+            for i in range(retry):
+                try:
+                    return f(*args, **kwargs)
+                except SQLProgrammingError:
+                    raise
+                except SQLError as e:
+                    if rand_delay:
+                        use_delay = max(randint(0, delay*3), delay)
+                    else:
+                        use_delay = delay
 
-    Args:
-        connection: redis connection
+                    log.warning("Retry %s/%s in %s seconds (%s) for %s" %
+                                (i+1,
+                                 retry,
+                                 use_delay,
+                                 e,
+                                 f.__name__,))
 
-    """
-    __slots__ = ('_redis')
-
-    def __init__(self, connection):
-        self._redis = connection
-
-    def set(self, attr, value, expire=None):
-        value = pickle.dumps(value)
-        self._redis.set(attr, value, ex=expire)
-
-    def delete(self, attr, value):
-        return self._redis.delete(attr)
-
-    def get(self, attr):
-        value = self._redis.get(attr)
-        if value is not None:
-            return pickle.loads(value)
-        else:
-            return None
-
-    def __setatrr__(self, attr, value):
-        return self.set(attr, value)
-
-    def __getattr__(self, attr):
-        return self.get(attr)
-
-    def __delattr__(self, attr):
-        return self.delete(attr)
-
-    def __setitem__(self, key, value):
-        return self.set(key, value)
-
-    def __getitem__(self, key):
-        return self.get(key)
-
-    def __delitem__(self, key):
-        return self.delete(key)
-
-    def __contains__(self, key):
-        return self._redis.exists(key)
-
-    def __iter__(self):
-        raise NotImplementedError()
+                    time.sleep(use_delay)
+        return inner
+    return decorator

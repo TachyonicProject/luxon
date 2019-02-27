@@ -30,32 +30,31 @@
 import redis
 
 from luxon import g
-from luxon.utils.rd import Redis as RedisBase
+from luxon.utils.rd import Redis as RedisInterface
 
 
-def strict():
-    """strict Function
-
-    Imports redis if required and returns a redis.StrictRedis
-    object with the parameters from the 'redis' section in config file.
-
-    return:
-        redis.StrictRedis object
-    """
-    global _cached_strict_redis
+def pool():
+    global _cached_redis_pool
 
     try:
-        return _cached_strict_redis
+        return _cached_redis_pool
     except NameError:
         kwargs = g.app.config.kwargs('redis')
-        _cached_strict_redis = redis.StrictRedis(**kwargs)
-        return _cached_strict_redis
+        _cached_redis_pool = redis.ConnectionPool(**kwargs)
+        return _cached_redis_pool
 
 
-class Redis(RedisBase):
+class Redis(object):
     """Basic redis object"""
-    __slots__ = ('_redis', '_expire',)
+    __slots__ = ('_pool', '_connection',)
 
-    def __init__(self, expire=None):
-        self._redis = strict()
-        self._expire = expire
+    def __init__(self):
+        self._pool = pool()
+        self._connection = None
+
+    def __enter__(self):
+        self._connection = redis.Redis(connection_pool=self._pool)
+        return RedisInterface(self._connection)
+
+    def __exit__(self, type, value, traceback):
+        self._connection = None

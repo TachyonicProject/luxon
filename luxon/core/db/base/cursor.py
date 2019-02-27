@@ -46,11 +46,14 @@ def _log(cursor, msg, elapsed=0, values=None):
         msg (str): Log message.
         elapsed (float): Time elapsed.
     """
-    log_msg = msg + " (%s) (%s)" % (values, cursor,)
+    if values:
+        log_msg = msg + " (%s) (%s)" % (values, cursor,)
+    else:
+        log_msg = msg + " (%s)" % cursor
 
     if elapsed is not None and elapsed > 0.1:
         log_msg = " !!!SLOW!!! " + log_msg
-    log.info(log_msg, timer=elapsed)
+    log.debug(log_msg, timer=elapsed)
 
 
 class Cursor(BaseExeptions):
@@ -399,6 +402,11 @@ class Cursor(BaseExeptions):
         subclass) exception will be raised if any operation is attempted with
         the cursor.
         """
+        if self._uncommited is True:
+            self.rollback()
+            self.commit()
+
+        self._conn._cursors.remove(self)
         self._crsr.close()
 
     def commit(self):

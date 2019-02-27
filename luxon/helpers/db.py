@@ -70,7 +70,7 @@ def db():
     if kwargs.get('type') == 'mysql':
         if _cached_pool is None:
             _cached_pool = Pool(_get_conn,
-                                pool_size=kwargs.get('pool_size', 10),
+                                pool_size=kwargs.get('pool_size', 64),
                                 max_overflow=kwargs.get('max_overflow', 0))
         return _cached_pool()
     elif kwargs.get('type') == 'sqlite3':

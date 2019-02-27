@@ -39,21 +39,25 @@ class SessionRedis(object):
     Please refer to Session.
     """
     def __init__(self, expire, session_id, session):
-        self._redis = Redis(expire=expire)
+        self._redis = Redis()
+        self._expire = expire
         self._session = session
         self._name = "session:%s" % str(session_id)
 
     def load(self):
-        if self._name in self._redis:
-            self._session.update(self._redis[self._name])
+        with Redis() as redis:
+            if self._name in redis:
+                self._session.update(redis.get(self._name))
 
     def save(self):
         if len(self._session) > 0:
-            self._redis[self._name] = self._session
+            with Redis() as redis:
+                redis.set(self._name, self._session, self._expire)
 
     def clear(self):
         self._session.clear()
         try:
-            del self._redis[self._name]
+            with Redis() as redis:
+                redis.delete(self._name)
         except Exception:
             pass

@@ -41,17 +41,20 @@ def profile_objects(root=None, include_obj=True):
                 root is None):
             module = ".".join(module)
             py_mod = import_module(module)
-            for obj, py_obj in inspect.getmembers(py_mod):
-                if not inspect.ismodule(py_obj):
-                    if include_obj is True:
-                        usage.append((module + '.' + obj,
-                                      sys.getsizeof(py_obj),
-                                      str(type(py_obj)),
-                                      py_obj))
-                    else:
-                        usage.append((module + '.' + obj,
-                                      sys.getsizeof(py_obj),
-                                      str(type(py_obj))))
+            try:
+                for obj, py_obj in inspect.getmembers(py_mod):
+                    if not inspect.ismodule(py_obj):
+                        if include_obj is True:
+                            usage.append((module + '.' + obj,
+                                          sys.getsizeof(py_obj),
+                                          str(type(py_obj)),
+                                          py_obj))
+                        else:
+                            usage.append((module + '.' + obj,
+                                          sys.getsizeof(py_obj),
+                                          str(type(py_obj))))
+            except:
+                pass
     return usage
 
 
