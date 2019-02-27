@@ -27,8 +27,6 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import os
-
 from luxon import g
 from luxon.utils.pool import Pool
 from luxon.core.db.mysql import connect
@@ -44,10 +42,13 @@ def _get_conn():
     """
     kwargs = g.app.config.kwargs('database')
     if kwargs.get('type') == 'mysql':
-        return connect(kwargs.get('write', '127.0.0.1'),
+        return connect(kwargs.get('write',
+                                  kwargs.get('host', '127.0.0.1')),
                        kwargs.get('username', 'tachyonic'),
                        kwargs.get('password', 'password'),
-                       kwargs.get('database', 'tachyonic'))
+                       kwargs.get('database', 'tachyonic'),
+                       port=int(kwargs.get('write_port',
+                                           kwargs.get('port', 3306))))
 
 
 def dbw():
