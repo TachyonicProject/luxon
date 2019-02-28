@@ -154,7 +154,7 @@ class Application(object):
             pid_file = args.pid
 
         if not args.app and not args.pid:
-            pid_file = '/var/run/' + pid_file
+            pid_file = g.app.path + '/' + pid_file
 
         if args.debug:
             GetLogger().level = 'DEBUG'
