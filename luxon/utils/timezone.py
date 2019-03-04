@@ -40,6 +40,9 @@ _cached_time_zone_system = None
 _cached_time_zone_app = None
 
 TIME_FORMATS = (
+    '%Y-%m-%dT%H:%M:%S%z',
+    '%Y-%m-%d %H:%M:%S.%f',
+    '%Y/%m/%d %H:%M:%S%z',
     '%Y-%m-%d %H:%M:%S.%f',
     '%Y-%m-%dT%H:%M:%SZ',
     '%Y-%m-%d %H:%M:%S.%f%z',
@@ -158,6 +161,10 @@ def TimezoneApp():
     return _cached_time_zone_app
 
 
+def TimezoneUser():
+    return TimezoneApp()
+
+
 def parse_datetime(datetime):
     if isinstance(datetime, (int, float,)):
         return py_datetime.fromtimestamp(datetime)
@@ -168,17 +175,11 @@ def parse_datetime(datetime):
         raise ValueError("datetime value not" +
                          " 'str' or 'datetime'")
 
-    # NOTE(cfrademan): PARSE UTC OFFSET FROM in FORM of +HH:MM to +HHMM
-    splitted_datetime = datetime.split('+')
-    datetime = splitted_datetime[0]
-    try:
-        datetime += '+' + splitted_datetime[1].replace(':', '')
-    except IndexError:
-        pass
-
     for time_format in TIME_FORMATS:
         try:
-            return py_datetime.strptime(datetime, time_format)
+            dt = py_datetime.strptime(datetime, time_format)
+            return dt
+
         except ValueError:
             continue
 
@@ -186,15 +187,20 @@ def parse_datetime(datetime):
                      ' match known formats')
 
 
-def to_timezone(datetime, dst=TimezoneSystem(), src=None):
+def to_timezone(datetime, dst=TimezoneSystem(), src=None, fallback=None):
     if not isinstance(datetime, py_datetime):
         datetime = parse_datetime(datetime)
 
     if src is None and datetime.tzinfo is None:
-        raise ValueError('to_timezone not possible from naive datetime' +
-                         ' use src keyword to define source timezone')
+        if fallback is None:
+            raise ValueError('timezone modification not possible' +
+                             ' from naive datetime')
+        else:
+            src = fallback
+
     if isinstance(dst, str):
         dst = pytz.timezone(dst)
+
     if src is not None:
         if isinstance(src, str):
             src = pytz.timezone(src)
@@ -224,42 +230,50 @@ def utc(datetime):
     return to_timezone(datetime, dst=TimezoneUTC(), src=TimezoneUTC())
 
 
-def to_utc(datetime, src=None):
-    return to_timezone(datetime, dst=TimezoneUTC(), src=src)
+def to_utc(datetime, src=None, fallback=None):
+    return to_timezone(datetime, dst=TimezoneUTC(),
+                       src=src, fallback=fallback)
 
 
-def to_gmt(datetime, src=None):
-    return to_timezone(datetime, dst=TimezoneGMT(), src=src)
+def to_gmt(datetime, src=None, fallback=None):
+    return to_timezone(datetime, dst=TimezoneGMT(),
+                       src=src, fallback=fallback)
 
 
-def to_system(datetime, src=None):
-    return to_timezone(datetime, dst=TimezoneSystem(), src=src)
+def to_system(datetime, src=None, fallback=None):
+    return to_timezone(datetime, dst=TimezoneSystem(),
+                       src=src, fallback=None)
 
 
-def to_app(datetime, src=None):
-    return to_timezone(datetime, dst=TimezoneApp(), src=src)
+def to_app(datetime, src=None, fallback=None):
+    return to_timezone(datetime, dst=TimezoneApp(),
+                       src=src, fallback=fallback)
 
 
-def format_datetime(datetime, src=TimezoneUTC()):
+def to_user(datetime, src=None, fallback=None):
+    return to_timezone(datetime, dst=TimezoneUser(),
+                       src=src, fallback=fallback)
+
+
+def format_datetime(datetime):
     """String Formatted Date & Time.
 
     Many countries have adopted the ISO standard of year-month-day
     hour:minute:seconds. For
-        example, 2015-03-30 10:15:25 (SAST).
+        example, 2015-03-30T10:15:25+0000.
 
     Appends short timezone name.
 
     Args:
-        datetime (datetime): Datetime object. (Optional)
-        destination_tz (str): Destination Timezone.
-            List of valid entries in timezones attribute.
+        datetime (datetime): Datetime object.
 
     Returns string formatted date.
     """
-    datetime = to_timezone(datetime, dst=TimezoneApp(), src=src)
+    return(datetime.strftime('%Y-%m-%d %H:%M:%S%z'))
 
-    return(datetime.strftime('%Y-%m-%d %H:%M:%S ') + "(" +
-           datetime.tzname() + ")")
+
+def format_pretty(datetime):
+    return(datetime.strftime('%Y-%m-%d %H:%M:%S'))
 
 
 def format_http_datetime(datetime, src=TimezoneUTC()):

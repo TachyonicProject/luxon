@@ -39,6 +39,7 @@ from luxon import js
 from luxon import __identity__
 from luxon.core.logger import GetLogger
 from luxon.utils.timer import Timer
+from luxon.utils.timezone import to_utc, TimezoneUser
 from luxon.exceptions import (NoContextError,
                               HTTPClientError,
                               HTTPClientInvalidHeader,
@@ -64,6 +65,7 @@ from luxon.core.cache import Cache
 from luxon.utils.timezone import utc, now
 from luxon.utils.objects import orderdict
 from luxon.utils.unique import string_id
+from luxon.core.regex import DATETIME_RE
 
 log = GetLogger(__name__)
 
@@ -947,3 +949,15 @@ class Client(object):
             return True
         else:
             return False
+
+
+def parse_form_field(value, default=None):
+    if isinstance(value, str):
+        if value == '':
+            return default
+        else:
+            if DATETIME_RE.match(value):
+                return to_utc(value, fallback=TimezoneUser())
+        return value
+    else:
+        return value

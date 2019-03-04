@@ -40,7 +40,7 @@ from luxon.utils import js
 from luxon.utils.cast import to_tuple
 from luxon.utils.timezone import TimezoneGMT, to_gmt
 from luxon.utils.objects import dict_value_property
-from luxon.utils.text import blank_to_none
+from luxon.utils.http import parse_form_field
 from luxon.utils.imports import get_class
 from luxon.exceptions import (HTTPInvalidHeader,
                               HTTPMissingHeader, HTTPMissingFormField)
@@ -792,7 +792,7 @@ class Request(RequestBase):
                         json_safe_object[prop].append(file_obj)
                     else:
                             json_safe_object[prop].append(
-                                blank_to_none(item.value)
+                                parse_form_field(item.value)
                             )
             else:
                 if field.filename:
@@ -803,7 +803,7 @@ class Request(RequestBase):
                                 'base64': data}
                     json_safe_object[prop] = file_obj
                 else:
-                    json_safe_object[prop] = blank_to_none(field.value)
+                    json_safe_object[prop] = parse_form_field(field.value)
 
         return json_safe_object
 
@@ -1026,7 +1026,7 @@ class Request(RequestBase):
 
         try:
             if field in form:
-                return blank_to_none(form.getfirst(field), default)
+                return parse_form_field(form.getfirst(field), default)
             else:
                 return default
         except TypeError:

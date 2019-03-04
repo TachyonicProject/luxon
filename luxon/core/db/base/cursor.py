@@ -29,6 +29,7 @@
 # SUCH DAMAGE.
 from luxon.core.logger import GetLogger
 from luxon.core.db.base.args import args_to
+from luxon.core.db.base.parse import parse_row
 from luxon.core.db.base.exceptions import Exceptions as BaseExeptions
 from luxon.utils.timer import Timer
 
@@ -161,7 +162,7 @@ class Cursor(BaseExeptions):
         while True:
             value = self.fetchone()
             if value is not None:
-                yield value
+                yield parse_row(value)
             else:
                 break
 
@@ -261,7 +262,7 @@ class Cursor(BaseExeptions):
         if self._executed is False:
             raise self.ProgrammingError('No data, use execute method first')
         try:
-            row = dict(self._crsr.fetchone())
+            row = parse_row(dict(self._crsr.fetchone()))
             self._rownumber += 1
             return row
         except TypeError:

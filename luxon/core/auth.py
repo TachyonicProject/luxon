@@ -39,7 +39,7 @@ from luxon.exceptions import (AccessDeniedError,
                               TokenExpiredError,
                               TokenMissingError)
 from luxon.utils import js
-from luxon.utils.timezone import utc, now
+from luxon.utils.timezone import now, to_utc
 from luxon.utils import files
 
 log = GetLogger(__name__)
@@ -110,7 +110,7 @@ class Auth(object):
         if not self.authenticated:
             raise TokenMissingError()
 
-        if now() > utc(self._credentials['expire']):
+        if now() > to_utc(self._credentials['expire']):
             raise TokenExpiredError()
 
         bytes_token = if_unicode_to_bytes(js.dumps(self._credentials,
@@ -135,7 +135,7 @@ class Auth(object):
             raise AccessDeniedError('Invalid Auth Token. %s' % e)
 
         decoded = js.loads(base64.b64decode(b64_token))
-        utc_expire = utc(decoded['expire'])
+        utc_expire = to_utc(decoded['expire'])
 
         if now() > utc_expire:
             raise TokenExpiredError()
@@ -147,7 +147,7 @@ class Auth(object):
         if not self.authenticated:
             raise TokenMissingError()
 
-        utc_expire = utc(self._credentials['expire'])
+        utc_expire = to_utc(self._credentials['expire'])
         if now() > utc_expire:
             raise TokenExpiredError()
 
@@ -181,7 +181,7 @@ class Auth(object):
         if 'expire' not in self._credentials:
             # Create New Token
             expire = (now() + timedelta(seconds=self._token_expire))
-            self._credentials['expire'] = expire.strftime("%Y/%m/%d %H:%M:%S")
+            self._credentials['expire'] = expire
 
         self._credentials['user_id'] = user_id
 
@@ -258,7 +258,7 @@ class Auth(object):
         if not self.authenticated:
             raise TokenMissingError() from None
         elif 'expire' in self._credentials:
-            utc_expire = utc(self._credentials['expire'])
+            utc_expire = to_utc(self._credentials['expire'])
             if now() > utc_expire:
                 self.clear()
                 raise TokenExpiredError() from None
