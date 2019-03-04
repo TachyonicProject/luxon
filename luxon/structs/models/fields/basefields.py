@@ -27,8 +27,8 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+import re
 import uuid
-from datetime import datetime as py_datetime
 from decimal import Decimal as PyDecimal
 
 import phonenumbers
@@ -37,7 +37,6 @@ from luxon.utils.global_counter import global_counter
 from luxon.utils.encoding import if_bytes_to_unicode
 from luxon.exceptions import FieldError
 from luxon.utils.timezone import to_utc
-from luxon.utils.timezone import TimezoneUTC
 from luxon.core.regex import (EMAIL_RE,
                               WORD_RE,
                               USERNAME_RE,
@@ -89,7 +88,8 @@ class BaseFields(object):
                      enum=[], on_update=None, password=False,
                      signed=True, internal=False, ignore_null=False,
                      lower=False, upper=False, data_url=None,
-                     data_endpoint=None, callback=None):
+                     data_endpoint=None, callback=None,
+                     regex=None, regex_ignore_case=True):
 
             self._creation_counter = global_counter()
             self._value = None
@@ -100,6 +100,7 @@ class BaseFields(object):
                 self.max_length = length
             else:
                 self.max_length = max_length
+
             self.signed = signed
             self.null = null
             self.default = default
@@ -121,6 +122,8 @@ class BaseFields(object):
             self.data_url = data_url
             self.data_endpoint = data_endpoint
             self.callback = callback
+            self.regex = regex
+            self.regex_ignore_case = regex_ignore_case
 
         @property
         def name(self):
@@ -158,6 +161,15 @@ class BaseFields(object):
                         len(value) > self.max_length):
                     self.error("Exceeded max length '%s'"
                                % self.max_length, value)
+
+            if self.regex:
+                if self.regex_ignore_case:
+                    regex = re.compile(self.regex, re.IGNORECASE)
+                else:
+                    regex = re.compile(self.regex)
+
+                if not regex.match(value):
+                    self.error("Invalid value", value)
 
             return value
 
@@ -302,17 +314,13 @@ class BaseFields(object):
         UTC/GMT +00:00.
         """
         def parse(self, value):
-            try:
-                if isinstance(value, py_datetime):
-                    if value.tzinfo is not None:
-                        value = to_utc(value)
-                    else:
-                        value = to_utc(value, src=TimezoneUTC())
-                else:
-                    value = to_utc(value, src=TimezoneUTC())
-
-            except ValueError as e:
-                self.error('DateTime value required (%s)' % e, value)
+            if value:
+                try:
+                    value = to_utc(value)
+                except ValueError as e:
+                    self.error('DateTime value error (%s)' % e, value)
+            elif not self.null:
+                self.error('DateTime value required'. value)
             return value
 
     class PyObject(BaseField):
@@ -342,7 +350,7 @@ class BaseFields(object):
             if isinstance(value, str):
                 try:
                     return js.loads(value)
-                except:
+                except Exception:
                     self.error("Invalid json in '%s'" % value, value)
 
     class Enum(String):
@@ -388,7 +396,7 @@ class BaseFields(object):
         """
         def parse(self, value):
             value = super().parse(value)
-            if not EMAIL_RE.match(value):
+            if not self.regex and not EMAIL_RE.match(value):
                 self.error("Invalid email '%s'" % value, value)
 
             return value
@@ -423,7 +431,7 @@ class BaseFields(object):
     class Word(String):
         def parse(self, value):
             value = super().parse(value)
-            if not WORD_RE.match(value):
+            if not self.regex and not WORD_RE.match(value):
                 self.error("Invalid Word '%s'" % value, value)
 
             return value
@@ -433,8 +441,10 @@ class BaseFields(object):
         """
         def parse(self, value):
             value = super().parse(value)
-            if not USERNAME_RE.match(value):
-                self.error("Invalid Username '%s'" % value, value)
+
+            if not self.regex:
+                if not USERNAME_RE.match(value):
+                    self.error("Invalid Username '%s'" % value, value)
 
             return value
 
@@ -443,7 +453,7 @@ class BaseFields(object):
         """
         def parse(self, value):
             value = super().parse(value)
-            if not URI_RE.match(value):
+            if not self.regex and not URI_RE.match(value):
                 self.error("Invalid URI '%s'" % value, value)
 
             return value
@@ -453,7 +463,7 @@ class BaseFields(object):
         """
         def parse(self, value):
             value = super().parse(value)
-            if not FQDN_RE.match(value):
+            if not self.regex and not FQDN_RE.match(value):
                 self.error("Invalid Domain '%s'" % value, value)
 
             return value

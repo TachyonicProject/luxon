@@ -61,9 +61,11 @@ class Application(object):
         app_root (str): Path to application root. (e.g. The location of
             'settings.ini', 'policy.json' and overiding 'templates')
     """
-    def __init__(self, name, path=None, ini=None, defaults=False):
+    def __init__(self, name, path=None, ini=None, defaults=False,
+                 middleware=None):
         try:
             # Initilize Application
+            self._middleware = middleware
             App(name, path=path, ini=ini, defaults=defaults)
             # Started Application
             log.info('Started'
@@ -158,6 +160,13 @@ class Application(object):
 
         if args.debug:
             GetLogger().level = 'DEBUG'
+
+        if self._middleware:
+            if isinstance(self._middleware, (tuple, list,)):
+                for func in self._middleware:
+                    func()
+            else:
+                self._middleware()
 
         fork = Daemon(pid_file, run=self.proc, args=(args.method, args.route,))
         if args.fork:

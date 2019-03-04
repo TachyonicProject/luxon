@@ -33,6 +33,8 @@ import datetime
 from decimal import Decimal
 
 from luxon.exceptions import JSONDecodeError
+from luxon.utils.timezone import to_user, parse_datetime
+from luxon.core.regex import DATETIME_RE
 
 
 class _JsonEncoder(json.JSONEncoder):
@@ -57,7 +59,7 @@ class _JsonEncoder(json.JSONEncoder):
             return str(o)
         elif isinstance(o, datetime.datetime):
             # Parse Datetime
-            return str(o.strftime("%Y/%m/%d %H:%M:%S"))
+            return str(to_user(o).strftime("%Y-%m-%dT%H:%M:%S%z"))
         elif isinstance(o, bytes):
             return o.decode('utf-8')
         elif hasattr(o, 'dict'):
@@ -65,6 +67,25 @@ class _JsonEncoder(json.JSONEncoder):
         else:
             # Pass to Default Encoder
             return json.JSONEncoder.default(self, o)
+
+
+def parse_load(parse):
+    if isinstance(parse, list):
+        for i, obj in enumerate(parse):
+            parse[i] = parse_load(obj)
+        return parse
+    elif isinstance(parse, dict):
+        for obj in parse:
+            parse[obj] = parse_load(parse[obj])
+        return parse
+    else:
+        if isinstance(parse, str):
+            if DATETIME_RE.match(parse):
+                try:
+                    parse = to_user(parse)
+                except ValueError as e:
+                    raise JSONDecodeError(str(e))
+        return parse
 
 
 def loads(json_text, **kwargs):
@@ -81,7 +102,9 @@ def loads(json_text, **kwargs):
         # JSON requires str not bytes hence decode.
         json_text = json_text.decode('UTF-8')
     try:
-        return json.loads(json_text, **kwargs)
+        obj = json.loads(json_text, object_hook=parse_load, **kwargs)
+        return obj
+
     except json.decoder.JSONDecodeError as e:
         raise JSONDecodeError(e) from None
 

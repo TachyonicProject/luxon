@@ -94,7 +94,7 @@ class Connection(BaseConnection):
     THREADSAFETY = threadsafety
 
     def __init__(self, db):
-        super().__init__(db)
+        super().__init__(db, detect_types=sqlite3.PARSE_DECLTYPES)
         self._crsr_cls = getattr(self._conn, 'cursor')
         self._db = db
         self._conn.row_factory = sqlite3.Row
