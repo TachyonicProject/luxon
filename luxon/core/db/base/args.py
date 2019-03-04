@@ -32,6 +32,8 @@ import re
 from decimal import Decimal
 from datetime import datetime
 
+from luxon.utils.timezone import to_utc
+
 pyformat_re = r"%\([\w]+\)\w"
 numeric_re = r":\d+"
 named_re = r":[a-z]*\w+"
@@ -55,6 +57,8 @@ def _parse_param(value, cast_map):
             return 1
         else:
             return 0
+    elif isinstance(value, datetime):
+        return to_utc(value)
     elif hasattr(value, '__call__'):
         value = value()
         if isinstance(value, (Decimal, int, float, str, bytes, datetime)):

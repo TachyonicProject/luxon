@@ -75,11 +75,16 @@ Releases
 
 1.5.0 = BETA Release (2019/02/27)
 ---------------------------------
-   * Added missing copyright notice updates for contributers.
+   * Added timezone for datetime model field from unknown tz source to set to UTC.
+   * Added username model field realm support exmple (username@realm.com)
    * Added Helper for Mysql/MariaDb Write Database. (used in clustering)
-   * Added new time format for datetime values.
+   * Added missing copyright notice updates for contributers.
    * Added MessageBus Helpers (front to RabbitMQ)
+   * Added new time format for datetime values.
    * Added products to policy.json.
+   * Added regex option for model fields.
+   * Added middleware feature for CMD handler.
+   * Clean up core.regex expressions.
    * Updated policy.json to allow 'internal' access to infrastructure:view rule.
    * Fixed bug in html select using list to set default/selected value.
    * Fixed Issue when debugging and trying to log non UTF-8 encoded responses.
@@ -90,3 +95,4 @@ Releases
    * Improved Redis Helpers.
    * Enabled model fields to define callback for select bootstrap utility.
    * Cosmetic change to 'In use by reference error' for ORM.
+   * Fixed PID file location when path is defined for application.

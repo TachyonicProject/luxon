@@ -76,7 +76,7 @@ class Sqlite3(object):
                         sql_field += ' UNSIGNED'
 
                 elif isinstance(model_fields[field], self._model.DateTime):
-                    sql_field = " %s INTEGER" % column
+                    sql_field = " %s TIMESTAMP" % column
 
                 elif isinstance(model_fields[field], self._model.BaseBlob):
                     sql_field = " %s BLOB" % column
