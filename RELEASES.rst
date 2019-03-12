@@ -84,6 +84,7 @@ Releases
    * Added products to policy.json.
    * Added regex option for model fields.
    * Added middleware feature for CMD handler.
+   * Added timezone conversion in js dumps/loads
    * Clean up core.regex expressions.
    * Updated policy.json to allow 'internal' access to infrastructure:view rule.
    * Fixed bug in html select using list to set default/selected value.

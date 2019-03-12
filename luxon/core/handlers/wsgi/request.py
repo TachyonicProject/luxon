@@ -491,7 +491,7 @@ class Request(RequestBase):
     @property
     def app(self):
         try:
-            return self.env['SCRIPT_NAME']
+            return self.env['SCRIPT_NAME'].strip()
         except KeyError:
             return ''
 
@@ -974,6 +974,11 @@ class Request(RequestBase):
             else:
                 return self.credentials.domain
 
+    @context_domain.setter
+    def context_domain(self, domain):
+        self.session['domain'] = domain
+        self.session.save()
+
     @property
     def context_tenant_id(self):
         if self.get_header('X-Tenant-Id'):
@@ -984,6 +989,11 @@ class Request(RequestBase):
 
         return g.app.config.get('identity', 'tenant_id',
                                 fallback=self.credentials.tenant_id)
+
+    @context_tenant_id.setter
+    def context_tenant_id(self, tenant_id):
+        self.session['tenant_id'] = tenant_id
+        self.session.save()
 
     def get_first(self, field, required=False, default=None):
         """Get the value for the given field name in form.
