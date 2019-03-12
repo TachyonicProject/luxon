@@ -33,7 +33,8 @@ import datetime
 from decimal import Decimal
 
 from luxon.exceptions import JSONDecodeError
-from luxon.utils.timezone import to_user, parse_datetime
+from luxon.utils.timezone import to_user
+from luxon.utils.html5 import strip_tags
 from luxon.core.regex import DATETIME_RE
 
 
@@ -61,7 +62,7 @@ class _JsonEncoder(json.JSONEncoder):
             # Parse Datetime
             return str(to_user(o).strftime("%Y-%m-%dT%H:%M:%S%z"))
         elif isinstance(o, bytes):
-            return o.decode('utf-8')
+            return strip_tags(o.decode('utf-8'))
         elif hasattr(o, 'dict'):
             return o.dict
         else:
@@ -85,6 +86,8 @@ def parse_load(parse):
                     parse = to_user(parse)
                 except ValueError as e:
                     raise JSONDecodeError(str(e))
+            else:
+                parse = strip_tags(parse)
         return parse
 
 
