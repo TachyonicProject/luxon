@@ -55,6 +55,7 @@ def render_template(template, *args, rst2html=False, **kwargs):
 
         context = {
             'APP': app,
+            'SITE': app,
             'REQ': g.current_request,
             'REQUEST_ID': g.current_request.id,
             'STATIC': g.current_request.static,
