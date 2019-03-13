@@ -29,7 +29,7 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 from luxon import g
 from luxon.core.auth import Auth
-from luxon.exceptions import AccessDeniedError
+from luxon.exceptions import TokenExpiredError
 from luxon.utils.unique import request_id
 from luxon import policy as policy_engine
 from luxon.structs.container import Container
@@ -105,7 +105,7 @@ class RequestBase(object):
                     else:
                         self.credentials.token = self.user_token
                     self.log['USER-ID'] = self._cached_auth.user_id
-                except AccessDeniedError:
+                except TokenExpiredError:
                     self.user_token = None
                     self.scope_token = None
                     self.session.clear()
