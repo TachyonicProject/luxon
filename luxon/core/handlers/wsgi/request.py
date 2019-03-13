@@ -48,6 +48,11 @@ from luxon.core.session import Session
 from luxon.utils.http import ETags
 from luxon.core.handlers.request import RequestBase
 
+from luxon.core.logger import GetLogger
+
+
+log = GetLogger(__name__)
+
 
 class Request(RequestBase):
     """Represents a clients HTTP request.
@@ -336,6 +341,7 @@ class Request(RequestBase):
         '_cached_cache_control',
         '_cached_match',
         '_cached_none_match',
+        '_cached_tjsl',
         '_user_token',
         '_scope_token',
     )
@@ -390,6 +396,7 @@ class Request(RequestBase):
         self._cached_cache_control = None
         self._cached_match = None
         self._cached_none_match = None
+        self._cached_tjsl = None
 
     @property
     def if_match(self):
@@ -889,12 +896,27 @@ class Request(RequestBase):
             raise HTTPInvalidHeader(header, msg)
 
     @property
+    def tjsl(self):
+        if not self.is_ajax:
+            if self._cached_tjsl is None:
+                if 'tachyonLogin' in self.cookies:
+                    try:
+                        self._cached_tjsl = js.loads(
+                            base64.b64decode(self.cookies['tachyonLogin']))
+                    except Exception:
+                        log.error('TJSL Cookie corrupt: %s' %
+                                  self.cookies['tachyonLogin'])
+            return self._cached_tjsl
+
+    @property
     def user_token(self):
         if self._user_token is not None:
             return self._user_token
 
         if self.get_header('X-Auth-Token'):
             self._user_token = self.get_header('X-Auth-Token')
+        elif self.tjsl and 'token' in self.tjsl:
+            return self.tjsl['token']
         elif self.host in self.cookies and 'token' in self.session:
             return self.session['token']
 
@@ -911,6 +933,9 @@ class Request(RequestBase):
     def scope_token(self):
         if self._scope_token is not None:
             return self._scope_token
+
+        elif self.tjsl and 'scoped_token' in self.tjsl:
+            return self.tjsl['scoped_token']
 
         elif self.host in self.cookies and 'scoped' in self.session:
             return self.session['scoped']
@@ -952,6 +977,9 @@ class Request(RequestBase):
             if self.get_header('X-Region'):
                 return self.get_header('X-Region')
 
+            elif self.tjsl and 'region' in self.tjsl:
+                return self.tjsl['region']
+
             elif self.host in self.cookies and 'region' in self.session:
                 return self.session.get('region')
 
@@ -968,7 +996,8 @@ class Request(RequestBase):
         else:
             if self.get_header('X-Domain'):
                 return self.get_header('X-Domain')
-
+            elif self.tjsl and 'domain' in self.tjsl:
+                return self.tjsl['domain']
             elif self.host in self.cookies and 'domain' in self.session:
                 return self.session.get('domain')
             else:
@@ -983,6 +1012,9 @@ class Request(RequestBase):
     def context_tenant_id(self):
         if self.get_header('X-Tenant-Id'):
             return self.get_header('X-Tenant-Id')
+
+        elif self.tjsl and 'tenant_id' in self.tjsl:
+            return self.tjsl['tenant_id']
 
         elif self.host in self.cookies and 'tenant_id' in self.session:
             return self.session.get('tenant_id')
@@ -1291,11 +1323,10 @@ class Request(RequestBase):
                 try:
                     parser.load(cookie_part)
                 except CookieError:
-                    pass
+                    log.error('Invalid Cookie: %s' % cookie_part)
             cookies = {}
             for morsel in parser.values():
                 cookies[morsel.key] = morsel.value
-
             self._cached_cookies = cookies
 
         return self._cached_cookies.copy()
