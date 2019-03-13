@@ -96,7 +96,7 @@ class TrackCookie(object):
             self._session_id = self._req.id
 
     def clear(self):
-        session_in_cookie = self._req.cookie.get(self._cookie_name)
+        session_in_cookie = self._req.cookies.get(self._cookie_name)
 
         self._req.response.unset_cookie(
             self._cookie_name,
