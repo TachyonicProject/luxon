@@ -897,7 +897,7 @@ class Request(RequestBase):
 
     @property
     def tjsl(self):
-        if not self.is_ajax:
+        if not self.is_ajax and not self.get_header('X-Auth-Token'):
             if self._cached_tjsl is None:
                 if 'tachyonLogin' in self.cookies:
                     try:

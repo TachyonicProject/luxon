@@ -127,9 +127,8 @@ class Auth(object):
     @token.setter
     def token(self, token):
         token = if_unicode_to_bytes(token)
-        signature, b64_token = token.split(b'!!!!')
-
         try:
+            signature, b64_token = token.split(b'!!!!')
             self._rsakey.verify(signature, b64_token)
         except ValueError as e:
             raise AccessDeniedError('Invalid Auth Token. %s' % e)
@@ -182,6 +181,7 @@ class Auth(object):
             # Create New Token
             expire = (now() + timedelta(seconds=self._token_expire))
             self._credentials['expire'] = expire
+            self._credentials['loginat'] = now()
 
         self._credentials['user_id'] = user_id
 
@@ -193,6 +193,10 @@ class Auth(object):
 
         if roles is not None:
             self.roles = roles
+
+    def extend(self):
+        expire = (now() + timedelta(seconds=self._token_expire))
+        self._credentials['expire'] = expire
 
     @property
     def roles(self):
