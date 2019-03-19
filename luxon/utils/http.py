@@ -514,15 +514,7 @@ class Response(object):
 
     @property
     def content_type(self):
-        try:
-            header = self.headers['content-type']
-            content_type, params = cgi.parse_header(header)
-            if content_type is not None:
-                return str(content_type).upper()
-            else:
-                return None
-        except KeyError:
-            return None
+        return self.headers.get('content-type')
 
     @property
     def json(self):

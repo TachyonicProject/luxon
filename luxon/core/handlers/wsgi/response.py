@@ -490,6 +490,7 @@ class Response(Redirects):
 
         self._cookies[name] = ''
         self._cookies[name]['expires'] = -1
+        self._cookies[name]['max-age'] = -1
         if domain:
             self._cookies[name]['domain'] = domain
 
