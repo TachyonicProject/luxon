@@ -208,12 +208,13 @@ class Cursor(BaseExeptions):
                                       self._conn.CAST_MAP)
                 _log(self, "Start " + query, elapsed(), values=args)
                 if args is not None:
+                    self._uncommited = True
+                    self._executed = True
                     self._crsr.execute(query, args)
-                    self._uncommited = True
                 else:
-                    self._crsr.execute(query)
                     self._uncommited = True
-                self._executed = True
+                    self._executed = True
+                    self._crsr.execute(query)
                 return self
             except Exception as e:
                 self._error_handler(self, e, self._conn.ERROR_MAP)
