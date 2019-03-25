@@ -165,7 +165,7 @@ class Auth(object):
         return self.json
 
     def new(self, user_id, username=None, domain=None,
-            roles=None):
+            roles=None, region=None, confederation=None):
         """New Authentication token.
 
         Args:
@@ -184,6 +184,12 @@ class Auth(object):
             self._credentials['loginat'] = now()
 
         self._credentials['user_id'] = user_id
+
+        if region is not None:
+            self._credentials['user_region'] = region
+
+        if confederation is not None:
+            self._credentials['user_confederation'] = confederation
 
         if username is not None:
             self._credentials['username'] = username
@@ -241,6 +247,14 @@ class Auth(object):
     @property
     def user_domain(self):
         return self._credentials.get('user_domain', None)
+
+    @property
+    def user_region(self):
+        return self._credentials.get('user_region', None)
+
+    @property
+    def user_confederation(self):
+        return self._credentials.get('user_confederation', None)
 
     @property
     def domain(self):

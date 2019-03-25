@@ -58,13 +58,13 @@ def raw_list(req, data, limit=None, context=True, sql=False):
     if limit is None:
         limit = int(req.query_params.get('limit', 10))
 
-    page = int(req.query_params.get('page', 1)) - 1
+    page = int(req.query_params.get('page', 1))
     if sql is True:
         start = 0
         end = limit
-        rows = len(data) + (page * limit)
+        rows = len(data) + ((page - 1) * limit)
     else:
-        start = page * limit
+        start = (page - 1) * limit
         end = start + limit
         rows = len(data)
 
@@ -148,12 +148,12 @@ def raw_list(req, data, limit=None, context=True, sql=False):
                     req.app + req.route)
 
     if limit > 0:
-        if page + 1 > 1:
+        if page > 1:
             links['previous'] = resource + '?limit=%s&page=%s' % (limit, page,)
             links['previous'] += sort_query
             links['previous'] += search_query
 
-        if page + 1 < ceil(rows / limit):
+        if page < ceil(rows / limit):
             links['next'] = resource + '?limit=%s&page=%s' % (limit, page + 2,)
             links['next'] += sort_query
             links['next'] += search_query
@@ -167,7 +167,7 @@ def raw_list(req, data, limit=None, context=True, sql=False):
         'payload': result,
         'metadata': {
             "records": rows,
-            "page": page + 1,
+            "page": page,
             "pages": pages,
             "per_page": limit,
             "sort": sort,
@@ -224,7 +224,7 @@ def sql_list(req, table, sql_fields, limit=None, group_by=None, where=None,
     if limit <= 0:
         limit_range_query = ""
     else:
-        limit_range_query = " LIMIT %s, %s" % (start, limit * 2,)
+        limit_range_query = " LIMIT %s, %s" % (start, limit + 100,)
 
     # Step 3 Search
     search_query = {}
@@ -241,7 +241,6 @@ def sql_list(req, table, sql_fields, limit=None, group_by=None, where=None,
         search_query[fields[search_field]] = value
 
     # Step 4 Prepre to run queries
-    #fields_str = ", ".join(fields.values())
     fields_str = None
     for field in fields:
         if fields_str is None:
@@ -292,8 +291,6 @@ def sql_list(req, table, sql_fields, limit=None, group_by=None, where=None,
             sql += sort_range_query
 
         sql += limit_range_query
-
-
 
         result = conn.execute(sql,
                               values + search_values).fetchall()

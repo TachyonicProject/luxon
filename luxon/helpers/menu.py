@@ -27,6 +27,8 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+import operator
+
 from luxon import g
 
 
@@ -43,7 +45,7 @@ class Menu(object):
         self._items = []
         self._html_class = html_class
 
-    def add(self, path_name, href='#', tag=None, **kwargs):
+    def add(self, path_name, href='#', tag=None, endpoint=None, **kwargs):
         """Method to append item to menu item list.
 
         Args:
@@ -53,7 +55,7 @@ class Menu(object):
             kwargs (kwargs): Keyword args used when link() -ing on html_class
                              obj.
         """
-        self._items.append((path_name, tag, href, kwargs))
+        self._items.append((path_name, tag, href, endpoint, kwargs))
 
     def render(self, *args, **kwargs):
         """Method to render the menu's html.
@@ -65,6 +67,7 @@ class Menu(object):
         Returns:
             Rendered obj of type html_class.
         """
+        self._items.sort(key=operator.itemgetter(0))
         req = g.current_request
         root_menu = self._html_class(*args, **kwargs)
 
@@ -84,11 +87,13 @@ class Menu(object):
         has_policy_engine = hasattr(req, 'policy')
         # Run through items.
         for item in self._items:
-            path_name, view, href, kwargs = item
+            path_name, view, href, endpoint, kwargs = item
             if (view is None or (has_policy_engine and
                                  req.policy.validate(view))):
-                path_name = path_name.strip('/').split('/')
-                render_item(root_menu, path_name, href, **kwargs)
+                if (endpoint is None or endpoint in
+                    g.current_request.context.api.endpoints):
+                    path_name = path_name.strip('/').split('/')
+                    render_item(root_menu, path_name, href, **kwargs)
 
         return root_menu
 

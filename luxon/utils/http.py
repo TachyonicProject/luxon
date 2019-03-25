@@ -738,22 +738,40 @@ def request(client, method, url, params={},
             raise HTTPClientMissingSchema(e)
         except requests.exceptions.ConnectionError as e:
             e = append_to_error(e, endpoint)
-            raise HTTPClientConnectionError(e)
+            log.critical(e)
+            raise HTTPClientConnectionError(
+                "API Connection error to '%s' (%s)" % (url,
+                                                       endpoint,))
         except requests.exceptions.ProxyError as e:
             e = append_to_error(e, endpoint)
-            raise HTTPClientProxyError(e)
+            log.critical(e)
+            raise HTTPClientProxyError(
+                "API proxy error to '%s' (%s)" % (url,
+                                                  endpoint,))
         except requests.exceptions.SSLError as e:
             e = append_to_error(e, endpoint)
-            raise HTTPClientSSLError(e)
+            log.critical(e)
+            raise HTTPClientSSLError(
+                "API SSL error to '%s' (%s)" % (url,
+                                                endpoint,))
         except requests.exceptions.Timeout as e:
             e = append_to_error(e, endpoint)
-            raise HTTPClientTimeoutError(e)
+            log.critical(e)
+            raise HTTPClientTimeoutError(
+                "API connection timeout to '%s' (%s)" % (url,
+                                                         endpoint,))
         except requests.exceptions.ConnectTimeout as e:
             e = append_to_error(e, endpoint)
-            raise HTTPClientConnectTimeoutError(e)
+            log.critical(e)
+            raise HTTPClientConnectTimeoutError(
+                "API connect timeout to '%s' (%s)" % (url,
+                                                      endpoint,))
         except requests.exceptions.ReadTimeout as e:
             e = append_to_error(e, endpoint)
-            raise HTTPClientReadTimeoutError(e)
+            log.critical(e)
+            raise HTTPClientReadTimeoutError(
+                "API read timeout to '%s' (%s)" % (url,
+                                                   endpoint,))
         except requests.exceptions.HTTPError as e:
             e = append_to_error(e, endpoint)
             raise HTTPError(e.response.status_code, e)
