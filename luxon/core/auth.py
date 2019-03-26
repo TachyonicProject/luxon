@@ -257,6 +257,14 @@ class Auth(object):
         return self._credentials.get('user_confederation', None)
 
     @property
+    def default_tenant_id(self):
+        return self._credentials.get('default_tenant_id', None)
+
+    @default_tenant_id.setter
+    def default_tenant_id(self, value):
+        self._credentials['default_tenant_id'] = value
+
+    @property
     def domain(self):
         return self._credentials.get('domain', None)
 
