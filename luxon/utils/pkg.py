@@ -27,14 +27,14 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-
+import importlib.util
 from pkg_resources import (resource_stream, resource_listdir,
                            resource_isdir, resource_exists,
                            iter_entry_points)
 
 from luxon.utils.singleton import NamedSingleton
 from luxon.utils.imports import import_module
-from luxon.utils.files import mkdir, exists, is_dir
+from luxon.utils.files import mkdir, f_exists, is_dir
 from luxon.exceptions import Error
 
 
@@ -203,7 +203,7 @@ class Module(object):
                         mkdir(real_dst, recursive=True)
                     else:
                         content = self.read(real_src)
-                        if new_extension is not None and exists(real_dst):
+                        if new_extension is not None and f_exists(real_dst):
                             real_dst += "." + new_extension.strip('.')
 
                         with open(real_dst, 'wb') as new_file:
@@ -214,7 +214,7 @@ class Module(object):
                 if is_dir(dst):
                     dst = dst.rstrip('/') + '/' + src_file
 
-                if new_extension is not None and exists(dst):
+                if new_extension is not None and f_exists(dst):
                     dst += "." + new_extension.strip('.')
 
                 with open(dst, 'wb') as new_file:
@@ -222,3 +222,9 @@ class Module(object):
 
         except ImportError:
             raise ImportError(self._module) from None
+
+
+def exists(package):
+    if importlib.util.find_spec(package) is None:
+        return False
+    return True
