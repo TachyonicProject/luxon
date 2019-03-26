@@ -181,5 +181,5 @@ class MBServer(object):
                 connection.add_callback_threadsafe(msg_ack)
 
         with rmq() as mb:
-            mb.receiver('subscriber', callback,
+            mb.receiver(self._queue, callback,
                         acks=False, prefetch=self._threads)
