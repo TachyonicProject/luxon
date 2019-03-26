@@ -34,8 +34,12 @@ from pkg_resources import (resource_stream, resource_listdir,
 
 from luxon.utils.singleton import NamedSingleton
 from luxon.utils.imports import import_module
-from luxon.utils.files import mkdir, f_exists, is_dir
+from luxon.utils.files import mkdir, is_dir
+from luxon.utils.files import exists as f_exists
 from luxon.exceptions import NotFoundError
+from luxon.core.logger import GetLogger
+
+log = GetLogger(__name__)
 
 
 class EntryPoints(metaclass=NamedSingleton):
@@ -206,6 +210,9 @@ class Module(object):
                         if new_extension is not None and f_exists(real_dst):
                             real_dst += "." + new_extension.strip('.')
 
+                        print("Copy file %s:%s to %s" % (self._module,
+                                                         real_src,
+                                                         real_dst,))
                         with open(real_dst, 'wb') as new_file:
                             new_file.write(content)
             else:
@@ -217,6 +224,7 @@ class Module(object):
                 if new_extension is not None and f_exists(dst):
                     dst += "." + new_extension.strip('.')
 
+                print("Copy file %s:/%s to %s" % (self._module, src_file, dst,))
                 with open(dst, 'wb') as new_file:
                     new_file.write(content)
 
