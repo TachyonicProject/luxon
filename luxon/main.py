@@ -69,12 +69,14 @@ def setup(args):
 
     def copy(name, new_extension=None):
         if module.exists(name):
-            print("Install files %s" % path + '/' + name)
             module.copy(name,
                         path + '/' + name,
                         new_extension=new_extension)
 
     mkdir(path)
+    if (module.exists('etc')):
+        mkdir("/etc/tachyonic")
+        module.copy('etc', '/etc/tachyonic', 'default')
     mkdir(joinpath(path, 'tmp'))
     copy('policy.json', 'default')
     copy('settings.ini', 'default')
