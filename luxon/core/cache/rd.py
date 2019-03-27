@@ -28,7 +28,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 import sys
-import pickle
 
 from luxon.helpers.rd import Redis as RedisHelper
 from luxon.core.logger import GetLogger
@@ -63,5 +62,5 @@ class Redis(object):
         if sys.getsizeof(value, 0) <= self._max_obj_size:
             with RedisHelper() as redis:
                 redis.set('cache:' + key,
-                          pickle.dumps(value),
-                          ex=expire)
+                          value,
+                          expire=expire)
