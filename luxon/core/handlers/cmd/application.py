@@ -68,7 +68,7 @@ class Application(object):
             self._middleware = middleware
             App(name, path=path, ini=ini, defaults=defaults)
             # Started Application
-            log.info('Started'
+            log.info('CMD'
                      ' %s' % name +
                      ' app_root: %s' % g.app.path)
 
@@ -250,7 +250,7 @@ class Application(object):
             # Return response object.
         finally:
             # Completed Request
-            log.info('Completed Request',
+            log.info('Completed CMD',
                      timer=elapsed())
 
     def handle_error(self, req, resp, exception, trace):

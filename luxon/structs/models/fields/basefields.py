@@ -42,7 +42,8 @@ from luxon.core.regex import (EMAIL_RE,
                               USERNAME_RE,
                               PASSWORD_RE,
                               URI_RE,
-                              FQDN_RE)
+                              FQDN_RE,
+                              DATETIME_RE)
 from luxon import js
 
 
@@ -315,6 +316,8 @@ class BaseFields(object):
         """
         def parse(self, value):
             if value:
+                if isinstance(value, str) and not DATETIME_RE.match(value):
+                    self.error('DateTime value error (%s)' % value , value)
                 try:
                     value = to_utc(value)
                 except ValueError as e:

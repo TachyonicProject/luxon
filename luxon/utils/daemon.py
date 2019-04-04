@@ -32,7 +32,34 @@ import sys
 import os
 import time
 import atexit
-from signal import SIGTERM
+from signal import (signal,
+                    SIGHUP,
+                    SIGINT,
+                    SIGQUIT,
+                    SIGTERM,
+                    SIGKILL)
+
+
+class GracefulKiller:
+    def __init__(self, callback):
+        self._killed = False
+        self._callback = callback
+        signal(SIGHUP, self._exit_gracefully)
+        signal(SIGINT, self._exit_gracefully)
+        signal(SIGQUIT, self._exit_gracefully)
+        signal(SIGTERM, self._exit_gracefully)
+
+        # builtins.OSError: [Errno 22] Invalid argument
+        # signal(SIGKILL, self._exit_gracefully)
+
+    def _exit_gracefully(self, signum, frame):
+        self._killed = True
+        if self._callback:
+            self._callback(signum)
+
+    @property
+    def killed(self):
+        return self._killed
 
 
 class Daemon(object):

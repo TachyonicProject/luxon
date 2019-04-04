@@ -35,12 +35,15 @@ import pytz
 from tzlocal import get_localzone
 
 from luxon import g
+from luxon.core.regex import ISODATETIME_RE
 
 _cached_time_zone_system = None
 _cached_time_zone_app = None
 
 TIME_FORMATS = (
+    '%Y-%m-%dT%H:%M:%S.%f%z',
     '%Y-%m-%dT%H:%M:%S%z',
+    '%Y-%m-%d %H:%M:%S%z',
     '%Y-%m-%d %H:%M:%S.%f',
     '%Y/%m/%d %H:%M:%S%z',
     '%Y-%m-%d %H:%M:%S.%f',
@@ -175,11 +178,15 @@ def parse_datetime(datetime):
         raise ValueError("datetime value not" +
                          " 'str' or 'datetime'")
 
+    # PYTHON strptime %z cannot match 00:00 ISO 8601 offset.
+    if ISODATETIME_RE.match(datetime):
+        dt = datetime[0:20]
+        tz = datetime[20:25].replace(":", "")
+        datetime = dt + tz
+
     for time_format in TIME_FORMATS:
         try:
-            dt = py_datetime.strptime(datetime, time_format)
-            return dt
-
+            return py_datetime.strptime(datetime, time_format)
         except ValueError:
             continue
 
@@ -260,7 +267,7 @@ def format_datetime(datetime):
 
     Many countries have adopted the ISO standard of year-month-day
     hour:minute:seconds. For
-        example, 2015-03-30T10:15:25+0000.
+        example, 2015-03-30T10:15:25+00:00
 
     Appends short timezone name.
 
@@ -269,7 +276,12 @@ def format_datetime(datetime):
 
     Returns string formatted date.
     """
-    return(datetime.strftime('%Y-%m-%d %H:%M:%S%z'))
+    tz = datetime.strftime('%z')
+    if tz and tz != '':
+        tz = tz[0] + tz[1] + tz[2] + ':' + tz[3] + tz[4]
+        return(datetime.strftime('%Y-%m-%dT%H:%M:%S') + tz)
+
+    raise ValueError('Cannot ISO format naive datetime')
 
 
 def format_pretty(datetime):
