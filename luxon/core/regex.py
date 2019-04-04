@@ -110,3 +110,11 @@ IP6_PREFIX_RE = re.compile(r'^' + IP6_PREFIX_EXPR +
 DATETIME_RE = re.compile(r'^[0-9]{4}[-/][0-9]{2}[-/][0-9]{2}[ T]'
                          r'[0-9]{2}:[0-9]{2}:[0-9]{2}' +
                          r'([+-][0-9]{2}:?[0-9]{2})?$')
+
+# MATCH ISO DATETIME
+ISODATETIME_RE = re.compile(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}T'
+                            r'[0-9]{2}:[0-9]{2}:[0-9]{2}' +
+                            r'([+-][0-9]{2}:[0-9]{2})?$')
+
+# MATCH SQL FIELD
+SQLFIELD_RE = re.compile(r'^[a-z0-9_]+$', re.IGNORECASE)

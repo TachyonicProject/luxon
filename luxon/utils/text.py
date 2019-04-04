@@ -30,6 +30,19 @@
 from luxon.utils.encoding import is_text
 
 
+def split(string, by):
+    pos = string.find(by)
+    if pos > 0:
+        return (string[0:pos], string[pos+1:],)
+    else:
+        return string
+
+
+def join(obj, seperator=" "):
+    parsed = [str(val) for val in obj]
+    return seperator.join(parsed)
+
+
 def filter_none_text(string):
     """Parse String and filter Binary
 
