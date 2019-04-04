@@ -66,7 +66,13 @@ def start(name, image, volumes=None, ports=None,
 
 def restart(name):
     container = client.containers.get(name)
-    container.restart()
+
+    if container.status in ('running'):
+        container.restart()
+    elif container.status == 'paused':
+        container.unpause()
+    elif container.status == 'exited':
+        container.start()
 
 
 def stop(name):

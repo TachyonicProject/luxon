@@ -43,8 +43,8 @@ from luxon.utils.encoding import if_bytes_to_unicode
 from luxon.utils.unique import string_id
 
 
-log_format = logging.Formatter('%(asctime)s%(app_name)s' +
-                               ' %(name)s' +
+log_format = logging.Formatter('%(asctime)s %(app_name)s:' +
+                               '%(name)s' +
                                '[%(process)d][%(threadName)s]' +
                                ' <%(levelname)s>: %(message)s',
                                datefmt='%b %d %H:%M:%S')
@@ -123,9 +123,9 @@ class _TachyonFilter(logging.Filter):
 
     def filter(self, record):
         try:
-            record.app_name = ' ' + g.app.config.get('application',
-                                                     'name',
-                                                     fallback='')
+            record.app_name = g.app.config.get('application',
+                                               'name',
+                                               fallback='').title()
             return True
         except NoContextError:
             pass
@@ -179,9 +179,8 @@ def configure(config, config_section, logger):
         else:
             _tachyonfilter = _TachyonFilter()
 
-        # Clean/Remove Handlers
-        for handler in logger.handlers:
-            logger.removeHandler(handler)
+        # Remove Handlers
+        logger.handlers = []
 
         # Set Logger Level
         set_level(logger,

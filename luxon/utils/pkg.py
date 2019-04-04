@@ -224,7 +224,7 @@ class Module(object):
                 if new_extension is not None and f_exists(dst):
                     dst += "." + new_extension.strip('.')
 
-                print("Copy file %s:/%s to %s" % (self._module, src_file, dst,))
+                print("Copy file %s:/%s to %s" % (self._module, src, dst,))
                 with open(dst, 'wb') as new_file:
                     new_file.write(content)
 
