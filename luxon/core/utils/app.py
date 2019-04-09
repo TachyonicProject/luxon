@@ -46,7 +46,7 @@ def determine_app_root(name, app_root=None):
         Root directory of app, as a string
     """
     if app_root is None:
-        if name == "__main__" or "_mod_wsgi" in name:
+        if name == "__main__" or name == 'wsgi' or "_mod_wsgi" in name:
             app_mod = imports.import_module(name)
             return abspath(
                 os.path.dirname(

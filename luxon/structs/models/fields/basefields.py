@@ -29,6 +29,7 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 import re
 import uuid
+import ipaddress
 from decimal import Decimal as PyDecimal
 
 import phonenumbers
@@ -317,7 +318,7 @@ class BaseFields(object):
         def parse(self, value):
             if value:
                 if isinstance(value, str) and not DATETIME_RE.match(value):
-                    self.error('DateTime value error (%s)' % value , value)
+                    self.error('DateTime value error (%s)' % value, value)
                 try:
                     value = to_utc(value)
                 except ValueError as e:
@@ -325,6 +326,37 @@ class BaseFields(object):
             elif not self.null:
                 self.error('DateTime value required'. value)
             return value
+
+    class Binary(BaseField):
+        pass
+
+    class Ip4(Binary):
+        """IP Version 4 Field.
+        """
+        def __init__(self, null=False):
+            super().__init__(null, max_length=4)
+
+        def parse(self, value):
+            if isinstance(value, (bytes, int, str),):
+                return ipaddress.IPv4Address(value)
+            elif value is None and not self.null:
+                self.error('Invalid IPv4 Address')
+            else:
+                return None
+
+    class Ip6(Binary):
+        """IP Version 6 Field.
+        """
+        def __init__(self, null=False):
+            super().__init__(null, max_length=16)
+
+        def parse(self, value):
+            if isinstance(value, (bytes, int, str),):
+                return ipaddress.IPv6Address(value)
+            elif value is None and not self.null:
+                self.error('Invalid IPv6 Address')
+            else:
+                return None
 
     class PyObject(BaseField):
         """Python Object Field.
@@ -392,7 +424,7 @@ class BaseFields(object):
         def parse(self, value):
             if isinstance(value, uuid.UUID):
                 value = str(value)
-            return value
+            return str(value)
 
     class Email(String):
         """Email Field.

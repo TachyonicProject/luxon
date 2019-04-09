@@ -117,4 +117,4 @@ ISODATETIME_RE = re.compile(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}T'
                             r'([+-][0-9]{2}:[0-9]{2})?$')
 
 # MATCH SQL FIELD
-SQLFIELD_RE = re.compile(r'^[a-z0-9_]+$', re.IGNORECASE)
+SQLFIELD_RE = re.compile(r'^[a-z0-9_\.]+$', re.IGNORECASE)

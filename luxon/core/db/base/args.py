@@ -29,6 +29,7 @@
 # SUCH DAMAGE.
 
 import re
+from ipaddress import IPv4Address, IPv6Address
 from decimal import Decimal
 from datetime import datetime
 
@@ -59,6 +60,8 @@ def _parse_param(value, cast_map):
             return 0
     elif isinstance(value, datetime):
         return to_utc(value)
+    elif isinstance(value, (IPv4Address, IPv6Address,)):
+        return value.packed
     elif hasattr(value, '__call__'):
         value = value()
         if isinstance(value, (Decimal, int, float, str, bytes, datetime)):

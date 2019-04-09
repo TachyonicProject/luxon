@@ -56,7 +56,8 @@ class MBClient(object):
                    'msg': msg}
             self._rmq.distribute(self._queue, **msg)
         else:
-            raise MessageBusError('MBClient connection closed')
+            raise MessageBusError('MBClient connection closed' +
+                                  '/ use enter context')
 
     def __enter__(self):
         self._rmq = rmq()

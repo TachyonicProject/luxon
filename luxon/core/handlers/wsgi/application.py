@@ -65,7 +65,7 @@ class Application(object):
     def __init__(self, name, path=None, ini=None, content_type=None):
         try:
             # Initilize Application
-            App(name, path, ini)
+            app = App(name, path, ini)
 
             # Set Default Content Type
             if content_type is not None:
@@ -73,8 +73,8 @@ class Application(object):
 
             # Started Application
             log.info('Started Application'
-                     ' %s' % name +
-                     ' path: %s' % path)
+                     ' %s' % app.name +
+                     ' path: %s' % app.path)
 
         except Exception:
             trace = str(traceback.format_exc())

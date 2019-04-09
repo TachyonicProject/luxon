@@ -451,7 +451,8 @@ def form(model, values=None, readonly=False):
                                      label=label,
                                      callback=obj.callback))
         elif isinstance(obj, (Model.Decimal, Model.Double,
-                              Model.Float, Model.String, Model.BaseInteger)):
+                              Model.Float, Model.String, Model.BaseInteger,
+                              Model.Ip4, Model.Ip6)):
             html.append(field_text(field, value=value,
                                    readonly=field_readonly,
                                    disabled=field_readonly,
