@@ -678,7 +678,12 @@ class Request(RequestBase):
 
     @property
     def remote_addr(self):
-        return self.env.get('REMOTE_ADDR')
+        if ('REMOTE_ADDR' in self.env and
+                self.env['REMOTE_ADDR'] is not None and
+                self.env['REMOTE_ADDR'].strip() != ''):
+            return self.env.get('REMOTE_ADDR')
+        elif 'HTTP_X_REAL_IP' in self.env:
+            return self.env.get('HTTP_X_REAL_IP')
 
     @property
     def access_hops(self):
@@ -694,7 +699,9 @@ class Request(RequestBase):
                 self._cached_access_hops = [ip.strip() for ip in addresses]
             elif 'HTTP_X_REAL_IP' in self.env:
                 self._cached_access_hops = [self.env['HTTP_X_REAL_IP']]
-            elif 'REMOTE_ADDR' in self.env:
+            elif ('REMOTE_ADDR' in self.env and
+                    self.env['REMOTE_ADDR'] is not None and
+                    self.env['REMOTE_ADDR'].strip() != ''):
                 self._cached_access_hops = [self.env['REMOTE_ADDR']]
             else:
                 self._cached_access_hops = []

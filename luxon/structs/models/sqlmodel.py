@@ -65,6 +65,17 @@ class SQLModel(Model, SQLFields):
             self._updated = False
             self._new.clear()
 
+    def _sql_parse_fields(self, fields):
+        parsed = {}
+
+        for field in fields:
+            if isinstance(self.fields, (self.Ip4, self.Ip6,)):
+                parsed[field] = fields[field].packed
+            else:
+                parsed[field] = fields[field]
+
+        return parsed
+
     def sql_query(self, query, values=None):
         with db() as conn:
             crsr = conn.execute(query, values)
@@ -158,7 +169,8 @@ class SQLModel(Model, SQLFields):
                     placeholders.append('%s')
                 query += ','.join(placeholders)
                 query += ')'
-                conn.execute(query, list(transaction.values()))
+                conn.execute(query, list(self._sql_parse_fields(
+                    transaction).values()))
                 if isinstance(self.primary_key, SQLModel.Integer):
                     self[self.primary_key.name] = conn.last_row_id()
                 conn.commit()
@@ -169,7 +181,8 @@ class SQLModel(Model, SQLFields):
                 update_id = transaction[key_id]
                 sets = []
                 args = []
-                for field in self._new:
+                parsed = self._sql_parse_fields(self._new)
+                for field in parsed:
                     if self.primary_key.name != field:
                         # We already check this on setitem
                         # if self.fields[field].readonly:
@@ -177,7 +190,7 @@ class SQLModel(Model, SQLFields):
                         if self.fields[field].db:
                             sets.append('%s' % field +
                                         ' = %s')
-                            args.append(self._new[field])
+                            args.append(parsed[field])
 
                 if len(sets) > 0:
                     sets = ", ".join(sets)

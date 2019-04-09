@@ -27,8 +27,18 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+import re
+
 from luxon.utils.text import join
 from luxon.utils.cast import to_list
+
+
+def get_field(field):
+    starts = [m.start() for m in re.finditer(r'\(', field)]
+    stops = [m.start() for m in re.finditer(r'\)', field)]
+    if len(starts) == 0:
+        return field
+    return field[starts[-1]+1:stops[0]]
 
 
 class BaseQuery(object):
@@ -134,13 +144,76 @@ class BaseCompare(BaseQuery):
             else:
                 return BaseCompare.Condition(query)
 
+    def __gt__(self, other):
+        if isinstance(other, Value) and other._values[0] is None:
+            query = self._query + ['IS NULL']
+            return BaseCompare.Condition(query)
+        else:
+            query = self._query[:1] + ['>'] + other._query[:1]
+            if isinstance(other, Value):
+                values = other._values[:1]
+                return BaseCompare.Condition(query, values)
+            elif isinstance(self, Value):
+                values = self._values[:1]
+                return BaseCompare.Condition(query, values)
+            else:
+                return BaseCompare.Condition(query)
+
+    def __ge__(self, other):
+        if isinstance(other, Value) and other._values[0] is None:
+            query = self._query + ['IS NULL']
+            return BaseCompare.Condition(query)
+        else:
+            query = self._query[:1] + ['>='] + other._query[:1]
+            if isinstance(other, Value):
+                values = other._values[:1]
+                return BaseCompare.Condition(query, values)
+            elif isinstance(self, Value):
+                values = self._values[:1]
+                return BaseCompare.Condition(query, values)
+            else:
+                return BaseCompare.Condition(query)
+
+    def __lt__(self, other):
+        if isinstance(other, Value) and other._values[0] is None:
+            query = self._query + ['IS NULL']
+            return BaseCompare.Condition(query)
+        else:
+            query = self._query[:1] + ['<'] + other._query[:1]
+            if isinstance(other, Value):
+                values = other._values[:1]
+                return BaseCompare.Condition(query, values)
+            elif isinstance(self, Value):
+                values = self._values[:1]
+                return BaseCompare.Condition(query, values)
+            else:
+                return BaseCompare.Condition(query)
+
+    def __le__(self, other):
+        if isinstance(other, Value) and other._values[0] is None:
+            query = self._query + ['IS NULL']
+            return BaseCompare.Condition(query)
+        else:
+            query = self._query[:1] + ['<='] + other._query[:1]
+            if isinstance(other, Value):
+                values = other._values[:1]
+                return BaseCompare.Condition(query, values)
+            elif isinstance(self, Value):
+                values = self._values[:1]
+                return BaseCompare.Condition(query, values)
+            else:
+                return BaseCompare.Condition(query)
+
     def __xor__(self, other):
         if isinstance(other, Value) and other._values[0] is None:
             query = self._query + ['IS NULL']
             return BaseCompare.Condition(query)
         elif isinstance(other, Value):
             query = self._query[:1] + ['LIKE'] + other._query[:1]
-            values = [other._values[0] + '%']
+            try:
+                values = [other._values[0] + '%']
+            except (ValueError, TypeError):
+                values = [other._values[0]]
             return BaseCompare.Condition(query, values)
         else:
             raise ValueError('sql select invalid like condition')
@@ -194,11 +267,11 @@ class Field(BaseCompare):
         self._column = column
         self._query.append(column)
         sort = _parse_sort(sort)
-        self._query_order = [column, sort]
+        self._query_order = [get_field(column), sort]
 
     def __call__(self, sort='>'):
         sort = _parse_sort(sort)
-        self._query_order = [self._column, sort]
+        self._query_order = [get_field(self._column), sort]
         return self
 
 
@@ -276,13 +349,18 @@ class Select(object):
         parsed = []
 
         def add_field(field):
-            field = str(field)
+            orig = field
+            field = get_field(str(field))
+
             value = ''
             if self._fields or parsed:
                 value += ', '
             if '.' in str(field):
                 name = str(field).split('.')[1]
-                value += str(field) + ' AS ' + name
+                value += str(orig) + ' AS ' + name
+            elif '(' in str(orig):
+                name = str(field)
+                value += str(orig) + ' AS ' + name
             else:
                 value += str(field)
                 name = str(field)
@@ -316,11 +394,11 @@ class Select(object):
             for field in fields:
                 if self._group or parsed:
                     parsed.append(',')
-                parsed.append(str(field))
+                parsed.append(get_field(str(field)))
         else:
             if self._group:
                 parsed.append(',')
-            parsed.append(str(fields))
+            parsed.append(get_field(str(fields)))
 
         self._group += parsed
 

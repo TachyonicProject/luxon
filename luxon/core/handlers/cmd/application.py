@@ -66,11 +66,11 @@ class Application(object):
         try:
             # Initilize Application
             self._middleware = middleware
-            App(name, path=path, ini=ini, defaults=defaults)
+            app = App(name, path=path, ini=ini, defaults=defaults)
             # Started Application
             log.info('CMD'
-                     ' %s' % name +
-                     ' app_root: %s' % g.app.path)
+                     ' %s' % app.name +
+                     ' app_root: %s' % app.path)
 
         except Exception:
             trace = str(traceback.format_exc())
