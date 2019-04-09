@@ -27,6 +27,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+from ipaddress import ip_address
 from math import ceil
 from luxon.utils.sort import Itemgetter
 from luxon.helpers.access import validate_access, validate_set_scope
@@ -38,8 +39,9 @@ from luxon.utils.sql import (Select,
                              Value,
                              Group,
                              And,
-                             Or)
-
+                             Or,
+                             get_field)
+from luxon.utils.api import search_params, search_datetime
 from luxon.utils.cast import to_list
 from luxon import SQLModel
 from luxon.core.regex import SQLFIELD_RE
@@ -48,18 +50,6 @@ from luxon.utils.text import split
 from luxon import GetLogger
 
 log = GetLogger(__name__)
-
-
-def search_params(req):
-    searches = to_list(req.query_params.get('search'))
-    for search in searches:
-        try:
-            search_field, value = split(search, ':')
-        except (TypeError, ValueError):
-            raise ValueError("Invalid field search field value." +
-                             " Expecting 'field:value'")
-
-        yield (search_field, value,)
 
 
 def raw_list(req, data, limit=None, context=True, sql=False,
@@ -207,7 +197,7 @@ def raw_list(req, data, limit=None, context=True, sql=False,
     }
 
 
-def sql_list(req, select, fields=[], limit=None, ordering=True,
+def sql_list(req, select, fields={}, limit=None, order=True,
              search=None, callbacks=None, context=True):
 
     if not isinstance(select, Select):
@@ -218,7 +208,17 @@ def sql_list(req, select, fields=[], limit=None, ordering=True,
         select.fields = Field(field)
 
     # Step 2 Build sort
-    if ordering:
+    if order:
+        order_fields = {}
+        if isinstance(order, list):
+            for orig_field in order:
+                orig_field = get_field(orig_field)
+                if '.' in orig_field:
+                    table, field = split(orig_field, '.')
+                else:
+                    field = orig_field
+                order_fields[field] = orig_field
+
         sort = to_list(req.query_params.get('sort'))
         if len(sort) > 0:
             for order in sort:
@@ -227,6 +227,13 @@ def sql_list(req, select, fields=[], limit=None, ordering=True,
                 except (TypeError, ValueError):
                     raise ValueError("Invalid field sort field value." +
                                      " Expecting 'field:desc' or 'field:asc'")
+
+                if order_fields and order_field in order_fields:
+                    order_field = order_fields[order_field]
+                elif order_fields:
+                    raise ValueError("Field '%s' not sortable" %
+                                     order_field)
+
                 order_type = order_type.lower()
                 if not SQLFIELD_RE.match(order_field):
                     raise ValueError("Invalid field '%s' in sort" %
@@ -255,7 +262,6 @@ def sql_list(req, select, fields=[], limit=None, ordering=True,
     if isinstance(search, dict):
         for field in search:
             if '.' in field:
-                field.split('.')[1]
                 search_parsed[field.split('.')[1]] = (field,
                                                       search[field],)
             else:
@@ -274,7 +280,32 @@ def sql_list(req, select, fields=[], limit=None, ordering=True,
 
         if isinstance(search, dict):
             if search_field in search_parsed:
-                if issubclass(search_parsed[search_field][1], str):
+                if isinstance(search_parsed[search_field][1], str):
+                    if search_parsed[search_field][1] == 'datetime':
+                        search_value = search_datetime(search_value)
+                        if search_value[1] is True:
+                            conditions.append(
+                                Field(
+                                    search_parsed[search_field][0])
+                                >= Value(search_value[0]))
+                        else:
+                            conditions.append(
+                                Field(
+                                    search_parsed[search_field][0])
+                                == Value(search_value[0]))
+                    elif search_parsed[search_field][1] == 'ip':
+                        try:
+                            search_value = ip_address(search_value).packed
+                            conditions.append(
+                                Field(
+                                    search_parsed[search_field][0])
+                                == Value(search_value))
+                        except ValueError:
+                            pass
+                    else:
+                        raise ValueError("Unknown search field type '%s'" %
+                                         search_field)
+                elif issubclass(search_parsed[search_field][1], str):
                     conditions.append(
                         Field(
                             search_parsed[search_field][0])
@@ -285,6 +316,11 @@ def sql_list(req, select, fields=[], limit=None, ordering=True,
                     except ValueError:
                         raise ValueError("Expecting integer for search" +
                                          " field '%s'" % search_field)
+                    conditions.append(
+                        Field(
+                            search_parsed[search_field][0])
+                        == Value(search_value))
+                elif issubclass(search_parsed[search_field][1], bytes):
                     conditions.append(
                         Field(
                             search_parsed[search_field][0])

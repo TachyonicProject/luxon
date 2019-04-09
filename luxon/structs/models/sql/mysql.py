@@ -136,6 +136,12 @@ class Mysql(object):
                             self._model.primary_key.name == field):
                         sql_field += " auto_increment"
 
+                elif isinstance(model_fields[field], self._model.Binary):
+                    if max_length is None:
+                        sql_field = " %s varbinary" % column
+                    else:
+                        sql_field = " %s varbinary(%s)" % (column, max_length)
+
                 elif isinstance(model_fields[field], self._model.DateTime):
                     sql_field = " %s datetime" % column
 

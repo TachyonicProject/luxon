@@ -27,10 +27,10 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-
 import json
 import datetime
 from decimal import Decimal
+from ipaddress import IPv4Address, IPv6Address
 
 from luxon.exceptions import JSONDecodeError
 from luxon.utils.timezone import format_datetime, to_user
@@ -61,6 +61,8 @@ class _JsonEncoder(json.JSONEncoder):
         elif isinstance(o, datetime.datetime):
             # Parse Datetime
             return format_datetime(to_user(o))
+        elif isinstance(o, (IPv4Address, IPv6Address,)):
+            return str(o)
         elif isinstance(o, bytes):
             return strip_tags(o.decode('utf-8'))
         elif hasattr(o, 'dict'):
