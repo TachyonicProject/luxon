@@ -155,6 +155,8 @@ def raw_list(req, data, limit=None, context=True, sql=False,
                             value = callbacks[callback](row[column])
                             if isinstance(value, dict):
                                 updates.update(value)
+                            else:
+                                updates[callback] = value
                 row.update(updates)
 
     # Step 6 Build links next &/ /previous
@@ -211,13 +213,12 @@ def sql_list(req, select, fields={}, limit=None, order=True,
     if order:
         order_fields = {}
         if isinstance(order, list):
-            for orig_field in order:
-                orig_field = get_field(orig_field)
-                if '.' in orig_field:
-                    table, field = split(orig_field, '.')
+            for field in order:
+                field, as_field = get_field(field)
+                if as_field:
+                    order_fields[as_field] = field
                 else:
-                    field = orig_field
-                order_fields[field] = orig_field
+                    order_fields[field] = field
 
         sort = to_list(req.query_params.get('sort'))
         if len(sort) > 0:
