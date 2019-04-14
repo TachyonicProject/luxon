@@ -32,13 +32,29 @@ import re
 from luxon.utils.text import join
 from luxon.utils.cast import to_list
 
+AS_FIELD = re.compile(r'^(?P<orig>.+) AS[ ]+(?P<field>[a-z0-9_]+)$',
+                      re.IGNORECASE)
+P_FIELD = re.compile(r'^.+\(+(?P<field>[a-z0-9_\.]+)\)+$')
 
-def get_field(field):
-    starts = [m.start() for m in re.finditer(r'\(', field)]
-    stops = [m.start() for m in re.finditer(r'\)', field)]
-    if len(starts) == 0:
-        return field
-    return field[starts[-1]+1:stops[0]]
+
+def get_field(value):
+    value = str(value)
+    as_field = AS_FIELD.match(value)
+    if as_field:
+        return as_field.group('orig'), as_field.group('field')
+
+    p_field = P_FIELD.match(value)
+    if p_field:
+        field = p_field.group('field')
+        if '.' in field:
+            field = field.split('.')[1]
+    else:
+        if '.' in value:
+            field = value.split('.')[1]
+        else:
+            field = None
+
+    return value, field
 
 
 class BaseQuery(object):
@@ -267,12 +283,26 @@ class Field(BaseCompare):
         self._column = column
         self._query.append(column)
         sort = _parse_sort(sort)
-        self._query_order = [get_field(column), sort]
+        field, as_field = get_field(column)
+        if as_field:
+            self._name = as_field
+            self._query_order = [as_field, sort]
+        else:
+            self._name = field
+            self._query_order = [field, sort]
 
     def __call__(self, sort='>'):
         sort = _parse_sort(sort)
-        self._query_order = [get_field(self._column), sort]
+        field, as_field = get_field(self._column)
+        if as_field:
+            self._query_order = [as_field, sort]
+        else:
+            self._query_order = [field, sort]
         return self
+
+    @property
+    def name(self):
+        return self._name
 
 
 class Value(BaseCompare):
@@ -349,21 +379,17 @@ class Select(object):
         parsed = []
 
         def add_field(field):
-            orig = field
-            field = get_field(str(field))
+            field, as_field = get_field(field)
 
             value = ''
             if self._fields or parsed:
                 value += ', '
-            if '.' in str(field):
-                name = str(field).split('.')[1]
-                value += str(orig) + ' AS ' + name
-            elif '(' in str(orig):
-                name = str(field)
-                value += str(orig) + ' AS ' + name
+            if as_field:
+                value += field + ' AS ' + as_field
+                name = as_field
             else:
-                value += str(field)
-                name = str(field)
+                name = field
+                value += field
 
             if name not in self._dupfields:
                 self._dupfields.append(name)
@@ -394,11 +420,11 @@ class Select(object):
             for field in fields:
                 if self._group or parsed:
                     parsed.append(',')
-                parsed.append(get_field(str(field)))
+                parsed.append(field)
         else:
             if self._group:
                 parsed.append(',')
-            parsed.append(get_field(str(fields)))
+            parsed.append(fields)
 
         self._group += parsed
 
