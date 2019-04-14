@@ -254,7 +254,8 @@ def sql_list(req, select, fields={}, limit=None, order=True,
     page = int(req.query_params.get('page', 1)) - 1
     start = page * limit
 
-    select.limit(start, limit + 100)
+    if limit > 0:
+        select.limit(start, limit + 100)
 
     # Step 4 Search
     searches = to_list(req.query_params.get('search'))
