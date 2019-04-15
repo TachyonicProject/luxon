@@ -40,6 +40,7 @@ from luxon.utils import js
 from luxon.utils.cast import to_tuple
 from luxon.utils.timezone import TimezoneGMT, to_gmt
 from luxon.utils.objects import dict_value_property
+from luxon.utils.text import split
 from luxon.utils.http import parse_form_field
 from luxon.utils.imports import get_class
 from luxon.exceptions import (HTTPInvalidHeader,
@@ -342,6 +343,7 @@ class Request(RequestBase):
         '_cached_match',
         '_cached_none_match',
         '_cached_tjsl',
+        '_cached_headers',
         '_user_token',
         '_scope_token',
     )
@@ -397,6 +399,7 @@ class Request(RequestBase):
         self._cached_match = None
         self._cached_none_match = None
         self._cached_tjsl = None
+        self._cached_headers = None
 
     @property
     def if_match(self):
@@ -828,6 +831,23 @@ class Request(RequestBase):
     @property
     def form_json(self):
         return js.dumps(self.form_dict)
+
+    @property
+    def headers(self):
+        if self._cached_headers is not None:
+            return self._cached_headers
+
+        self._cached_headers = {}
+        for header in self.env:
+            if header.startswith('HTTP_'):
+                orig_header = split(header, '_')[1].replace('_', '-')
+                self._cached_headers[orig_header] = self.env[header]
+            if self.content_type:
+                self._cached_headers['Content-Type'] = self.content_type
+            if self.content_length:
+                self._cached_headers['Content-Length'] = self.content_length
+
+        return self._cached_headers
 
     def get_header(self, name, required=False, default=None):
         """Retrieve the raw string value for the given header.

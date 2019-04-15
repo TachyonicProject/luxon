@@ -35,7 +35,6 @@ from ipaddress import IPv4Address, IPv6Address
 from luxon.exceptions import JSONDecodeError
 from luxon.utils.timezone import format_datetime, to_user
 from luxon.utils.html5 import strip_tags
-from luxon.core.regex import DATETIME_RE
 
 
 class _JsonEncoder(json.JSONEncoder):
@@ -83,13 +82,7 @@ def parse_load(parse):
         return parse
     else:
         if isinstance(parse, str):
-            if DATETIME_RE.match(parse):
-                try:
-                    parse = to_user(parse)
-                except ValueError as e:
-                    raise JSONDecodeError(str(e))
-            else:
-                parse = strip_tags(parse)
+            parse = strip_tags(parse)
         return parse
 
 

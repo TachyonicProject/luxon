@@ -34,7 +34,7 @@ from luxon.utils.html5 import select as html_select
 from luxon.structs.htmldoc import HTMLDoc
 from luxon.structs.models.model import Model
 from luxon.utils.objects import orderdict
-from luxon.utils.timezone import format_pretty
+from luxon.utils.timezone import to_user, format_pretty
 
 
 class NAVMenu(object):
@@ -259,8 +259,6 @@ def field_datetime(field, value=None, id=None, readonly=False,
 
     if value:
         if isinstance(value, datetime):
-            label = "%s (%s)" % (label,
-                                 value.tzname())
             value = format_pretty(value)
 
     group = field_group()
@@ -271,6 +269,7 @@ def field_datetime(field, value=None, id=None, readonly=False,
     io.set_attribute('class', 'form-control')
     io.set_attribute('id', field)
     io.set_attribute('name', field)
+    io.set_attribute('data-localize')
 
     if value is not None:
         io.set_attribute('value', value)
