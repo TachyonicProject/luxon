@@ -31,7 +31,7 @@ from datetime import datetime
 
 from luxon.utils.cast import to_list
 from luxon.utils.text import split
-from luxon.utils.timezone import TimezoneUser, to_user
+from luxon.utils.timezone import TimezoneUser, to_utc
 
 
 def search_params(req):
@@ -93,7 +93,7 @@ def search_datetime(val):
         partial = True
 
     return (
-        to_user(
+        to_utc(
             datetime(year=year, month=month, day=day,
                      hour=hour, minute=minute, second=second),
             src=TimezoneUser()

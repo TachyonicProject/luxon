@@ -286,18 +286,15 @@ class Field(BaseCompare):
         field, as_field = get_field(column)
         if as_field:
             self._name = as_field
-            self._query_order = [as_field, sort]
         else:
             self._name = field
-            self._query_order = [field, sort]
+
+        self._query_order = [field, sort]
 
     def __call__(self, sort='>'):
         sort = _parse_sort(sort)
         field, as_field = get_field(self._column)
-        if as_field:
-            self._query_order = [as_field, sort]
-        else:
-            self._query_order = [field, sort]
+        self._query_order = [field, sort]
         return self
 
     @property

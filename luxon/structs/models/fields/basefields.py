@@ -338,7 +338,10 @@ class BaseFields(object):
 
         def parse(self, value):
             if isinstance(value, (bytes, int, str),):
-                return ipaddress.IPv4Address(value)
+                try:
+                    return ipaddress.IPv4Address(value)
+                except ValueError:
+                    self.error('Invalid IPv4 Address')
             elif value is None and not self.null:
                 self.error('Invalid IPv4 Address')
             else:
@@ -352,7 +355,10 @@ class BaseFields(object):
 
         def parse(self, value):
             if isinstance(value, (bytes, int, str),):
-                return ipaddress.IPv6Address(value)
+                try:
+                    return ipaddress.IPv6Address(value)
+                except ValueError:
+                    self.error('Invalid IPv6 Address')
             elif value is None and not self.null:
                 self.error('Invalid IPv6 Address')
             else:

@@ -165,7 +165,12 @@ def TimezoneApp():
 
 
 def TimezoneUser():
-    return TimezoneApp()
+    try:
+        usertz = g.current_request.get_header('X-Timezone')
+        if usertz is not None:
+            return pytz.timezone(usertz)
+    except Exception:
+        return TimezoneApp()
 
 
 def parse_datetime(datetime):
