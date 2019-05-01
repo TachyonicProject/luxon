@@ -27,6 +27,7 @@
 # STRICT LIABILITY,OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 # WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
+from luxon import g
 from luxon.core.logger import GetLogger
 from luxon.core.db.base.args import args_to
 from luxon.core.db.base.parse import parse_row
@@ -66,6 +67,10 @@ class Cursor(BaseExeptions):
             self.arraysize = 1
             self._rownumber = 0
             self._executed = False
+            try:
+                self._debug = g.app.debug
+            except AttributeError:
+                self._debug = True
         except Exception as e:
             self._error_handler(self, e, self._conn.ERROR_MAP)
 
@@ -206,7 +211,8 @@ class Cursor(BaseExeptions):
 
                 query, args = args_to(query, args, self._conn.DEST_FORMAT,
                                       self._conn.CAST_MAP)
-                _log(self, "Start " + query, elapsed(), values=args)
+                if self._debug:
+                    _log(self, "Start " + query, elapsed(), values=args)
                 if args is not None:
                     self._uncommited = True
                     self._executed = True
@@ -219,7 +225,8 @@ class Cursor(BaseExeptions):
             except Exception as e:
                 self._error_handler(self, e, self._conn.ERROR_MAP)
             finally:
-                _log(self, "Completed " + query, elapsed(), values=args)
+                if self._debug:
+                    _log(self, "Completed " + query, elapsed(), values=args)
 
     def executemany(self, query, params):
         """Pepare and Execute Many.
@@ -396,6 +403,7 @@ class Cursor(BaseExeptions):
         if self._uncommited is True:
             self.rollback()
             self.commit()
+            pass
 
     def close(self):
         """Close the cursor now (rather than whenever __del__ is called).
@@ -422,9 +430,13 @@ class Cursor(BaseExeptions):
                 try:
                     self._crsr.commit()
                 except AttributeError:
-                    self._conn._conn.commit()
+                    try:
+                        self._conn.commit()
+                    except AttributeError:
+                        self._conn._conn.commit()
 
-            _log(self, "Commit", elapsed())
+            if self._debug:
+                _log(self, "Commit", elapsed())
             self._uncommited = False
 
     def rollback(self):
@@ -440,7 +452,8 @@ class Cursor(BaseExeptions):
                     self._crsr.rollback()
                 except AttributeError:
                     self._conn._conn.rollback()
-            _log(self, "Rollback", elapsed())
+            if self._debug:
+                _log(self, "Rollback", elapsed())
 
     def insert(self, table, data):
         """Insert data into table.

@@ -27,11 +27,13 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+import os
+
 from luxon import g
 from luxon.utils.pool import Pool
 from luxon.core.db.mysql import connect
 
-_cached_pool = None
+_cached_pool = {}
 
 
 def _get_conn():
@@ -66,10 +68,11 @@ def dbw():
     kwargs = g.app.config.kwargs('database')
     global _cached_pool
     if kwargs.get('type') == 'mysql':
-        if _cached_pool is None:
-            _cached_pool = Pool(_get_conn,
-                                pool_size=kwargs.get('pool_size', 64),
-                                max_overflow=kwargs.get('max_overflow', 0))
-        return _cached_pool()
+        if _cached_pool.get(os.getpid()) is None:
+            _cached_pool[os.getpid()] = Pool(
+                _get_conn,
+                pool_size=kwargs.get('pool_size', 64),
+                max_overflow=kwargs.get('max_overflow', 0))
+        return _cached_pool[os.getpid()]()
     else:
         raise TypeError('Unknown Database type defined in configuration')

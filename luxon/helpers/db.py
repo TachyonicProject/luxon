@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@ from luxon import g
 from luxon.utils.pool import Pool
 from luxon.core.db.mysql import connect
 
-_cached_pool = None
+_cached_pool = {}
 
 
 def _get_conn():
@@ -69,11 +69,12 @@ def db():
     kwargs = g.app.config.kwargs('database')
     global _cached_pool
     if kwargs.get('type') == 'mysql':
-        if _cached_pool is None:
-            _cached_pool = Pool(_get_conn,
-                                pool_size=kwargs.get('pool_size', 64),
-                                max_overflow=kwargs.get('max_overflow', 0))
-        return _cached_pool()
+        if _cached_pool.get(os.getpid()) is None:
+            _cached_pool[os.getpid()] = Pool(
+                _get_conn,
+                pool_size=kwargs.get('pool_size', 64),
+                max_overflow=kwargs.get('max_overflow', 0))
+        return _cached_pool[os.getpid()]()
     elif kwargs.get('type') == 'sqlite3':
         from luxon.core.db.sqlite import connect
         db = "sqlite3.db"

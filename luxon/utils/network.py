@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Christiaan Frans Rademan.
+# Copyright (c) 2019 Christiaan Frans Rademan. <christiaan.rademan@gmail.com>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,53 +27,22 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import os
-import random
-import string
-
-# Use cryptographic-safe random generator as provided by the OS.
-random_generator = random.SystemRandom()
+import socket
 
 
-def string_id(length=8):
-    """ Generate Random ID.
+def get_addr_info(addr):
+    """Use getaddrinfo to lookup all addresses for each address.
 
-    Random ID contains ascii letters and digitis.
-
-    Args:
-        length (int): Character length of id.
-
-    Returns:
-        Random id string.
+    Returns a list of tuples or an empty list:
+      [(family, address)]
     """
-    return ''.join(random.choice(string.ascii_letters +
-                                 string.digits)
-                   for _ in range(length))
+    results = set()
+    try:
+        tmp = socket.getaddrinfo(addr, 'www')
+    except socket.gaierror:
+        return []
 
+    for el in tmp:
+        results.add((el[0], el[4][0]))
 
-# Request ID Counter
-####################
-
-req_c = None
-pid = None
-
-
-def request_id():
-    # Using random is pretty slow. This is way quicker.
-    # It uses cached proc id. Then only does this append counter.
-    # per request...
-    #
-    # It may not be as unique, but highly unlikely to collide
-    # with recent requet ids.
-    global req_c, pid
-
-    if req_c is None:
-        req_c = random.randint(1000*1000, 1000*1000*1000)
-
-    if pid is None:
-        pid = str(os.getpid())
-
-    req_id = req_c = req_c + 1
-    req_id = hex(req_id)[2:].zfill(8)[-8:]
-
-    return pid + '-' + req_id
+    return results

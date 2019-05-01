@@ -36,8 +36,7 @@ from signal import (signal,
                     SIGHUP,
                     SIGINT,
                     SIGQUIT,
-                    SIGTERM,
-                    SIGKILL)
+                    SIGTERM)
 
 
 class GracefulKiller:
@@ -199,14 +198,9 @@ class Daemon(object):
             while 1:
                 os.kill(pid, SIGTERM)
                 time.sleep(0.1)
-        except OSError as err:
-            err = str(err)
-            if err.find("No such process") > 0:
-                if os.path.exists(self.pidfile):
-                    os.remove(self.pidfile)
-                else:
-                    print(str(err))
-                    sys.exit(1)
+        except OSError:
+            if os.path.exists(self.pidfile):
+                os.remove(self.pidfile)
 
     @property
     def running(self):
