@@ -32,7 +32,7 @@ from luxon.constants import HTTP_STATUS_CODES
 
 
 class Error(Exception):
-    """Luxon BaseException
+    """Luxon BaseException.
     """
 
 
