@@ -33,7 +33,7 @@
     "billing:admin": "$role:root or $role:billing or $internal",
     "billing:view": "$staff or $internal",
     "monitor:admin": "$infrastructure:admin",
-    "monitor:view": "$infrastrucute:view",
+    "monitor:view": "$infrastructure:view",
     "products:admin": "$infrastructure:admin",
     "products:view": "$infrastructure:view",
     "process:admin": "$infrastructure:admin",

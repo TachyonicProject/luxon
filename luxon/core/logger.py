@@ -245,6 +245,13 @@ class MPLogger(object):
             self._logger = logging.getLogger(name)
 
     def receive(self):
+        def handle(logger, record):
+            def log(msg):
+                record.msg = msg
+                logger.handle(record)
+
+            return log
+
         def receiver(queue):
             try:
                 while True:
@@ -252,8 +259,10 @@ class MPLogger(object):
                     # Get Logger
                     logger = logging.getLogger(record.name)
 
-                    # No level or filter logic applied - just do it!
-                    logger.handle(record)
+                    logger_facility = handle(logger, record)
+                    log_formatted(logger_facility, record.msg)
+            except (KeyboardInterrupt, SystemExit):
+                pass
             except Exception:
                 print('Whoops! Problem:', file=sys.stderr)
                 traceback.print_exc(file=sys.stderr)

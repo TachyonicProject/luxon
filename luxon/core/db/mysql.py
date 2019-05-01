@@ -106,7 +106,8 @@ class Connection(BaseConnection):
         self._crsr_cls = pymysql.cursors.DictCursor
         self._crsr_cls_args = [self._conn]
         self.execute('SET time_zone = %s', '+00:00')
-        self.commit()
+        self._crsr._uncommited = False
+        self._crsr._executed = False
 
     def __str__(self):
         return "MySQL Server: '%s' Database: '%s'" % (self._host, self._db,)
@@ -119,18 +120,41 @@ class Connection(BaseConnection):
         if self._conn._sock is None:
             self._conn.connect()
             self.execute('SET time_zone = %s', '+00:00')
-            self.commit()
+            self._crsr._uncommited = False
+            self._crsr._executed = False
             return False
         else:
             try:
                 self._conn._execute_command(COMMAND.COM_PING, "")
                 self._conn._read_ok_packet()
+                self._crsr._uncommited = False
+                self._crsr._executed = False
                 return True
             except Exception:
                 self._conn.connect()
                 self.execute('SET time_zone = %s', '+00:00')
-                self.commit()
+                self._crsr._uncommited = False
+                self._crsr._executed = False
                 return False
+
+    def commit(self):
+        """Commit Transactionl Queries.
+
+        Commit any pending transaction to the database.
+
+        Note that if the database supports an auto-commit feature, this
+        must be initially off. An interface method may be provided to
+        turn it back on.
+
+        Database modules that do not support transactions should implement
+        this method with void functionality.
+
+        Reference PEP-0249
+        """
+        self._conn.commit()
+        for crsr in self._cursors:
+            crsr._uncommited = False
+            crsr._executed = False
 
 
 def connect(*args, **kwargs):

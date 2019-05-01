@@ -48,7 +48,7 @@ def split_by_n(seq, n):
         yield seq
 
 
-def list_of_lines(text):
+def list_of_lines(text, include_lines=False):
     """Parse Text newlines into list.
 
     Safely parses strings into list.
@@ -68,5 +68,7 @@ def list_of_lines(text):
     if isinstance(text, bytes):
         text = text.decode('UTF-8')
     for line in text.split('\n'):
+        if include_lines:
+            line += '\n'
         lst.append(line)
     return lst
