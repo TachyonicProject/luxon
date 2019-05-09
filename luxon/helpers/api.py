@@ -285,16 +285,17 @@ def sql_list(req, select, fields={}, limit=None, order=True,
                 if isinstance(search_parsed[search_field][1], str):
                     if search_parsed[search_field][1] == 'datetime':
                         search_value = search_datetime(search_value)
-                        if search_value[1] is True:
-                            conditions.append(
-                                Field(
-                                    search_parsed[search_field][0])
-                                >= Value(search_value[0]))
-                        else:
-                            conditions.append(
-                                Field(
-                                    search_parsed[search_field][0])
-                                == Value(search_value[0]))
+                        if search_value[0] is not None:
+                            if search_value[1] is True:
+                                conditions.append(
+                                    Field(
+                                        search_parsed[search_field][0])
+                                    >= Value(search_value[0]))
+                            else:
+                                conditions.append(
+                                    Field(
+                                        search_parsed[search_field][0])
+                                    == Value(search_value[0]))
                     elif search_parsed[search_field][1] == 'ip':
                         try:
                             search_value = ip_address(search_value).packed
