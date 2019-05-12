@@ -30,70 +30,83 @@
 import sys
 import traceback
 from time import sleep
-from threading import Thread as PYThread
+from multiprocessing import Process as PYProcess
 
 from luxon.core.logger import GetLogger
+from luxon.core.logger import MPLogger
 from luxon.utils.daemon import GracefulKiller
-
 
 log = GetLogger(__name__)
 
 
-class ThreadManager(object):
-    __slots__ = ('_threads', '_restart')
+class ProcessManager(object):
+    __slots__ = ('_procs', '_restart', '_mplogger')
 
     def __init__(self):
-        self._threads = {}
+        self._procs = {}
         self._restart = []
+        self._mplogger = MPLogger('__main__')
 
     def new(self, target, name, restart=False, args=(), kwargs={}):
-        if name in self._threads:
-            raise ValueError("Duplicate thread '%s'" % name)
-        self._threads[name] = Thread(target, name, args=args, kwargs=kwargs)
+        if name in self._procs:
+            raise ValueError("Duplicate Process '%s'" % name)
+        self._procs[name] = Process(target, name, args=args, kwargs=kwargs)
         if restart:
             self._restart.append(name)
 
-    def _get_thread(self, name):
+    def _get_proc(self, name):
         try:
-            return self._threads[name]
+            return self._procs[name]
         except KeyError:
-            raise ValueError("No such thread '%s'" % name)
+            raise ValueError("No such process '%s'" % name)
+
+    def terminate(self, name):
+        proc = self._get_proc(name)
+        if proc.alive:
+            log.info("Terminating process '%s'" % proc.name)
+            proc.terminate()
+        del self._procs[name]
+        if name in self._restart:
+            self._restart.remove(name)
 
     def alive(self, name):
-        thread = self._get_thread(name)
-        return thread.alive
+        proc = self._get_proc(name)
+        return proc.alive
 
     def start(self):
-        for thread in self._threads:
-            log.info("Starting thread '%s'" % self._threads[thread].name)
-            self._threads[thread].start()
+
+        self._mplogger.receive()
 
         def die(sig):
             sys.exit()
 
         sig = GracefulKiller(die)
 
+        for proc in self._procs:
+            log.info("Starting process '%s'" % self._procs[proc].name)
+            self._procs[proc].start()
+
         while True:
-            if not self._threads:
+            if not self._procs:
                 break
-            if sig.killed:
+            elif sig.killed:
                 break
             else:
-                for thread_name in self._threads.copy():
-                    thread = self._threads[thread_name]
-                    if not thread.alive:
-                        if thread_name in self._restart:
-                            log.info("Restarting thread '%s'" % thread.name)
-                            thread.restart()
+                for proc_name in self._procs.copy():
+                    proc = self._procs[proc_name]
+                    if not proc.alive:
+                        if proc_name in self._restart:
+                            log.info("Restarting process '%s'" % proc.name)
+                            proc.restart()
                         else:
-                            del self._threads[thread_name]
-                            if thread_name in self._restart:
-                                self._restart.remove(thread_name)
+                            self.terminate(proc_name)
             sleep(1)
 
+        self._mplogger.close()
 
-class Thread(object):
-    __slots__ = ('_target', '_name', '_args', '_kwargs', '_thread')
+
+class Process(object):
+    __slots__ = ('_target', '_name', '_args', '_kwargs', '_proc')
 
     def __init__(self, target, name, args=(), kwargs={}):
 
@@ -101,25 +114,26 @@ class Thread(object):
         self._name = name
         self._args = args
         self._kwargs = kwargs
-        self._thread = self._new()
+        self._proc = self._new()
 
     def _new(self):
-        def _thread(*args, **kwargs):
+        def _process(*args, **kwargs):
+            MPLogger(self._name)
             try:
                 return self._target(*args, **kwargs)
             except SystemExit:
-                log.error('Thread ended (System Exit)')
+                log.error('Process ended (System Exit)')
             except KeyboardInterrupt:
-                log.error('Thread ended (Keyboard Interrupt)')
+                log.error('Process ended (Keyboard Interrupt)')
             except Exception:
-                log.critical('Thread ended (Unhandled Exception)'
+                log.critical('Process ended (Unhandled Exception)'
                              '\n%s' % str(traceback.format_exc()))
 
-        return PYThread(target=_thread,
-                        name=self._name,
-                        args=self._args,
-                        kwargs=self._kwargs,
-                        daemon=True)
+        return PYProcess(target=_process,
+                         name=self._name,
+                         args=self._args,
+                         kwargs=self._kwargs,
+                         daemon=True)
 
     @property
     def name(self):
@@ -127,16 +141,26 @@ class Thread(object):
 
     @property
     def alive(self):
-        return self._thread.is_alive()
+        return self._proc.is_alive()
 
     def join(self):
-        return self._thread.join()
+        return self._proc.join()
+
+    def terminate(self):
+        if self.alive:
+            self._proc.terminate()
+        else:
+            self._proc.join()
 
     def start(self):
-        self._thread.start()
+        self._proc.start()
 
     def restart(self):
-        self.join()
+        if not self.alive:
+            self.join()
+        else:
+            self.terminate()
+            self.join()
 
-        self._thread = self._new()
+        self._proc = self._new()
         self.start()
