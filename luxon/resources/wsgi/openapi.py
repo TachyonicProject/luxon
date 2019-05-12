@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Christiaan Frans Rademan.
+# Copyright (c) 2019 Christiaan Frans Rademan. <christiaan.rademan@gmail.com>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,40 +27,19 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import time
-from random import randint
-
-from luxon.exceptions import (SQLError,
-                              SQLProgrammingError)
-from luxon import GetLogger
-
-log = GetLogger(__name__)
+from luxon import register
+from luxon import render_template
+from luxon.constants import TEXT_HTML
 
 
-def retry(retry=10, delay=3, rand_delay=True):
-    def decorator(f):
-        def inner(*args, **kwargs):
-            for i in range(retry+1):
-                try:
-                    return f(*args, **kwargs)
-                except SQLProgrammingError:
-                    raise
-                except SQLError as e:
-                    if rand_delay:
-                        use_delay = max(randint(0, delay*3), delay)
-                    else:
-                        use_delay = delay
+@register.resource('GET', '/api-docs')
+def openapi(req, resp):
+    """Index of API Resources.
 
-                    if i == retry:
-                        raise
-
-                    log.warning("Retry %s/%s in %s seconds (%s) for %s" %
-                                (i+1,
-                                 retry,
-                                 use_delay,
-                                 e,
-                                 f.__name__,))
-
-                    time.sleep(use_delay)
-        return inner
-    return decorator
+    Returns:
+        A List of tuples containing routes when performing a 'GET' on the
+        API application's root '/' path.
+        E.g. [ ( ‘GET’, ‘/test’, ‘rule1’, resource_view_object), ]
+    """
+    resp.content_type = TEXT_HTML
+    return render_template('luxon/openapi/index.html')
