@@ -40,7 +40,7 @@ from signal import (signal,
 
 
 class GracefulKiller:
-    def __init__(self, callback):
+    def __init__(self, callback=None):
         self._killed = False
         self._callback = callback
         signal(SIGHUP, self._exit_gracefully)

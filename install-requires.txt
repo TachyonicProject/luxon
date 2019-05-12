@@ -37,3 +37,7 @@ virtualenv
 
 # Virtualization
 docker
+
+# OpenAPI
+prance
+openapi-spec-validator

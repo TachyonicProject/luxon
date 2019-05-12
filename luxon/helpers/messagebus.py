@@ -28,14 +28,15 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 import functools
-from multiprocessing import Process, current_process
-import threading
+from queue import Queue
+from multiprocessing import current_process
 
 from luxon import g
 from luxon.core.logger import GetLogger
-from luxon.core.logger import MPLogger
 from luxon.utils.rmq import Rmq
 from luxon.exceptions import MessageBusError
+from luxon.utils.multiproc import ProcessManager
+from luxon.utils.multithread import ThreadManager
 
 log = GetLogger(__name__)
 
@@ -72,41 +73,31 @@ class MBClient(object):
 
 
 class MBServer(object):
-    def __init__(self, queue, funcs, procs=1, threads=1):
+    def __init__(self, queue, funcs, procs=1, threads=1, process_manager=None):
         self._funcs = funcs
         self._procs = procs
         self._threads = threads
         self._queue = queue
-        self._mb_procs = []
+        if process_manager:
+            self._pm = process_manager
+            self._pmi = False
+        else:
+            self._pm = ProcessManager()
+            self._pmi = True
 
     def start(self):
         for mp in range(self._procs):
-            self._mb_procs.append(Process(target=self._messagebus_proc,
-                                          name='MB-%s' % (mp+1,)))
+            self._pm.new(self._messagebus_proc,
+                         'MB-%s' % (mp+1,),
+                         restart=True)
 
-        for proc in self._mb_procs:
-            proc.start()
-
-    def check(self):
-        for proc in self._mb_procs:
-            if not proc.is_alive():
-                self._mb_procs.remove(proc)
-                new = Process(target=self._messagebus_proc,
-                              name=proc.name)
-                log.critical('Restarting process %s' % proc.name)
-                self._mb_procs.append(new)
-                new.start()
-
-    def stop(self):
-        for proc in self._mb_procs:
-            proc.terminate()
+        if self._pmi:
+            self._pm.start()
 
     def _messagebus_proc(self):
         proc_name = current_process().name
-        MPLogger(__name__)
-        threads = []
-        for thread in range(self._threads):
-            threads.append(None)
+        tm = ThreadManager()
+        queue = Queue(maxsize=self._threads * 2)
 
         def ack_message(ch, delivery_tag):
             if ch.is_open:
@@ -121,66 +112,50 @@ class MBServer(object):
             else:
                 pass
 
-        def action(connection, ch, method, properties, msg):
-            msg_type = msg.get('type')
-            message = msg.get('msg')
-            if msg_type in self._funcs:
-                if message is not None:
-                    if self._funcs[msg_type](message):
-                        msg_ack = functools.partial(ack_message, ch,
-                                                    method.delivery_tag)
-                        connection.add_callback_threadsafe(msg_ack)
+        def _messagebus_thread():
+            while True:
+                connection, ch, method, properties, msg = queue.get()
+                msg_type = msg.get('type')
+                message = msg.get('msg')
+                if msg_type in self._funcs:
+                    if message is not None:
+                        if self._funcs[msg_type](message):
+                            msg_ack = functools.partial(ack_message, ch,
+                                                        method.delivery_tag)
+                            connection.add_callback_threadsafe(msg_ack)
+                        else:
+                            msg_ack = functools.partial(reject_message, ch,
+                                                        method.delivery_tag,
+                                                        False)
+                            connection.add_callback_threadsafe(msg_ack)
                     else:
                         msg_ack = functools.partial(reject_message, ch,
                                                     method.delivery_tag,
                                                     False)
                         connection.add_callback_threadsafe(msg_ack)
+                        log.critical('Message failed to process' +
+                                     ' type %s' % msg_type +
+                                     ' with empty body')
                 else:
                     msg_ack = functools.partial(reject_message, ch,
                                                 method.delivery_tag,
                                                 False)
                     connection.add_callback_threadsafe(msg_ack)
-                    raise MessageBusError('Message failed to process' +
-                                          ' type %s' % msg_type +
-                                          ' with empty body')
-            else:
-                msg_ack = functools.partial(reject_message, ch,
-                                            method.delivery_tag,
-                                            True)
-                connection.add_callback_threadsafe(msg_ack)
-                raise MessageBusError('Message failed to process' +
-                                      ' unknown func/type %s' % msg_type)
+                    log.critical('Message failed to process' +
+                                 ' unknown func/type %s' % msg_type)
 
-        def callback(connection, ch, method, properties, msg):
-            # Clean up threads.
-            for th, thread in enumerate(threads):
-                if thread and not thread.is_alive():
-                    threads[th] = None
-                    thread.join()
+        def _thread_receiver():
+            def callback(connection, ch, method, properties, msg):
+                queue.put((connection, ch, method, properties, msg))
 
-            # Find first availible thread.
-            for th, thread in enumerate(threads):
-                if thread is None:
-                    thread_slot = th
-                    break
-                else:
-                    thread_slot = -1
+            with rmq() as mb:
+                mb.receiver(self._queue, callback,
+                            acks=False, prefetch=self._threads)
 
-            if thread_slot > -1:
-                thread = threading.Thread(
-                    target=action,
-                    name='%s-%s' % (proc_name,
-                                    thread_slot+1,),
-                    args=(connection, ch, method, properties, msg,))
-                thread.start()
-                threads[thread_slot] = thread
-            else:
-                log.critical('Process overload, message set for requeue')
-                msg_ack = functools.partial(reject_message, ch,
-                                            method.delivery_tag,
-                                            True)
-                connection.add_callback_threadsafe(msg_ack)
-
-        with rmq() as mb:
-            mb.receiver(self._queue, callback,
-                        acks=False, prefetch=self._threads)
+        tm.new(_thread_receiver, '%s-Receiver', restart=True)
+        for thread in range(self._threads):
+            tm.new(_messagebus_thread,
+                   '%s-%s' % (proc_name,
+                              thread+1,),
+                   restart=True)
+        tm.start()

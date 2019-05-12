@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Christiaan Frans Rademan.
+# Copyright (c) 2019 Christiaan Frans Rademan.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,40 +27,39 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import time
-from random import randint
-
-from luxon.exceptions import (SQLError,
-                              SQLProgrammingError)
+from luxon import g
 from luxon import GetLogger
+from luxon.core.openapi.parser import Parser
+from luxon.exceptions import HTTPNotImplemented
+from luxon import router
 
 log = GetLogger(__name__)
 
+g.openapi = []
 
-def retry(retry=10, delay=3, rand_delay=True):
-    def decorator(f):
-        def inner(*args, **kwargs):
-            for i in range(retry+1):
-                try:
-                    return f(*args, **kwargs)
-                except SQLProgrammingError:
-                    raise
-                except SQLError as e:
-                    if rand_delay:
-                        use_delay = max(randint(0, delay*3), delay)
-                    else:
-                        use_delay = delay
 
-                    if i == retry:
-                        raise
+class OpenAPI(object):
+    SCHEMA = ''
+    POLICIES = {}
 
-                    log.warning("Retry %s/%s in %s seconds (%s) for %s" %
-                                (i+1,
-                                 retry,
-                                 use_delay,
-                                 e,
-                                 f.__name__,))
+    def __init__(self):
+        self._openapi = Parser(self.SCHEMA)
 
-                    time.sleep(use_delay)
-        return inner
-    return decorator
+        for route in self._openapi.routes:
+            _method, _route, _op_id, _policy = route
+            router.add(_method,
+                       _route,
+                       self._view(_op_id),
+                       tag=_policy)
+
+    def _view(self, operation_id):
+        def _view(req, resp, **kwargs):
+            try:
+                view = getattr(self, operation_id)
+            except AttributeError:
+                raise HTTPNotImplemented(operation_id)
+            return view(req, resp)
+        return _view
+
+    def listLogicalResource(self, req, resp):
+        return '{}'
