@@ -79,7 +79,8 @@ def raw_list(req, data, limit=None, context=True, sql=False,
                     continue
             if ('tenant_id' in row and
                     req.context_tenant_id is not None):
-                if row['tenant_id'] != req.context_tenant_id:
+                if (row['tenant_id'] != req.context_tenant_id and
+                    row['id'] != req.context_tenant_id):
                     continue
         if sql is False and to_list(req.query_params.get('search')):
             for search_field, value in search_params(req):
