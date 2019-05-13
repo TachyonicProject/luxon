@@ -33,6 +33,7 @@ from luxon.utils.cast import to_list
 from luxon.utils.text import split
 from luxon.utils.timezone import TimezoneUser, to_utc
 
+DATE_SEPARATORS = (' ', '/', '-')
 
 def search_params(req):
     searches = to_list(req.query_params.get('search'))
@@ -48,6 +49,16 @@ def search_params(req):
 
 def search_datetime(val):
     partial = False
+
+    # NOTE(Vuader): We allow for for 4 digits of year, but if the
+    # next character is not a date separator, we are assuming this
+    # is not a date. Otherwise this has undesirable effects, for example
+    # a search on one field for 12345@ wil return all results where
+    # datetime field is greater than 1983
+    if len(val) > 4 and val[4] not in DATE_SEPARATORS:
+        return (None, False,)
+    elif len(val) < 4:
+        return (None, False,)
 
     try:
         year = int(val[0:4])
