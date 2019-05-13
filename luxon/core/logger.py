@@ -278,21 +278,6 @@ class MPLogger(object):
             if self._log_proc is not None:
                 self._log_proc.terminate()
 
-    def critical(self, msg):
-        self._logger.critical(msg)
-
-    def error(self, msg):
-        self._logger.error(msg)
-
-    def warning(self, msg):
-        self._logger.warning(msg)
-
-    def info(self, msg):
-        self._logger.info(msg)
-
-    def debug(self, msg):
-        self._logger.debug(msg)
-
 
 class GetLogger(metaclass=NamedSingleton):
     """Wrapper Class for convienance.
