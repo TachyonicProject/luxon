@@ -237,7 +237,7 @@ class MPLogger(object):
             if not queue:
                 raise ValueError('MPLogger for Process requires queue')
             root = logging.getLogger()
-            root.handlers = [logging.handlers.QueueHandler(MPLogger._queue)]
+            root.handlers = [logging.handlers.QueueHandler(queue)]
 
             for logger in logging.Logger.manager.loggerDict:
                 sub_logger = logging.Logger.manager.loggerDict[logger]
