@@ -27,14 +27,21 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-from prance import ResolvingParser
 import json
+
+from prance import ResolvingParser
+
+from luxon.exceptions import NotFoundError
 
 
 class Parser(object):
     def __init__(self, schema, base_path=None, default_policy=None):
-        parser = ResolvingParser(schema,
-                                 backend='openapi-spec-validator')
+        schema = 'python://' + schema.strip('/')
+        try:
+            parser = ResolvingParser(schema,
+                                     backend='openapi-spec-validator')
+        except (FileNotFoundError, IsADirectoryError):
+            raise NotFoundError('OpenAPI Schema not found')
         self._spec = parser.specification
         self._paths = self._spec.get('paths', [])
         self._policy = {}

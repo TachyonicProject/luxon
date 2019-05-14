@@ -29,17 +29,30 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 from luxon import register
 from luxon import render_template
-from luxon.constants import TEXT_HTML
+from luxon.constants import (TEXT_HTML,
+                             APPLICATION_JSON)
+from luxon.core.openapi.parser import Parser
+from luxon import g
 
 
 @register.resource('GET', '/api-docs')
-def openapi(req, resp):
-    """Index of API Resources.
-
-    Returns:
-        A List of tuples containing routes when performing a 'GET' on the
-        API application's root '/' path.
-        E.g. [ ( ‘GET’, ‘/test’, ‘rule1’, resource_view_object), ]
-    """
+def swagger_ui(req, resp):
     resp.content_type = TEXT_HTML
-    return render_template('luxon/openapi/index.html')
+
+    try:
+        schemas = g.openapi
+    except AttributeError:
+        schemas = []
+
+    return render_template('luxon/openapi/index.html',
+                           schemas=schemas)
+
+
+@register.resource('GET',
+                   'regex:^/openapi/.*$')
+def schemas(req, resp):
+    resp.content_type = APPLICATION_JSON
+    schema = "/".join(req.route.lstrip('/').split('/')[1:])
+    parser = Parser(schema)
+
+    return parser.specification

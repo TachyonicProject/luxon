@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2019 Christiaan Frans Rademan.
+# Copyright (c) 2019 Christiaan Rademan <christiaan.rademan@gmail.com>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -43,6 +43,7 @@ class OpenAPI(object):
     POLICIES = {}
 
     def __init__(self):
+        g.openapi.append(self.SCHEMA)
         self._openapi = Parser(self.SCHEMA)
 
         for route in self._openapi.routes:
@@ -60,6 +61,3 @@ class OpenAPI(object):
                 raise HTTPNotImplemented(operation_id)
             return view(req, resp)
         return _view
-
-    def listLogicalResource(self, req, resp):
-        return '{}'
