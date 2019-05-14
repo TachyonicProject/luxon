@@ -228,12 +228,14 @@ def configure(config, config_section, logger):
 class MPLogger(object):
     _queue = multiprocessing.Queue(-1)
 
-    def __init__(self, name):
+    def __init__(self, name, queue=None):
         self._log_thread = None
         self._name = name
         if self._name == "__main__":
             self._logger = logging.getLogger(name)
         else:
+            if not queue:
+                raise ValueError('MPLogger for Process requires queue')
             root = logging.getLogger()
             root.handlers = [logging.handlers.QueueHandler(MPLogger._queue)]
 
@@ -243,6 +245,10 @@ class MPLogger(object):
                     sub_logger.handlers = []
 
             self._logger = logging.getLogger(name)
+
+    @property
+    def queue(self):
+        return MPLogger._queue
 
     def receive(self):
         def handle(logger, record):
@@ -260,7 +266,6 @@ class MPLogger(object):
                         break
                     # Get Logger
                     logger = logging.getLogger(record.name)
-
                     logger_facility = handle(logger, record)
                     log_formatted(logger_facility, record.msg)
             except (KeyboardInterrupt, SystemExit):
