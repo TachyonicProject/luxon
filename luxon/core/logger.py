@@ -30,8 +30,9 @@
 import sys
 import logging
 import logging.handlers
-import multiprocessing
+import threading
 import traceback
+import multiprocessing
 
 from luxon import g
 from luxon.exceptions import NoContextError
@@ -41,7 +42,6 @@ from luxon.utils.files import is_socket
 from luxon.utils.split import list_of_lines, split_by_n
 from luxon.utils.encoding import if_bytes_to_unicode
 from luxon.utils.unique import string_id
-
 
 log_format = logging.Formatter('%(asctime)s %(app_name)s:' +
                                '%(name)s' +
@@ -229,7 +229,7 @@ class MPLogger(object):
     _queue = multiprocessing.Queue(-1)
 
     def __init__(self, name):
-        self._log_proc = None
+        self._log_thread = None
         self._name = name
         if self._name == "__main__":
             self._logger = logging.getLogger(name)
@@ -256,6 +256,8 @@ class MPLogger(object):
             try:
                 while True:
                     record = queue.get()
+                    if record is None:
+                        break
                     # Get Logger
                     logger = logging.getLogger(record.name)
 
@@ -268,15 +270,13 @@ class MPLogger(object):
                 traceback.print_exc(file=sys.stderr)
 
         if self._name == "__main__":
-            self._log_proc = multiprocessing.Process(target=receiver,
-                                                     name='Logger',
-                                                     args=(MPLogger._queue,))
-            self._log_proc.start()
+            self._log_thread = threading.Thread(target=receiver,
+                                                name='Logger',
+                                                args=(MPLogger._queue,))
+            self._log_thread.start()
 
     def close(self):
-        if self._name == "__main__":
-            if self._log_proc is not None:
-                self._log_proc.terminate()
+        self._queue.put(None)
 
 
 class GetLogger(metaclass=NamedSingleton):

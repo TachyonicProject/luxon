@@ -27,7 +27,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import sys
+import os
 import traceback
 from time import sleep
 from multiprocessing import Process as PYProcess
@@ -40,9 +40,10 @@ log = GetLogger(__name__)
 
 
 class ProcessManager(object):
-    __slots__ = ('_procs', '_restart', '_mplogger')
+    __slots__ = ('_procs', '_restart', '_mplogger', '_manager_pid')
 
     def __init__(self):
+        self._manager_pid = os.getpid()
         self._procs = {}
         self._restart = []
         self._mplogger = MPLogger('__main__')
@@ -78,7 +79,11 @@ class ProcessManager(object):
         self._mplogger.receive()
 
         def die(sig):
-            sys.exit()
+            try:
+                if os.getpid() != self._manager_pid:
+                    raise SystemExit()
+            except Exception:
+                pass
 
         sig = GracefulKiller(die)
 
@@ -122,9 +127,9 @@ class Process(object):
             try:
                 return self._target(*args, **kwargs)
             except SystemExit:
-                log.error('Process ended (System Exit)')
+                log.info('Process ended (System Exit)')
             except KeyboardInterrupt:
-                log.error('Process ended (Keyboard Interrupt)')
+                log.info('Process ended (Keyboard Interrupt)')
             except Exception:
                 log.critical('Process ended (Unhandled Exception)'
                              '\n%s' % str(traceback.format_exc()))
