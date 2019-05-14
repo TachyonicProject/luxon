@@ -51,7 +51,11 @@ class ProcessManager(object):
     def new(self, target, name, restart=False, args=(), kwargs={}):
         if name in self._procs:
             raise ValueError("Duplicate Process '%s'" % name)
-        self._procs[name] = Process(target, name, args=args, kwargs=kwargs)
+        self._procs[name] = Process(target,
+                                    name,
+                                    self._mplogger.queue,
+                                    args=args,
+                                    kwargs=kwargs)
         if restart:
             self._restart.append(name)
 
@@ -113,17 +117,17 @@ class ProcessManager(object):
 class Process(object):
     __slots__ = ('_target', '_name', '_args', '_kwargs', '_proc')
 
-    def __init__(self, target, name, args=(), kwargs={}):
+    def __init__(self, target, name, log_queue, args=(), kwargs={}):
 
         self._target = target
         self._name = name
-        self._args = args
+        self._args = (log_queue,) + args
         self._kwargs = kwargs
         self._proc = self._new()
 
     def _new(self):
-        def _process(*args, **kwargs):
-            MPLogger(self._name)
+        def _process(log_queue, *args, **kwargs):
+            MPLogger(self._name, log_queue)
             try:
                 return self._target(*args, **kwargs)
             except SystemExit:
