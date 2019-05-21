@@ -64,7 +64,10 @@ def log_formatted(logger_facility, message, prepend=None, append=None,
     """
     try:
         log_items = list(g.current_request.log.items())
-        log_items.append(('REQUEST-ID', g.current_request.id))
+        try:
+            log_items.append(('REQUEST-ID', g.current_request.id))
+        except NotImplementedError:
+            pass
         request = " ".join(['(%s: %s)' % (key, value)
                            for (key, value) in log_items])
     except NoContextError:
@@ -267,7 +270,8 @@ class MPLogger(object):
                     # Get Logger
                     logger = logging.getLogger(record.name)
                     logger_facility = handle(logger, record)
-                    log_formatted(logger_facility, record.msg)
+                    logger_facility(record.msg)
+                    # log_formatted(logger_facility, record.msg)
             except (KeyboardInterrupt, SystemExit):
                 pass
             except Exception:
@@ -277,11 +281,13 @@ class MPLogger(object):
         if self._name == "__main__":
             self._log_thread = threading.Thread(target=receiver,
                                                 name='Logger',
-                                                args=(MPLogger._queue,))
+                                                args=(MPLogger._queue,),
+                                                daemon=False)
             self._log_thread.start()
 
     def close(self):
         self._queue.put(None)
+        self._log_thread.join()
 
 
 class GetLogger(metaclass=NamedSingleton):
