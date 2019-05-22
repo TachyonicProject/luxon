@@ -13,5 +13,5 @@ class Shared(object):
 
 
 #shared = Shared()
-#shared.set('kief', 'ma se fucker'.encode('utf-8'))
+#shared.set('kief', b'123')
 #print(shared.get('kief'))

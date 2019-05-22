@@ -20,8 +20,8 @@ class Shared
     //Note that unordered_map<Key, MappedType>'s value_type is std::pair<const Key, MappedType>,
     //so the allocator must allocate that pair.
     typedef char * KeyType;
-    typedef PyObject* MappedType;
-    typedef std::pair<char *, PyObject*> ValueType;
+    typedef std::vector<unsigned char> MappedType;
+    typedef std::pair<char *, std::vector<unsigned char>> ValueType;
 
     //Typedef the allocator
     typedef boost::interprocess::allocator<ValueType, boost::interprocess::managed_shared_memory::segment_manager> ShmemAllocator;
@@ -44,30 +44,25 @@ class Shared
         //Note that the first parameter is the initial bucket count and
         //after that, the hash function, the equality function and the allocator
         myhashmap = segment.construct<MyHashMap>("MyHashMap")  //object name
-            ( 10, boost::hash<char *>(), std::equal_to<char *>()                  //
+            ( 3, boost::hash<char *>(), std::equal_to<char *>()                  //
             , segment.get_allocator<ValueType>());                         //allocator instance
     }
 
     // Member Functions() 
-    void set(char * key, PyObject* value) 
+    void set(char * key, std::vector<unsigned char> value) 
     {
         boost::interprocess::managed_shared_memory segment(boost::interprocess::open_only, "kakas");
-        PyObject *new_value;
-        new_value = value;
-        
-        myhashmap->insert(ValueType(key, new_value));
+        myhashmap->insert(ValueType(key, value));
     }
 
-    PyObject* get(char * key)
+    std::vector<unsigned char> get(char * key)
     {
         boost::interprocess::managed_shared_memory segment(boost::interprocess::open_only, "kakas");
-        PyObject *new_value;
         MyHashMap::iterator f = myhashmap->find(key);
         if (f != myhashmap->end()) {
-            new_value = f->second;
-            return new_value;
+            return f->second;
         }
-        return Py_BuildValue("");
+        return std::vector<unsigned char>(0);
     }
 }; 
 
@@ -87,19 +82,19 @@ PyObject* py_set(PyObject* self, PyObject* args)
     // Arguments passed from Python
     PyObject* Capsule_;   // Capsule with the pointer to `Car` object
     char * key_;
-    PyObject * value_;
+    const char * value_;
 
     // Process arguments
-    PyArg_ParseTuple(args, "OsO",
+    PyArg_ParseTuple(args, "Osy",
                      &Capsule_,
                      &key_,
                      &value_);
 
+    std::vector<unsigned char> vec(value_, value_+128);
+
     // Get the pointer to `Car` object
     Shared* shared = (Shared*)PyCapsule_GetPointer(Capsule_, "SharedPtr");
-    //char* valueCopy;
-    //valueCopy = PyBytes_AsString((PyObject*) value_);
-    shared->set(key_, value_);
+    shared->set(key_, vec);
 
     // Return nothing
     return Py_BuildValue("");
@@ -119,8 +114,9 @@ PyObject* py_get(PyObject* self, PyObject* args)
 
     Shared* shared = (Shared*)PyCapsule_GetPointer(Capsule_, "SharedPtr");
 
-    PyObject * value = shared->get(key_);
-    return Py_BuildValue("O", value);
+    std::vector<unsigned char> value = shared->get(key_);
+    const char * blah = reinterpret_cast<const char*>(value.data());
+    return Py_BuildValue("y", blah);
 }
 
 static PyMethodDef SharedMethods[] = {
