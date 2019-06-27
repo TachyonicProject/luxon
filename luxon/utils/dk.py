@@ -33,7 +33,7 @@ client = docker.from_env()
 
 
 def start(name, image, volumes=None, ports=None,
-          links=None, hostname=None, **env):
+          links=None, hostname=None, env={}):
     try:
         container = client.containers.get(name)
         if container.status in ('running', 'restarting'):
