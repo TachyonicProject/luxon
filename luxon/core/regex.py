@@ -68,14 +68,14 @@ IP6_PREFIX_EXPR = (r'((([0-9a-f]{1,4}:){1,6})' +
 WORD_RE = re.compile(r'^[a-z]+[a-z0-9]+$', re.IGNORECASE)
 
 # MATCH USERNAME or USERNAME@DOMAIN.CO.ZA
-USERNAME_RE = re.compile(r'^([a-z0-9\.\-]+@[a-z0-9\.\-]+' +
-                         r'|^[a-z0-9\.]+)$', re.IGNORECASE)
+USERNAME_RE = re.compile(r'^([a-z0-9\.\-_]+@[a-z0-9\.\-_]+' +
+                         r'|^[a-z0-9\._]+)$', re.IGNORECASE)
 
 # MATCH PASSWORD WITH NO SPACES ANY CHARACTERS
 PASSWORD_RE = re.compile(r'^[^\s]+$', re.IGNORECASE)
 
 # MATCH EMAIL ADDRESS
-EMAIL_RE = re.compile(r'^[a-z0-9\.\-]+@[a-z0-9\.\-]+$',
+EMAIL_RE = re.compile(r'^[a-z0-9\.\-_]+@[a-z0-9\.\-_]+$',
                       re.IGNORECASE)
 
 # MATCH URI
