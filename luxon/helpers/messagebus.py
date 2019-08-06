@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Frans Rademan, David Kruger.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 import functools
+import time
 from queue import Queue
 from multiprocessing import current_process
 
@@ -73,11 +74,13 @@ class MBClient(object):
 
 
 class MBServer(object):
-    def __init__(self, queue, funcs, procs=1, threads=1, process_manager=None):
+    def __init__(self, queue, funcs, procs=1, threads=1, process_manager=None,
+                 retry=60):
         self._funcs = funcs
         self._procs = procs
         self._threads = threads
         self._queue = queue
+        self._retry = retry
         if process_manager:
             self._pm = process_manager
             self._pmi = False
@@ -108,7 +111,7 @@ class MBServer(object):
         def reject_message(ch, delivery_tag, requeue=False):
             if ch.is_open:
                 ch.basic_reject(delivery_tag=delivery_tag,
-                                requeue=False)
+                                requeue=requeue)
             else:
                 pass
 
@@ -117,17 +120,34 @@ class MBServer(object):
                 connection, ch, method, properties, msg = queue.get()
                 msg_type = msg.get('type')
                 message = msg.get('msg')
+                dtag = method.delivery_tag
                 if msg_type in self._funcs:
                     if message is not None:
-                        if self._funcs[msg_type](message):
-                            msg_ack = functools.partial(ack_message, ch,
-                                                        method.delivery_tag)
-                            connection.add_callback_threadsafe(msg_ack)
-                        else:
+                        try:
+                            if self._funcs[msg_type](message):
+                                msg_ack = functools.partial(ack_message, ch,
+                                                            dtag)
+                                connection.add_callback_threadsafe(msg_ack)
+                            else:
+                                msg_ack = functools.partial(reject_message, ch,
+                                                            dtag,
+                                                            False)
+                                connection.add_callback_threadsafe(msg_ack)
+                        except Exception as e:
+                            log.critical('Message failed to process' +
+                                         ' type %s' % msg_type +
+                                         ': Thread ended due to Exception'
+                                         ' (%s)' % e)
+                            log.critical('Sleeping %ss before re-queueing and'
+                                         ' re-raising' % self._retry)
+                            time.sleep(self._retry)
                             msg_ack = functools.partial(reject_message, ch,
-                                                        method.delivery_tag,
-                                                        False)
+                                                        dtag,
+                                                        True)
                             connection.add_callback_threadsafe(msg_ack)
+                            # Reraising so that we can get the full Traceback
+                            # to see what caused the thread to end.
+                            raise
                     else:
                         msg_ack = functools.partial(reject_message, ch,
                                                     method.delivery_tag,
