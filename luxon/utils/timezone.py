@@ -175,7 +175,8 @@ def TimezoneUser():
 
 def parse_datetime(datetime):
     if isinstance(datetime, (int, float,)):
-        return py_datetime.fromtimestamp(datetime)
+        pdt = py_datetime.fromtimestamp(datetime, tz=TimezoneUTC())
+        return pdt
     if isinstance(datetime, py_datetime):
         return datetime
 
@@ -311,23 +312,34 @@ def format_http_datetime(datetime, src=TimezoneUTC()):
     return(datetime.strftime('%a, %d %b %Y %H:%M:%S %Z'))
 
 
-def format_iso8601(datetime, src=TimezoneUTC()):
+def format_iso8601(datetime, always_offset=False):
     """String Formatted Date & Time.
 
     An ISO 8601 date string.
     e.g. 2011-04-14T16:00:49Z
 
     Args:
-        datetime (datetime): Datetime object. (Optional)
-        destination_tz (str): Destination Timezone.
-            List of valid entries in timezones attribute.
+        datetime (datetime): Datetime object.
 
-    Returns string formatted date.
+    Returns string ISO8601 formatted date+time.
     """
-    datetime = to_timezone(datetime, dst=TimezoneGMT(), src=src)
+    offset = datetime.utcoffset()
+    if offset is None:
+        raise ValueError('Cannot ISO8601 format naive datetime')
+    if not always_offset and offset == timedelta(hours=0):
+        return(datetime.strftime('%Y-%m-%dT%H:%M:%SZ'))
+    else:
+        seconds = offset.total_seconds()
+        hours, remainder = divmod(seconds, 3600)
+        minutes, remainder = divmod(remainder, 60)
+        if seconds >= 0:
+            tz = ("+{:02d}".format(int(hours)) +
+                  ":{:02d}".format(int(minutes)))
+        else:
+            tz = ("{:03d}".format(int(hours)) +
+                  ":{:02d}".format(int(minutes)))
 
-    return(datetime.strftime('%Y-%m-%dT%H:%M:%SZ') + "(" +
-           datetime.tzname() + ")")
+        return(datetime.strftime('%Y-%m-%dT%H:%M:%S') + tz)
 
 
 def add_date(orig_date, days=None, weeks=None, months=None):

@@ -70,11 +70,6 @@ metadata = SourceFileLoader(
     'metadata', os.path.join(MYDIR, CODE_DIRECTORY,
                              'metadata.py')).load_module()
 
-shared = Extension('luxon.structs.c_shared',
-                   sources=['luxon/structs/c_shared.cpp'],
-                   libraries=['pthread','rt'])
-
-
 # Miscellaneous helper functions
 def requirements(path):
     dependency = []
@@ -193,7 +188,6 @@ setup_dict = dict(
         ],
     },
     python_requires='>=3.6',
-    ext_modules=[shared]
 )
 
 

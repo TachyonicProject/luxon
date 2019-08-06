@@ -28,17 +28,45 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 import os
+import time
 import traceback
 import threading
 from time import sleep
 from multiprocessing import Process as PYProcess
-from multiprocessing import Queue
 
 from luxon.core.logger import GetLogger
 from luxon.core.logger import MPLogger
 from luxon.utils.daemon import GracefulKiller
 
 log = GetLogger(__name__)
+
+
+def dead(procs):
+    for proc in procs.copy():
+        if not proc.is_alive():
+            if isinstance(proc, threading.Thread):
+                log.error("Thread '%s' died" % proc.name)
+            else:
+                log.error("Process '%s' died" % proc.name)
+            procs.remove(proc)
+
+
+def join(procs):
+    while procs:
+        for proc in procs.copy():
+            if proc.is_alive():
+                if isinstance(proc, threading.Thread):
+                    log.error("Waiting for thread '%s' to end" % proc.name)
+                else:
+                    log.error("Waiting for process '%s' to end" % proc.name)
+            else:
+                if isinstance(proc, threading.Thread):
+                    log.error("Thread '%s' ended" % proc.name)
+                else:
+                    log.error("Process '%s' ended" % proc.name)
+                procs.remove(proc)
+            if procs:
+                time.sleep(1)
 
 
 class End(Exception):
@@ -54,7 +82,6 @@ class ProcessManager(object):
         self._procs = {}
         self._restart = []
         self._mplogger = MPLogger('__main__')
-        self._rpc_queue = Queue()
 
     def new(self, target, name, restart=False, args=(), kwargs={}):
         if name in self._procs:
@@ -136,7 +163,7 @@ class ProcessManager(object):
 class Process(object):
     __slots__ = ('_target', '_name', '_args', '_kwargs', '_proc')
 
-    def __init__(self, target, name, log_queue, rpc_queue, args=(), kwargs={}):
+    def __init__(self, target, name, log_queue, args=(), kwargs={}):
 
         self._target = target
         self._name = name
