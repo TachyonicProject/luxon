@@ -27,6 +27,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+import time
 import calendar
 from datetime import datetime as py_datetime
 from datetime import tzinfo, timedelta
@@ -39,6 +40,10 @@ from luxon.core.regex import ISODATETIME_RE
 
 _cached_time_zone_system = None
 _cached_time_zone_app = None
+
+
+if time.gmtime(0).tm_year != 1970:
+    raise Exception('System does not provide unix epoch time, incompatible')
 
 TIME_FORMATS = (
     '%Y-%m-%dT%H:%M:%S.%f%z',
@@ -312,7 +317,11 @@ def format_http_datetime(datetime, src=TimezoneUTC()):
     return(datetime.strftime('%a, %d %b %Y %H:%M:%S %Z'))
 
 
-def format_iso8601(datetime, always_offset=False):
+def epoch():
+    return time.time()
+
+
+def format_iso8601(datetime, ms=True, always_offset=False):
     """String Formatted Date & Time.
 
     An ISO 8601 date string.
@@ -324,10 +333,15 @@ def format_iso8601(datetime, always_offset=False):
     Returns string ISO8601 formatted date+time.
     """
     offset = datetime.utcoffset()
+    if ms:
+        ms = '.' + datetime.strftime('%f')[0:3]
+    else:
+        ms = ''
+
     if offset is None:
         raise ValueError('Cannot ISO8601 format naive datetime')
     if not always_offset and offset == timedelta(hours=0):
-        return(datetime.strftime('%Y-%m-%dT%H:%M:%SZ'))
+        return(datetime.strftime('%Y-%m-%dT%H:%M:%S' + ms + 'Z'))
     else:
         seconds = offset.total_seconds()
         hours, remainder = divmod(seconds, 3600)
@@ -339,7 +353,7 @@ def format_iso8601(datetime, always_offset=False):
             tz = ("{:03d}".format(int(hours)) +
                   ":{:02d}".format(int(minutes)))
 
-        return(datetime.strftime('%Y-%m-%dT%H:%M:%S') + tz)
+        return(datetime.strftime('%Y-%m-%dT%H:%M:%S' + ms) + tz)
 
 
 def add_date(orig_date, days=None, weeks=None, months=None):

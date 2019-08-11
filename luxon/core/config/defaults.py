@@ -29,9 +29,6 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 
 defaults = {
-    'DEFAULT': {
-        'host': '127.0.0.1',
-    },
     'application': {
         'name': 'Application',
         'static': '/static',
@@ -59,11 +56,14 @@ defaults = {
     },
     'database': {
         'type': 'sqlite3',
+        'host': '127.0.0.1',
     },
     'redis': {
         'db': '0',
+        'host': '127.0.0.1',
     },
     'rmq': {
+        'host': '127.0.0.1',
     },
     'cache': {
         'backend': 'luxon.core.cache:Memory',

@@ -34,6 +34,7 @@ import multiprocessing
 import traceback
 
 from luxon import g
+from luxon.utils.system import switch
 from luxon.core.networking.sock import (Pipe,
                                         recv_pickle,
                                         send_pickle)
@@ -188,9 +189,11 @@ def configure(config, config_section, logger):
         logger.handlers = []
 
         # Set Logger Level
-        set_level(logger,
-                  section.get('log_level',
-                              fallback='WARNING'))
+        level = section.get('log_level')
+        if level is not None:
+            set_level(logger, level)
+        elif config_section == 'application':
+            set_level(logger, 'WARNING')
 
         # Set Stdout
         if section.getboolean('log_stdout', fallback=False):
@@ -285,23 +288,38 @@ class MPLogger(object):
             return log
 
         def receiver():
+            self._running = True
+
+            # Switch from root to daemon user/group
             try:
-                self._running = True
-                while self._running:
-                    queue = MPLoggerSocketQueue(self._server)
-                    record = queue.get()
-                    if record is None:
-                        break
-                    # Get Logger
-                    logger = logging.getLogger(record.name)
-                    logger_facility = handle(logger, record)
-                    logger_facility(record.msg)
-            except (KeyboardInterrupt, SystemExit):
-                pass
+                user = g.app.config.get('minion', 'user',
+                                        fallback=None)
+                if user:
+                    group = g.app.config.get('minion', 'group',
+                                             fallback="tachyonic")
+                    switch(user, group)
             except Exception:
-                if self._running is True:
-                    print('Whoops! Problem:', file=sys.stderr)
-                    traceback.print_exc(file=sys.stderr)
+                print('MPLogger Whoops! Problem:', file=sys.stderr)
+                traceback.print_exc(file=sys.stderr)
+                self._running = False
+
+            while self._running:
+                try:
+                    while self._running:
+                        queue = MPLoggerSocketQueue(self._server)
+                        record = queue.get()
+                        if record is None:
+                            break
+                        # Get Logger
+                        logger = logging.getLogger(record.name)
+                        logger_facility = handle(logger, record)
+                        logger_facility(record.msg)
+                except (KeyboardInterrupt, SystemExit):
+                    self._running = False
+                except Exception:
+                    if self._running is True:
+                        print('MPLogger Whoops! Problem:', file=sys.stderr)
+                        traceback.print_exc(file=sys.stderr)
 
         if self._name == "__main__":
             self._log_thread = multiprocessing.Process(
