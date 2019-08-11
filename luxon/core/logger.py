@@ -30,11 +30,14 @@
 import sys
 import logging
 import logging.handlers
-import threading
-import traceback
 import multiprocessing
+import traceback
 
 from luxon import g
+from luxon.utils.system import switch
+from luxon.core.networking.sock import (Pipe,
+                                        recv_pickle,
+                                        send_pickle)
 from luxon.exceptions import NoContextError
 from luxon.utils.singleton import NamedSingleton
 from luxon.utils.formatting import format_seconds
@@ -64,7 +67,10 @@ def log_formatted(logger_facility, message, prepend=None, append=None,
     """
     try:
         log_items = list(g.current_request.log.items())
-        log_items.append(('REQUEST-ID', g.current_request.id))
+        try:
+            log_items.append(('REQUEST-ID', g.current_request.id))
+        except NotImplementedError:
+            pass
         request = " ".join(['(%s: %s)' % (key, value)
                            for (key, value) in log_items])
     except NoContextError:
@@ -183,9 +189,11 @@ def configure(config, config_section, logger):
         logger.handlers = []
 
         # Set Logger Level
-        set_level(logger,
-                  section.get('log_level',
-                              fallback='WARNING'))
+        level = section.get('log_level')
+        if level is not None:
+            set_level(logger, level)
+        elif config_section == 'application':
+            set_level(logger, 'WARNING')
 
         # Set Stdout
         if section.getboolean('log_stdout', fallback=False):
@@ -225,18 +233,39 @@ def configure(config, config_section, logger):
             logger.addHandler(handler)
 
 
-class MPLogger(object):
-    _queue = multiprocessing.Queue(-1)
+class MPLoggerSocketQueue(object):
+    def __init__(self, sock):
+        self._sock = sock
 
+    def get(self):
+        return recv_pickle(self._sock)
+
+    def put(self, msg):
+        send_pickle(self._sock, msg)
+
+    def put_nowait(self, msg):
+        send_pickle(self._sock, msg)
+
+    def flush(self):
+        return True
+
+
+class MPLogger(object):
+    # Multiprocessing queues are too slow and limited to 32786.
+    # Using Socket Socket Pipe with Queue wrapper interface.
     def __init__(self, name, queue=None):
+        self._running = False
         self._log_thread = None
         self._name = name
+        self._client = queue
         if self._name == "__main__":
+            self._server, self._client = Pipe()
             self._logger = logging.getLogger(name)
         else:
             if not queue:
                 raise ValueError('MPLogger for Process requires queue')
             root = logging.getLogger()
+            queue = MPLoggerSocketQueue(self._client)
             root.handlers = [logging.handlers.QueueHandler(queue)]
 
             for logger in logging.Logger.manager.loggerDict:
@@ -248,7 +277,7 @@ class MPLogger(object):
 
     @property
     def queue(self):
-        return MPLogger._queue
+        return self._client
 
     def receive(self):
         def handle(logger, record):
@@ -258,30 +287,52 @@ class MPLogger(object):
 
             return log
 
-        def receiver(queue):
+        def receiver():
+            self._running = True
+
+            # Switch from root to daemon user/group
             try:
-                while True:
-                    record = queue.get()
-                    if record is None:
-                        break
-                    # Get Logger
-                    logger = logging.getLogger(record.name)
-                    logger_facility = handle(logger, record)
-                    log_formatted(logger_facility, record.msg)
-            except (KeyboardInterrupt, SystemExit):
-                pass
+                user = g.app.config.get('minion', 'user',
+                                        fallback=None)
+                if user:
+                    group = g.app.config.get('minion', 'group',
+                                             fallback="tachyonic")
+                    switch(user, group)
             except Exception:
-                print('Whoops! Problem:', file=sys.stderr)
+                print('MPLogger Whoops! Problem:', file=sys.stderr)
                 traceback.print_exc(file=sys.stderr)
+                self._running = False
+
+            while self._running:
+                try:
+                    while self._running:
+                        queue = MPLoggerSocketQueue(self._server)
+                        record = queue.get()
+                        if record is None:
+                            break
+                        # Get Logger
+                        logger = logging.getLogger(record.name)
+                        logger_facility = handle(logger, record)
+                        logger_facility(record.msg)
+                except (KeyboardInterrupt, SystemExit):
+                    self._running = False
+                except Exception:
+                    if self._running is True:
+                        print('MPLogger Whoops! Problem:', file=sys.stderr)
+                        traceback.print_exc(file=sys.stderr)
 
         if self._name == "__main__":
-            self._log_thread = threading.Thread(target=receiver,
-                                                name='Logger',
-                                                args=(MPLogger._queue,))
+            self._log_thread = multiprocessing.Process(
+                target=receiver,
+                name='Logger',
+                daemon=True)
             self._log_thread.start()
 
     def close(self):
-        self._queue.put(None)
+        self._running = False
+        self._client.close()
+        self._server.close()
+        self._log_thread.join()
 
 
 class GetLogger(metaclass=NamedSingleton):

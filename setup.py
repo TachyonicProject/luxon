@@ -70,7 +70,6 @@ metadata = SourceFileLoader(
     'metadata', os.path.join(MYDIR, CODE_DIRECTORY,
                              'metadata.py')).load_module()
 
-
 # Miscellaneous helper functions
 def requirements(path):
     dependency = []
@@ -188,7 +187,7 @@ setup_dict = dict(
             'luxon = luxon.main:entry_point'
         ],
     },
-    python_requires='>=3.6'
+    python_requires='>=3.6',
 )
 
 

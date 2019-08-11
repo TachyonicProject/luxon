@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2016-2019, Christiaan Frans Rademan.
+# Copyright (c) 2019 Christiaan Rademan <christiaan.rademan@gmail.com>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,47 +27,16 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+from queue import Empty
 
-defaults = {
-    'application': {
-        'name': 'Application',
-        'static': '/static',
-        'use_forwarded': 'false',
-        'timezone': 'local',
-        'default_theme': 'default',
-        'log_stdout': 'True',
-        'log_level': 'WARNING',
-        'debug': 'False',
-    },
-    'identity': {
-        'url': 'http://127.0.0.1/infinitystone',
-        'interface': 'public',
-        'connect_timeout': '2',
-        'read_timeout': '8',
-        'verify': 'True',
-    },
-    'tokens': {
-        'expire': '3600',
-    },
-    'sessions': {
-        'expire': '86400',
-        'backend': 'luxon.core.session:Cookie',
-        'session': 'luxon.core.session:TrackCookie',
-    },
-    'database': {
-        'type': 'sqlite3',
-        'host': '127.0.0.1',
-    },
-    'redis': {
-        'db': '0',
-        'host': '127.0.0.1',
-    },
-    'rmq': {
-        'host': '127.0.0.1',
-    },
-    'cache': {
-        'backend': 'luxon.core.cache:Memory',
-        'max_objects': '5000',
-        'max_object_size': '50',
-    },
-}
+
+def batch(queue, number):
+    batch = []
+    batch.append(queue.get())
+    for no in range(number-1):
+        try:
+            batch.append(queue.get_nowait())
+        except Empty:
+            return batch
+
+    return batch

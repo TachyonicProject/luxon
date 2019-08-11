@@ -27,14 +27,15 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import sys
-import traceback
+# import sys
+import os
+import ctypes
 from time import sleep
+import traceback
 from threading import Thread as PYThread
-
+from luxon.utils.multiproc import End
 from luxon.core.logger import GetLogger
-from luxon.utils.daemon import GracefulKiller
-
+import threading
 
 log = GetLogger(__name__)
 
@@ -68,45 +69,49 @@ class ThreadManager(object):
             log.info("Starting thread '%s'" % self._threads[thread].name)
             self._threads[thread].start()
 
-        def die(sig):
-            sys.exit()
-
-        sig = GracefulKiller(die)
-
-        while True:
-            if not self._threads:
-                break
-            if sig.killed:
-                break
-            else:
-                for thread_name in self._threads.copy():
-                    thread = self._threads[thread_name]
-                    if not thread.alive:
-                        if thread_name in self._restart:
-                            log.info("Restarting thread '%s'" % thread.name)
-                            thread.restart()
-                        else:
-                            del self._threads[thread_name]
+        try:
+            while True:
+                if not self._threads:
+                    break
+                else:
+                    for thread_name in self._threads.copy():
+                        thread = self._threads[thread_name]
+                        if not thread.alive:
                             if thread_name in self._restart:
-                                self._restart.remove(thread_name)
-            sleep(1)
+                                log.info("Restarting thread '%s'"
+                                         % thread.name)
+                                thread.restart()
+                            else:
+                                del self._threads[thread_name]
+                sleep(1)
+        except End:
+            log.error('ThreadManager ended (Shutdown)')
+        except SystemExit:
+            log.error('ThreadManager ended (System Exit)')
+        except KeyboardInterrupt:
+            log.error('ThreadManager ended (Keyboard Interrupt)')
+        except Exception:
+            log.critical('Thread ended (Unhandled Exception)'
+                         '\n%s' % str(traceback.format_exc()))
 
 
 class Thread(object):
-    __slots__ = ('_target', '_name', '_args', '_kwargs', '_thread')
+    __slots__ = ('_target', '_name', '_args', '_kwargs', '_thread', '_exit')
 
     def __init__(self, target, name, args=(), kwargs={}):
-
         self._target = target
         self._name = name
         self._args = args
         self._kwargs = kwargs
         self._thread = self._new()
+        self._exit = False
 
     def _new(self):
         def _thread(*args, **kwargs):
             try:
-                return self._target(*args, **kwargs)
+                self._target(*args, **kwargs)
+            except End:
+                pass
             except SystemExit:
                 log.error('Thread ended (System Exit)')
             except KeyboardInterrupt:
@@ -126,8 +131,15 @@ class Thread(object):
         return self._name
 
     @property
+    def ident(self):
+        return self._thread.ident
+
+    @property
     def alive(self):
         return self._thread.is_alive()
+
+    def terminate(self):
+        self._exit = True
 
     def join(self):
         return self._thread.join()
