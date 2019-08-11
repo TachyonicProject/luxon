@@ -1,5 +1,5 @@
 # Cryptography
-cryptography
+cryptography>=2.5
 bcrypt
 passlib
 
