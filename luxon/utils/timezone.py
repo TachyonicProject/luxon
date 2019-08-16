@@ -245,6 +245,7 @@ def now(tz=TimezoneUTC()):
 
 
 def utc(datetime):
+    # Set datetime to UTC without altering.
     return to_timezone(datetime, dst=TimezoneUTC(), src=TimezoneUTC())
 
 
@@ -393,3 +394,8 @@ def calc_next_expire(metric, span, expired):
         new_expire = add_date(expired,
                               months=span)
     return new_expire
+
+
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days)):
+        yield start_date + timedelta(n)
