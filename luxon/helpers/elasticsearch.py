@@ -31,24 +31,31 @@ from luxon import g
 
 from elasticsearch import Elasticsearch
 
+_cached = None
 
-def es():
+
+def elasticsearch():
     """Function es - returns an ElasticSearch object.
 
     Returns:
          ElasticSearch object
     """
-    hosts = []
-    sniff = g.app.config.getboolean('elasticsearch', 'sniff',
-                                    fallback=True)
-    config = g.app.config.items('elasticsearch')
-    for option, value in config:
-        if '://' in value:
-            hosts.append(value)
-    if sniff:
-        return Elasticsearch(hosts,
-                             sniff_on_start=True,
-                             sniff_on_connection_fail=True,
-                             sniffer_timeout=60)
-    else:
-        return Elasticsearch(hosts)
+    global _cached
+
+    if not _cached:
+        hosts = []
+        sniff = g.app.config.getboolean('elasticsearch', 'sniff',
+                                        fallback=True)
+        config = g.app.config.items('elasticsearch')
+        for option, value in config:
+            if '://' in value:
+                hosts.append(value)
+        if sniff:
+            _cached = Elasticsearch(hosts,
+                                    sniff_on_start=True,
+                                    sniff_on_connection_fail=True,
+                                    sniffer_timeout=60)
+        else:
+            _cached = Elasticsearch(hosts)
+
+    return _cached
