@@ -10,7 +10,7 @@ Jinja2
 phonenumbers
 
 # HTTP / RESTAPI
-requests
+requests~=2.21
 
 # Timezones
 pytz
