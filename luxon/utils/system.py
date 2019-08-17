@@ -39,6 +39,29 @@ from luxon.utils.encoding import if_bytes_to_unicode
 from luxon.utils.unique import string_id
 
 
+def require_root():
+    if get_current_uid() != 0:
+        raise PermissionError("not started as system 'root' user")
+
+
+def switch(user, group):
+    require_root()
+    try:
+        to_uid = pwd.getpwnam(user).pw_uid
+    except KeyError:
+        raise RuntimeError("system user '%s' not found" % user) from None
+
+    try:
+        to_gid = pwd.getpwnam(user).pw_gid
+    except KeyError:
+        raise RuntimeError("system group '%s' not found" % user) from None
+
+    os.setgroups([])
+
+    os.setgid(to_gid)
+    os.setuid(to_uid)
+
+
 def get_current_uid():
     """Get current uid"""
     return os.getuid()

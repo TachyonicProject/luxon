@@ -52,7 +52,10 @@ class Config(configparser.ConfigParser):
     __slots__ = ()
 
     def __init__(self, config_file=None):
-        super().__init__()
+        super().__init__(interpolation=None,
+                         default_section="DONTUSETHIS")
+        # The default section breaks using items when expected  a whole
+        # bunch of options and not something in default section.
         if config_file is not None:
             self.load(config_file)
 

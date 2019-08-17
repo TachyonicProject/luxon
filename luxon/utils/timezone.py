@@ -27,6 +27,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
+import time
 import calendar
 from datetime import datetime as py_datetime
 from datetime import tzinfo, timedelta
@@ -39,6 +40,10 @@ from luxon.core.regex import ISODATETIME_RE
 
 _cached_time_zone_system = None
 _cached_time_zone_app = None
+
+
+if time.gmtime(0).tm_year != 1970:
+    raise Exception('System does not provide unix epoch time, incompatible')
 
 TIME_FORMATS = (
     '%Y-%m-%dT%H:%M:%S.%f%z',
@@ -175,7 +180,8 @@ def TimezoneUser():
 
 def parse_datetime(datetime):
     if isinstance(datetime, (int, float,)):
-        return py_datetime.fromtimestamp(datetime)
+        pdt = py_datetime.fromtimestamp(datetime, tz=TimezoneUTC())
+        return pdt
     if isinstance(datetime, py_datetime):
         return datetime
 
@@ -239,6 +245,7 @@ def now(tz=TimezoneUTC()):
 
 
 def utc(datetime):
+    # Set datetime to UTC without altering.
     return to_timezone(datetime, dst=TimezoneUTC(), src=TimezoneUTC())
 
 
@@ -311,23 +318,43 @@ def format_http_datetime(datetime, src=TimezoneUTC()):
     return(datetime.strftime('%a, %d %b %Y %H:%M:%S %Z'))
 
 
-def format_iso8601(datetime, src=TimezoneUTC()):
+def epoch():
+    return time.time()
+
+
+def format_iso8601(datetime, ms=True, always_offset=False):
     """String Formatted Date & Time.
 
     An ISO 8601 date string.
     e.g. 2011-04-14T16:00:49Z
 
     Args:
-        datetime (datetime): Datetime object. (Optional)
-        destination_tz (str): Destination Timezone.
-            List of valid entries in timezones attribute.
+        datetime (datetime): Datetime object.
 
-    Returns string formatted date.
+    Returns string ISO8601 formatted date+time.
     """
-    datetime = to_timezone(datetime, dst=TimezoneGMT(), src=src)
+    offset = datetime.utcoffset()
+    if ms:
+        ms = '.' + datetime.strftime('%f')[0:3]
+    else:
+        ms = ''
 
-    return(datetime.strftime('%Y-%m-%dT%H:%M:%SZ') + "(" +
-           datetime.tzname() + ")")
+    if offset is None:
+        raise ValueError('Cannot ISO8601 format naive datetime')
+    if not always_offset and offset == timedelta(hours=0):
+        return(datetime.strftime('%Y-%m-%dT%H:%M:%S' + ms + 'Z'))
+    else:
+        seconds = offset.total_seconds()
+        hours, remainder = divmod(seconds, 3600)
+        minutes, remainder = divmod(remainder, 60)
+        if seconds >= 0:
+            tz = ("+{:02d}".format(int(hours)) +
+                  ":{:02d}".format(int(minutes)))
+        else:
+            tz = ("{:03d}".format(int(hours)) +
+                  ":{:02d}".format(int(minutes)))
+
+        return(datetime.strftime('%Y-%m-%dT%H:%M:%S' + ms) + tz)
 
 
 def add_date(orig_date, days=None, weeks=None, months=None):
@@ -367,3 +394,8 @@ def calc_next_expire(metric, span, expired):
         new_expire = add_date(expired,
                               months=span)
     return new_expire
+
+
+def daterange(start_date, end_date):
+    for n in range(int((end_date - start_date).days)):
+        yield start_date + timedelta(n)

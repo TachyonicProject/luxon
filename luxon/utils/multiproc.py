@@ -28,7 +28,9 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 import os
+import time
 import traceback
+import threading
 from time import sleep
 from multiprocessing import Process as PYProcess
 
@@ -39,10 +41,43 @@ from luxon.utils.daemon import GracefulKiller
 log = GetLogger(__name__)
 
 
+def dead(procs):
+    for proc in procs.copy():
+        if not proc.is_alive():
+            if isinstance(proc, threading.Thread):
+                log.error("Thread '%s' died" % proc.name)
+            else:
+                log.error("Process '%s' died" % proc.name)
+            procs.remove(proc)
+
+
+def join(procs):
+    while procs:
+        for proc in procs.copy():
+            if proc.is_alive():
+                if isinstance(proc, threading.Thread):
+                    log.error("Waiting for thread '%s' to end" % proc.name)
+                else:
+                    log.error("Waiting for process '%s' to end" % proc.name)
+            else:
+                if isinstance(proc, threading.Thread):
+                    log.error("Thread '%s' ended" % proc.name)
+                else:
+                    log.error("Process '%s' ended" % proc.name)
+                procs.remove(proc)
+            if procs:
+                time.sleep(1)
+
+
+class End(Exception):
+    pass
+
+
 class ProcessManager(object):
-    __slots__ = ('_procs', '_restart', '_mplogger', '_manager_pid')
+    # __slots__ = ('_procs', '_restart', '_mplogger', '_manager_pid')
 
     def __init__(self):
+        self._dead = False
         self._manager_pid = os.getpid()
         self._procs = {}
         self._restart = []
@@ -78,40 +113,51 @@ class ProcessManager(object):
         proc = self._get_proc(name)
         return proc.alive
 
+    def join(self, name):
+        proc = self._get_proc(name)
+        return proc.join()
+
     def start(self):
-
-        self._mplogger.receive()
-
-        def die(sig):
-            try:
-                if os.getpid() != self._manager_pid:
+        def end(signal):
+            if self._manager_pid != os.getpid():
+                if (threading.current_thread() is
+                        threading.main_thread()):
                     raise SystemExit()
-            except Exception:
-                pass
 
-        sig = GracefulKiller(die)
+        sig = GracefulKiller(end)
 
         for proc in self._procs:
             log.info("Starting process '%s'" % self._procs[proc].name)
             self._procs[proc].start()
 
-        while True:
-            if not self._procs:
-                break
-            elif sig.killed:
-                break
-            else:
-                for proc_name in self._procs.copy():
-                    proc = self._procs[proc_name]
-                    if not proc.alive:
-                        if proc_name in self._restart:
-                            log.info("Restarting process '%s'" % proc.name)
-                            proc.restart()
-                        else:
-                            self.terminate(proc_name)
-            sleep(1)
+        self._mplogger.receive()
 
-        self._mplogger.close()
+        try:
+            while True:
+                if sig.killed or not self._procs:
+                    break
+                else:
+                    for proc_name in self._procs.copy():
+                        proc = self._procs[proc_name]
+                        if not proc.alive:
+                            if proc_name in self._restart:
+                                log.info("Restarting process '%s'" % proc.name)
+                                self._mplogger.close()
+                                proc.restart()
+                                self._mplogger.receive()
+                            else:
+                                self.terminate(proc_name)
+                sleep(1)
+
+            for proc in self._procs:
+                self._procs[proc]._proc.terminate()
+
+            self._mplogger.close()
+        except (SystemExit, KeyboardInterrupt):
+            for proc in self._procs:
+                self._procs[proc].terminate()
+
+            self._mplogger.close()
 
 
 class Process(object):
@@ -128,12 +174,13 @@ class Process(object):
     def _new(self):
         def _process(log_queue, *args, **kwargs):
             MPLogger(self._name, log_queue)
+
             try:
-                return self._target(*args, **kwargs)
+                self._target(*args, **kwargs)
             except SystemExit:
-                log.info('Process ended (System Exit)')
+                log.error('Process ended (System Exit)')
             except KeyboardInterrupt:
-                log.info('Process ended (Keyboard Interrupt)')
+                log.error('Process ended (Keyboard Interrupt)')
             except Exception:
                 log.critical('Process ended (Unhandled Exception)'
                              '\n%s' % str(traceback.format_exc()))
@@ -142,7 +189,7 @@ class Process(object):
                          name=self._name,
                          args=self._args,
                          kwargs=self._kwargs,
-                         daemon=True)
+                         daemon=False)
 
     @property
     def name(self):

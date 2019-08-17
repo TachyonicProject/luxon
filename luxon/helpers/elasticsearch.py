@@ -27,20 +27,35 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-import os
-
 from luxon import g
 
 from elasticsearch import Elasticsearch
 
-def es():
+_cached = None
+
+
+def elasticsearch():
     """Function es - returns an ElasticSearch object.
 
     Returns:
          ElasticSearch object
     """
-    kwargs = g.app.config.kwargs('objectstore')
-    if kwargs.get('type') == 'ElasticSearch':
-        return Elasticsearch(**kwargs)
-    else:
-        raise TypeError('Unknown Object Store type defined in configuration')
+    global _cached
+
+    if not _cached:
+        hosts = []
+        sniff = g.app.config.getboolean('elasticsearch', 'sniff',
+                                        fallback=True)
+        config = g.app.config.items('elasticsearch')
+        for option, value in config:
+            if '://' in value:
+                hosts.append(value)
+        if sniff:
+            _cached = Elasticsearch(hosts,
+                                    sniff_on_start=True,
+                                    sniff_on_connection_fail=True,
+                                    sniffer_timeout=60)
+        else:
+            _cached = Elasticsearch(hosts)
+
+    return _cached

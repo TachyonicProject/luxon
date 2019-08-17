@@ -66,6 +66,10 @@ class Request(RequestBase):
         return sys.stdin
 
     @property
+    def id(self):
+        raise NotImplementedError('CMD has no request-id')
+
+    @property
     def raw(self):
         """Returns sys.stdin"""
         return sys.stdin

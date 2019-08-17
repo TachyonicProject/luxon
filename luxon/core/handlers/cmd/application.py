@@ -30,7 +30,6 @@
 import os
 import argparse
 import traceback
-
 from luxon import g, router
 from luxon.core.app import App
 from luxon.core.handlers.cmd.request import Request
@@ -44,6 +43,7 @@ from luxon.utils.objects import object_name
 from luxon.utils.timer import Timer
 from luxon.core import register
 from luxon.utils.daemon import Daemon
+
 
 log = GetLogger(__name__)
 
