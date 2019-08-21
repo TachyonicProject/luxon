@@ -31,13 +31,8 @@
 
 import os
 import sys
-
-if not sys.version_info >= (3, 6):
-    print('Requires python version 3.6 or higher')
-    exit()
-
 import glob
-from distutils import cmd
+import platform
 from importlib.machinery import SourceFileLoader
 
 try:
@@ -48,13 +43,40 @@ except ImportError:
     print('`pip install setuptools`')
     exit()
 
+try:
+    from Cython.Build import cythonize
+except ImportError:
+    print('Requires `cython` to be installed')
+    print('`pip install cython`')
+    exit()
+
 # DEFINE ROOT PACKAGE NAME
 PACKAGE = 'luxon'
 
 
-###############################################################################
-# DO NOT EDIT CODE BELOW THIS POINT ###########################################
-###############################################################################
+##############################################################################
+# DO NOT EDIT CODE BELOW THIS POINT ##########################################
+##############################################################################
+
+if platform.system() == "Linux":
+    includes = []
+    libraries = ['rt']
+elif platform.system() == "Darwin":
+    # APPLE
+    includes = []
+    libraries = []
+else:
+    print("Supported `Linux` or 'MacOS X / Darwin' only")
+    exit()
+
+extensions = [
+    Extension("luxon.structs.ipc",
+              sources=["luxon/structs/ipc.pyx"],
+              include_dirs=['/opt/local/include'] + includes,
+              libraries=['pthread'] + libraries,
+              language='c++',
+              extra_compile_args=['-std=gnu++17'],),
+]
 
 cmdclass = {}
 MYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -69,6 +91,7 @@ sys.path.insert(0, MYDIR)
 metadata = SourceFileLoader(
     'metadata', os.path.join(MYDIR, CODE_DIRECTORY,
                              'metadata.py')).load_module()
+
 
 # Miscellaneous helper functions
 def requirements(path):
@@ -188,6 +211,7 @@ setup_dict = dict(
         ],
     },
     python_requires='>=3.6',
+    ext_modules=cythonize(extensions),
 )
 
 
