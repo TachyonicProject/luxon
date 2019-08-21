@@ -33,8 +33,8 @@ import os
 import time
 import atexit
 from signal import (signal,
-                    SIGHUP,
                     SIGINT,
+                    SIGHUP,
                     SIGQUIT,
                     SIGTERM)
 
@@ -43,6 +43,7 @@ class GracefulKiller:
     def __init__(self, callback=None):
         self._killed = False
         self._callback = callback
+
         signal(SIGHUP, self._exit_gracefully)
         signal(SIGINT, self._exit_gracefully)
         signal(SIGQUIT, self._exit_gracefully)
@@ -52,9 +53,10 @@ class GracefulKiller:
         # signal(SIGKILL, self._exit_gracefully)
 
     def _exit_gracefully(self, signum, frame):
-        self._killed = True
-        if self._callback:
-            self._callback(signum)
+        if signum != SIGHUP:
+            self._killed = True
+            if self._callback:
+                self._callback(signum)
 
     @property
     def killed(self):

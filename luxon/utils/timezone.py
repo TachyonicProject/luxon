@@ -34,9 +34,9 @@ from datetime import tzinfo, timedelta
 
 import pytz
 from tzlocal import get_localzone
+from dateutil.parser import parse as dateutil_parse
 
 from luxon import g
-from luxon.core.regex import ISODATETIME_RE
 
 _cached_time_zone_system = None
 _cached_time_zone_app = None
@@ -44,31 +44,6 @@ _cached_time_zone_app = None
 
 if time.gmtime(0).tm_year != 1970:
     raise Exception('System does not provide unix epoch time, incompatible')
-
-TIME_FORMATS = (
-    '%Y-%m-%dT%H:%M:%S.%f%z',
-    '%Y-%m-%dT%H:%M:%S%z',
-    '%Y-%m-%d %H:%M:%S%z',
-    '%Y-%m-%d %H:%M:%S.%f',
-    '%Y/%m/%d %H:%M:%S%z',
-    '%Y-%m-%d %H:%M:%S.%f',
-    '%Y-%m-%dT%H:%M:%SZ',
-    '%Y-%m-%d %H:%M:%S.%f%z',
-    '%Y-%m-%d %H:%M:%S%z',
-    '%Y-%m-%d %H:%M:%S %Z',
-    '%Y/%m/%d %H:%M:%S %Z',
-    '%Y-%m-%d %H:%M %Z',
-    '%Y/%m/%d %H:%M %Z',
-    '%Y-%m-%d %H:%M:%S',
-    '%Y/%m/%d %H:%M:%S',
-    '%Y-%m-%d %H:%M',
-    '%Y/%m/%d %H:%M',
-    '%a, %d %b %Y %H:%M:%S %Z',
-    '%a, %d-%b-%Y %H:%M:%S %Z',
-    '%A, %d-%b-%y %H:%M:%S %Z',
-    '%a %b %d %H:%M:%S %Y',
-    '%a %b %d %H:%M:%S %Y',
-)
 
 
 def parse_http_date(http_date, obs_date=False):
@@ -189,20 +164,11 @@ def parse_datetime(datetime):
         raise ValueError("datetime value not" +
                          " 'str' or 'datetime'")
 
-    # PYTHON strptime %z cannot match 00:00 ISO 8601 offset.
-    if ISODATETIME_RE.match(datetime):
-        dt = datetime[0:20]
-        tz = datetime[20:25].replace(":", "")
-        datetime = dt + tz
-
-    for time_format in TIME_FORMATS:
-        try:
-            return py_datetime.strptime(datetime, time_format)
-        except ValueError:
-            continue
-
-    raise ValueError('datetime value %r does not' % datetime +
-                     ' match known formats')
+    try:
+        return dateutil_parse(datetime)
+    except ValueError:
+        raise ValueError('datetime value %r does not' % datetime +
+                         ' match known formats')
 
 
 def to_timezone(datetime, dst=TimezoneSystem(), src=None, fallback=None):
@@ -397,5 +363,12 @@ def calc_next_expire(metric, span, expired):
 
 
 def daterange(start_date, end_date):
-    for n in range(int((end_date - start_date).days)):
-        yield start_date + timedelta(n)
+    if end_date > start_date:
+        for n in range(int((end_date - start_date).days)):
+            yield start_date + timedelta(n)
+
+        yield end_date
+
+    if start_date > end_date:
+        for n in range(int((start_date - end_date).days)):
+            yield start_date + timedelta(n)
