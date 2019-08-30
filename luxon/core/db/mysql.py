@@ -154,7 +154,6 @@ class Connection(BaseConnection):
         self._conn.commit()
         for crsr in self._cursors:
             crsr._uncommited = False
-            crsr._executed = False
 
 
 def connect(*args, **kwargs):
