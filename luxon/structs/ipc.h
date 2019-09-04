@@ -32,6 +32,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <iostream>
+#include <string>
 #include <boost/interprocess/sync/interprocess_sharable_mutex.hpp>
 #include <boost/interprocess/sync/interprocess_upgradable_mutex.hpp>
 #include <boost/interprocess/sync/sharable_lock.hpp>
@@ -41,11 +42,15 @@
 #include <boost/interprocess/containers/vector.hpp>
 #include <boost/container/scoped_allocator.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
+#include <boost/interprocess/containers/map.hpp>
 #include <boost/unordered_map.hpp>
 #include <exception>
-
+#include <boost/interprocess/containers/string.hpp>
+#include <boost/interprocess/containers/list.hpp>
 
 using boost::unordered_map;
+using boost::interprocess::map;
+using boost::interprocess::basic_string;
 
 
 namespace bip = boost::interprocess;
@@ -56,6 +61,30 @@ typedef unsigned char Byte;
 typedef bip::allocator<Byte, bip::managed_shared_memory::segment_manager> ByteAlloc;
 typedef bip::vector<Byte> Bytes;
 typedef bip::vector<Byte, ByteAlloc> ShmBytes;
+
+template <typename BytesContainer>
+struct BytesHash
+{
+    std::size_t operator()(BytesContainer const& c) const
+    {
+        return boost::hash_range(c.begin(), c.end());
+    }
+};
+
+typedef ShmBytes ShmKeyType;
+typedef ShmBytes ShmMappedType;
+typedef std::pair<ShmKeyType, ShmMappedType> ValueType;
+
+typedef bip::allocator<
+    ValueType,
+    bip::managed_shared_memory::segment_manager> ShmMapAlloc;
+
+typedef unordered_map<
+    ShmKeyType,
+    ShmMappedType,
+    BytesHash<ShmKeyType>,
+    std::equal_to<ShmKeyType>,
+    bcon::scoped_allocator_adaptor<ShmMapAlloc> > ShmMap;
 
 
 struct StopIteration : public std::exception {
@@ -70,41 +99,22 @@ struct KeyError : public std::exception {
    }
 };
 
+void shmfree(const char *name)
+{
+    bip::shared_memory_object::remove(name);
+}
+
 class BoostHashMap {
     private:
-        template <typename BytesContainer>
-        struct BytesHash
-        {
-            std::size_t operator()(BytesContainer const& c) const
-            {
-                return boost::hash_range(c.begin(), c.end());
-            }
-        };
-
-        typedef ShmBytes ShmKeyType;
-        typedef ShmBytes ShmMappedType;
-        typedef std::pair<ShmKeyType, ShmMappedType> ValueType;
-
-        typedef bip::allocator<
-            ValueType,
-            bip::managed_shared_memory::segment_manager> MapAlloc;
-
-        typedef unordered_map<
-            ShmKeyType,
-            ShmMappedType,
-            BytesHash<ShmKeyType>,
-            std::equal_to<ShmKeyType>,
-            bcon::scoped_allocator_adaptor<MapAlloc> > ShmMap;
-
-
         bip::managed_shared_memory shm;
-        const char *name;
+        const char *shm_name;
+        const char *map_name;
     public:
-
-        BoostHashMap(const char *name, long unsigned int size)
-            : shm(bip::open_or_create, name, size)
+        BoostHashMap(const char *shm_name, long unsigned int size, const char *map_name)
+            : shm(bip::open_or_create, shm_name, size)
         {
-            this->name = name;
+            this->shm_name = shm_name;
+            this->map_name = map_name;
         }
         ~BoostHashMap()
         {
@@ -113,18 +123,18 @@ class BoostHashMap {
 
         void set(char *key, long unsigned key_len, char *value, long unsigned int value_len)
         {
-            bip::interprocess_upgradable_mutex *mtx = this->shm.find_or_construct<boost::interprocess::interprocess_upgradable_mutex>("mtx")();
-            bip::upgradable_lock<bip::interprocess_upgradable_mutex> lock(*mtx);
-            ShmMap *shm_map = this->shm.find_or_construct<ShmMap>("dict")(this->shm.get_segment_manager());
+            bip::interprocess_sharable_mutex *mtx = this->shm.find_or_construct<boost::interprocess::interprocess_sharable_mutex>("mtx")();
+            bip::scoped_lock<bip::interprocess_sharable_mutex> lock(*mtx);
+            ShmMap *shm_map = this->shm.find_or_construct<ShmMap>(this->map_name)(this->shm.get_segment_manager());
             shm_map->erase(ShmKeyType { key, key+key_len, this->shm.get_segment_manager() });
             shm_map->insert(ValueType(ShmKeyType { key, key+key_len, this->shm.get_segment_manager() }, ShmMappedType { value, value+value_len, this->shm.get_segment_manager() }));
         }
 
         Bytes get(char *key, long unsigned key_len)
         {
-            bip::interprocess_upgradable_mutex *mtx = this->shm.find_or_construct<boost::interprocess::interprocess_upgradable_mutex>("mtx")();
-            bip::sharable_lock<bip::interprocess_upgradable_mutex> lock(*mtx);
-            ShmMap *shm_map = this->shm.find_or_construct<ShmMap>("dict")(this->shm.get_segment_manager());
+            bip::interprocess_sharable_mutex *mtx = this->shm.find_or_construct<boost::interprocess::interprocess_sharable_mutex>("mtx")();
+            bip::scoped_lock<bip::interprocess_sharable_mutex> lock_sharable(*mtx);
+            ShmMap *shm_map = this->shm.find_or_construct<ShmMap>(this->map_name)(this->shm.get_segment_manager());
             ShmMap::iterator f = shm_map->find(ShmKeyType { key, key+key_len, this->shm.get_segment_manager() });
             if (f != shm_map->end())
             {
@@ -137,16 +147,16 @@ class BoostHashMap {
         }
 
         void erase(char *key, long unsigned key_len) {
-            bip::interprocess_upgradable_mutex *mtx = this->shm.find_or_construct<boost::interprocess::interprocess_upgradable_mutex>("mtx")();
-            bip::sharable_lock<bip::interprocess_upgradable_mutex> lock(*mtx);
-            ShmMap *shm_map = this->shm.find_or_construct<ShmMap>("dict")(this->shm.get_segment_manager());
+            bip::interprocess_sharable_mutex *mtx = this->shm.find_or_construct<boost::interprocess::interprocess_sharable_mutex>("mtx")();
+            bip::scoped_lock<bip::interprocess_sharable_mutex> lock(*mtx);
+            ShmMap *shm_map = this->shm.find_or_construct<ShmMap>(this->map_name)(this->shm.get_segment_manager());
             shm_map->erase(ShmKeyType { key, key+key_len, this->shm.get_segment_manager() });
         }
 
         Bytes iter(long unsigned pos) {
-            bip::interprocess_upgradable_mutex *mtx = this->shm.find_or_construct<boost::interprocess::interprocess_upgradable_mutex>("mtx")();
-            bip::sharable_lock<bip::interprocess_upgradable_mutex> lock(*mtx);
-            ShmMap *shm_map = this->shm.find_or_construct<ShmMap>("dict")(this->shm.get_segment_manager());
+            bip::interprocess_sharable_mutex *mtx = this->shm.find_or_construct<boost::interprocess::interprocess_sharable_mutex>("mtx")();
+            bip::scoped_lock<bip::interprocess_sharable_mutex> lock(*mtx);
+            ShmMap *shm_map = this->shm.find_or_construct<ShmMap>(this->map_name)(this->shm.get_segment_manager());
             ShmMap::iterator f = shm_map->begin();
             advance(f, pos);
             if (f != shm_map->end())
@@ -161,9 +171,9 @@ class BoostHashMap {
 
         void clear()
         {
-            bip::interprocess_upgradable_mutex *mtx = this->shm.find_or_construct<boost::interprocess::interprocess_upgradable_mutex>("mtx")();
-            bip::sharable_lock<bip::interprocess_upgradable_mutex> lock(*mtx);
-            ShmMap *shm_map = this->shm.find_or_construct<ShmMap>("dict")(this->shm.get_segment_manager());
+            bip::interprocess_sharable_mutex *mtx = this->shm.find_or_construct<boost::interprocess::interprocess_sharable_mutex>("mtx")();
+            bip::scoped_lock<bip::interprocess_sharable_mutex> lock(*mtx);
+            ShmMap *shm_map = this->shm.find_or_construct<ShmMap>(this->map_name)(this->shm.get_segment_manager());
             shm_map->clear();
         }
 
@@ -177,11 +187,3 @@ class BoostHashMap {
             return this->shm.get_free_memory();
         }
 };
-
-
-void shmfree(const char *name)
-{
-    bip::shared_memory_object::remove(name);
-}
-
-
