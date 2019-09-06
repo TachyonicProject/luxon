@@ -165,7 +165,7 @@ class Auth(object):
         return self.json
 
     def new(self, user_id, username=None, domain=None,
-            roles=None, region=None, confederation=None):
+            roles=None, region=None, confederation=None, metadata={}):
         """New Authentication token.
 
         Args:
@@ -173,6 +173,7 @@ class Auth(object):
             username (str): Username (optional).
             domain (str): Domain (optional).
             roles (list): List of roles (optional).
+            metadata (dict): Provided metadata (optional)
         """
 
         self.clear()
@@ -184,6 +185,7 @@ class Auth(object):
             self._credentials['loginat'] = now()
 
         self._credentials['user_id'] = user_id
+        self._credentials['metadata'] = metadata
 
         if region is not None:
             self._credentials['user_region'] = region
@@ -239,6 +241,16 @@ class Auth(object):
                 raise AccessDeniedError("Token already scoped in 'tenant'")
 
         self._credentials['tenant_id'] = value
+
+    @property
+    def metadata(self):
+        return self._credentials.get('metadata', None)
+
+    @metadata.setter
+    def extra(self, value):
+        self.validate()
+
+        self._credentials['metadata'] = value
 
     @property
     def user_id(self):
