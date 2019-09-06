@@ -76,7 +76,14 @@ extensions = [
               libraries=['pthread'] + libraries,
               language='c++',
               extra_compile_args=['-std=gnu++17'],),
+    Extension("luxon.structs.lru",
+              sources=["luxon/structs/lru.pyx"],
+              include_dirs=['/opt/local/include'] + includes,
+              libraries=['pthread'] + libraries,
+              language='c++',
+              extra_compile_args=['-std=gnu++17'],),
 ]
+
 
 cmdclass = {}
 MYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -128,6 +135,21 @@ def list_packages(package):
                                              top_dir).replace('/', '.')))
 
     return packages
+
+
+cython_packages = [
+    'luxon.core.networking',
+    'luxon.utils',
+]
+
+extensions += [
+    Extension(
+        package + '.' + module,
+        [os.path.join(*(package.split('.') + [module + '.py']))]
+    )
+    for package in cython_packages
+    for module in list_modules(os.path.join(MYDIR, *package.split('.')))
+]
 
 
 def read(filename):
@@ -211,7 +233,9 @@ setup_dict = dict(
         ],
     },
     python_requires='>=3.6',
-    ext_modules=cythonize(extensions),
+    ext_modules=cythonize(extensions,
+                          compiler_directives={'language_level': 3}),
+
 )
 
 
