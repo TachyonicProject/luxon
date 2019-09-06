@@ -118,8 +118,8 @@ class Auth(object):
         b64_token = base64.b64encode(bytes_token)
         token_sig = if_unicode_to_bytes(self._rsakey.sign(b64_token))
         token = if_bytes_to_unicode(token_sig + b'!!!!' + b64_token)
-        if len(token) > 1280:
-            raise ValueError("Auth Token exceeded 10KB" +
+        if len(token) > 2560:
+            raise ValueError("Auth Token exceeded 20KB" +
                              " - Revise Assignments for credentials")
 
         return token
