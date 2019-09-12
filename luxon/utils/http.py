@@ -156,7 +156,7 @@ class ETags(object):
         )
 
 
-def parse_headers_values(header):
+def parse_headers_values(headers):
     """Parses comma seperated headers
 
     Headers with options and values using = seperator
@@ -164,12 +164,12 @@ def parse_headers_values(header):
 
     Returns list of header options and valuea.
     """
-    if header is None:
+    if headers is None:
         return []
 
     return [
         "=".join([value.strip(' ') for value in header.split('=')])
-        for header in list(map(str.strip, header.split(',')))
+        for header in list(map(str.strip, headers.split(',')))
     ]
 
 
