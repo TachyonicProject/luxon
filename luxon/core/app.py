@@ -69,7 +69,8 @@ class App(object):
         templating (luxon.core.template.Environment): Jinja Engine.
     """
 
-    __slots__ = ('_name', '_path', '_debug', '_config', '_jinja')
+    __slots__ = ('_name', '_path', '_debug',
+                 '_config_path', '_config', '_jinja')
 
     def __init__(self, name, path=None, ini=None, defaults=True):
 
@@ -78,6 +79,9 @@ class App(object):
 
         # Prepare configuration object
         self._config = Config()
+
+        # Config Path
+        self._config_path = ini
 
         # Attempt to determine application root.
         self._path = path = determine_app_root(name, path).rstrip('/')
@@ -89,10 +93,12 @@ class App(object):
             if ini is None:
                 if is_file(path + '/settings.ini'):
                     self._config.load(path + '/settings.ini')
+                    self._config_path = path + '/settings.ini'
                 else:
                     luxon_config = Module('luxon').read('settings.ini')
                     self._config.read_string(if_bytes_to_unicode(luxon_config))
             else:
+                self._config_path = ini
                 if is_file(ini):
                     self._config.load(ini)
                 else:
@@ -151,3 +157,7 @@ class App(object):
     @property
     def config(self):
         return self._config
+
+    @property
+    def config_path(self):
+        return self._config_path
