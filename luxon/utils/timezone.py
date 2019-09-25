@@ -31,6 +31,7 @@ import time
 import calendar
 from datetime import datetime as py_datetime
 from datetime import tzinfo, timedelta
+from math import floor
 
 import pytz
 from tzlocal import get_localzone
@@ -336,8 +337,8 @@ def add_date(orig_date, days=None, weeks=None, months=None):
         new_month = orig_date.month + months
         # note: in datetime.date, months go from 1 to 12
         if new_month > 12:
-            new_year += months / 12
-            new_month -= (months / 12) * 12
+            new_year += floor(months / 12)
+            new_month = new_month % 12
 
         last_day_of_month = calendar.monthrange(new_year, new_month)[1]
         new_day = min(orig_date.day, last_day_of_month)
