@@ -28,9 +28,11 @@ PyMySQL
 
 # Redis
 redis
+redlock-py
 # NOTE(cfrademan):
 # do not remove hiredis - performance
 hiredis
+
 
 # RabbitMQ
 pika==1.1.0

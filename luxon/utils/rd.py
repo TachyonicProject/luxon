@@ -28,6 +28,10 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 import pickle
+import redlock
+from logging import getLogger
+
+log = getLogger(__name__)
 
 
 class Redis(object):
@@ -41,6 +45,32 @@ class Redis(object):
 
     def __init__(self, connection):
         self._redis = connection
+
+    def lock(self, name, validity, retry_count=-1,
+             retry_delay=200):
+        if retry_count < 0:
+            retry_count = 0
+            is_blocking = True
+        else:
+            is_blocking = False
+
+        while True:
+            dlm = redlock.Redlock([self._redis],
+                                  retry_count=retry_count+1,
+                                  retry_delay=retry_delay / 1000.0)
+            lock = dlm.lock(name, validity)
+
+            if lock:
+                return lock
+
+            if is_blocking:
+                # redlock already slept for retry-delay
+                continue
+
+    def unlock(self, lock):
+        dlm = redlock.Redlock([self._redis])
+        lock = redlock.Lock(0, lock.resource, lock.key)
+        dlm.unlock(lock)
 
     def set(self, attr, value, expire=None):
         value = pickle.dumps(value)
