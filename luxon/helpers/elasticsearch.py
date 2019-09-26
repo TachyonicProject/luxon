@@ -54,8 +54,9 @@ def elasticsearch():
             _cached = Elasticsearch(hosts,
                                     sniff_on_start=True,
                                     sniff_on_connection_fail=True,
-                                    sniffer_timeout=60)
+                                    timeout=30)
         else:
-            _cached = Elasticsearch(hosts)
+            _cached = Elasticsearch(hosts,
+                                    timeout=30)
 
     return _cached
