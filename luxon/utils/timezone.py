@@ -337,7 +337,7 @@ def add_date(orig_date, days=None, weeks=None, months=None):
         new_month = orig_date.month + months
         # note: in datetime.date, months go from 1 to 12
         if new_month > 12:
-            new_year += floor(months / 12)
+            new_year += floor(new_month / 12)
             new_month = new_month % 12
 
         last_day_of_month = calendar.monthrange(new_year, new_month)[1]
