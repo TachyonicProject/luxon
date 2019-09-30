@@ -397,9 +397,9 @@ def form(model, values=None, readonly=False):
             field_readonly = readonly
 
         if obj.null:
-            required = True
-        else:
             required = False
+        else:
+            required = True
 
         label = obj.label
 
