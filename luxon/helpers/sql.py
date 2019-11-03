@@ -28,19 +28,13 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 from luxon import g
-from luxon.utils.encoding import if_bytes_to_unicode
+from luxon.utils.sql import sql as sql_util
 
-
-class TrackToken(object):
-    def __init__(self, expire):
-        self._session_id = g.current_request.unscoped_token
-
-    def clear(self):
-        pass
-
-    def save(self):
-        pass
-
-    def __str__(self):
-        return if_bytes_to_unicode(str(self._session_id),
-                                   'ISO-8859-1')
+def sql(config='database'):
+    kwargs = g.app.config.kwargs(config)
+    return sql_util(kwargs.get('type', 'mysql'),
+                    kwargs.get('username', 'None'),
+                    kwargs.get('password', 'None'),
+                    kwargs.get('host', 'localhost'),
+                    kwargs.get('port', '3306'),
+                    kwargs.get('database', 'tachyonic'))

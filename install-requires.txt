@@ -1,3 +1,6 @@
+# authentication
+authlib
+
 # Data Structures
 bidict
 
@@ -23,7 +26,9 @@ python-dateutil
 # RST
 docutils
 
-# Mysql
+# SQL
+SQLAlchemy
+mysqlclient
 PyMySQL
 
 # Redis

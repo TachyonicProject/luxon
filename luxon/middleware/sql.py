@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Christiaan Frans Rademan.
+# Copyright (c) 2019 Christiaan Rademan <chris@fwiw.co.za>.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -27,20 +27,21 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-from luxon import g
-from luxon.utils.encoding import if_bytes_to_unicode
 
+from luxon.helpers.sql import sql
 
-class TrackToken(object):
-    def __init__(self, expire):
-        self._session_id = g.current_request.unscoped_token
+class SQL(object):
+    def __init__(self):
+        self._db_session = sql()
 
-    def clear(self):
-        pass
+    def pre(self, req, response):
+        if req.method == 'OPTIONS':
+            return
 
-    def save(self):
-        pass
+        req.context['sql'] = self._db_session()
 
-    def __str__(self):
-        return if_bytes_to_unicode(str(self._session_id),
-                                   'ISO-8859-1')
+    def post(self, req, response, error):
+        if 'sql' in req.context:
+            if error:
+                req.context['sql'].rollback()
+            req.context['sql'].close()

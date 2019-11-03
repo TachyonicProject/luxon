@@ -43,7 +43,7 @@ class RequestBase(object):
         context (obj): Dictionary/Property object to hold any data about the
             request which is specific to your app. (e.g. auth object)
         credentials (obj): Cached luxon.core.auth.Auth object.
-        user_token (str): To be overwritten by specific handlers, if used.
+        unscoped_token (str): To be overwritten by specific handlers, if used.
                           Objects from the RequestBase Class returns None.
         context_domain (str): To be overwritten by specific handlers, if used.
                               Objects from the RequestBase Class returns None.
@@ -98,27 +98,27 @@ class RequestBase(object):
         if self._cached_auth is None:
             expire = g.app.config.getint('tokens', 'expire', fallback=3600)
             self._cached_auth = Auth(expire=expire)
-            if self.user_token:
+            if self.unscoped_token:
                 try:
-                    if self.scope_token:
-                        self.credentials.token = self.scope_token
+                    if self.scoped_token:
+                        self.credentials.token = self.scoped_token
                     else:
-                        self.credentials.token = self.user_token
+                        self.credentials.token = self.unscoped_token
                     self.log['USER-ID'] = self._cached_auth.user_id
                 except TokenExpiredError:
-                    self.user_token = None
-                    self.scope_token = None
+                    self.unscoped_token = None
+                    self.scoped_token = None
                     self.session.clear()
                     raise
 
         return self._cached_auth
 
     @property
-    def user_token(self):
+    def unscoped_token(self):
         return None
 
     @property
-    def scope_token(self):
+    def scoped_token(self):
         return None
 
     @property

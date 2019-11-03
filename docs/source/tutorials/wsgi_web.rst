@@ -371,7 +371,7 @@ Modify **myapp/myapp/views/login.py** with:
                                     data=req.form_dict)
                 if 'token' in login.json:
                     token = login.json['token']
-                    req.user_token = token
+                    req.unscoped_token = token
                     req.session['domain'] = "default"
                     req.session['tenant_id'] = "default"
                     req.session.save()
@@ -379,7 +379,7 @@ Modify **myapp/myapp/views/login.py** with:
 
 Luxon's HTTP Client returns a luxon response object. Because our API returns JSON formatted data, we can access
 it as a dict from the response's ``.json`` attribute. Of course, when the login is successful, we'll receive a
-token in the response. We update the ``req.user_token`` attribute with this value. This will save the user's token
+token in the response. We update the ``req.unscoped_token`` attribute with this value. This will save the user's token
 in the current :ref:`session<base_session>` so that we can use it for future requests as well. Luxon also caters
 for session `domain` s and `tenant` s, but this is beyond the scope of this tutorial, so they are set to ``default``.
 Lastly, the session is saved to persist this data, and we redirect the user to the home page.
@@ -413,14 +413,14 @@ should look like this:
                                     data=req.form_dict)
                 if 'token' in login.json:
                     token = login.json['token']
-                    req.user_token = token
+                    req.unscoped_token = token
                     req.session['domain'] = "default"
                     req.session['tenant_id'] = "default"
                     req.session.save()
                 resp.redirect('/')
 
         def logout(self, req, resp):
-            req.user_token = None
+            req.unscoped_token = None
             resp.redirect('/login')
 
 
@@ -470,7 +470,7 @@ Create the the **myapp/templates/navbar.html** template:
             </div>
           </li>
           <li class="nav-item">
-              {% if REQ.user_token %}
+              {% if REQ.unscoped_token %}
               <a class="nav-link" href="/logout">Logout</a>
               {% else %}
               <a class="nav-link" href="/login">Login</a>
@@ -481,7 +481,7 @@ Create the the **myapp/templates/navbar.html** template:
     </nav>
 
 Notice that luxon provides the request object to the jinja environment, in a variable called ``REQ``, so we look at
-``REQ.user_token`` to see if the user is logged in or not, and depending on that, either display *login* or *logout* in
+``REQ.unscoped_token`` to see if the user is logged in or not, and depending on that, either display *login* or *logout* in
 the menu.
 
 In our menu we are referencing two views we have not yet created - ``/users`` and ``/user/add``. These will be created
@@ -551,7 +551,7 @@ Next up we create the view. Create **views/users.py** with:
             return render_template('myapp/users.html', users=users.json, title="Users")
 
 In the API tutorial we protected our ``/users`` view with a tag, so this means we need to supply the token
-to the API so that it can authorize the logged-in user. If this is set in the session in the request's ``user_token``
+to the API so that it can authorize the logged-in user. If this is set in the session in the request's ``unscoped_token``
 attribute (like we did inside the ``/login`` view), luxon includes this value for the ``X-Auth-Token`` header when
 making the request to the API. The resulting list of users we obtain from the response's ``.json`` attribute, and pass
 that to the template in the variable ``users``.

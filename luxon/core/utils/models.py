@@ -29,7 +29,14 @@
 # THE POSSIBILITY OF SUCH DAMAGE.
 
 from luxon.core.register import _models
+from luxon.core.register import _sa_models
 from luxon.structs.models.sqlmodel import SQLModel
+from luxon.helpers.sql import sql
+from logging import getLogger
+
+from sqlalchemy.ext.declarative import declarative_base
+
+log = getLogger(__name__)
 
 
 def backup_tables(conn):
@@ -77,6 +84,15 @@ def create_tables():
         if issubclass(Model, SQLModel):
             Model.create_table()
 
+    session_maker = sql()
+    session = session_maker()
+    engine = session.get_bind()
+
+    for Model in _sa_models:
+        try:
+            Model.__table__.create(engine, checkfirst=True)
+        except Exception as err:
+            log.critical(err)
 
 def restore_tables(conn, backup):
     """Restores database from backup
