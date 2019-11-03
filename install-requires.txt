@@ -1,4 +1,7 @@
-# Other
+# authentication
+authlib
+
+# Data Structures
 bidict
 
 # Cryptography
@@ -18,18 +21,23 @@ requests~=2.21
 # Timezones
 pytz
 tzlocal
+python-dateutil
 
 # RST
 docutils
 
-# Mysql
+# SQL
+SQLAlchemy
+mysqlclient
 PyMySQL
 
 # Redis
 redis
+redlock-py
 # NOTE(cfrademan):
 # do not remove hiredis - performance
 hiredis
+
 
 # RabbitMQ
 pika==1.1.0
@@ -47,3 +55,6 @@ openapi-spec-validator
 
 # Elastic
 elasticsearch>=7.0.0,<8.0.0
+
+# Cython
+cython

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Rademan <chris@fwiw.co.za>.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,16 +30,17 @@
 import base64
 from datetime import timedelta
 
+from authlib.jose import jwt
+from authlib.jose.rfc7519 import JWTClaims
+import authlib.jose.errors
+
 from luxon import g
-from luxon.utils.encoding import (if_unicode_to_bytes,
-                                  if_bytes_to_unicode,)
-from luxon.utils import rsa
 from luxon.core.logger import GetLogger
 from luxon.exceptions import (AccessDeniedError,
                               TokenExpiredError,
                               TokenMissingError)
 from luxon.utils import js
-from luxon.utils.timezone import now, to_utc
+from luxon.utils.timezone import epoch
 from luxon.utils import files
 
 log = GetLogger(__name__)
@@ -48,9 +49,9 @@ log = GetLogger(__name__)
 class Auth(object):
     """Authentication class.
 
-    Luxon token / authentication provider. Uses RSA private keys to sign
-    tokens. Endpoints will require the public key to validate token
-    authenticity.
+    Luxon token / authentication provider. Uses JWT Tokens with RSA private
+    keys to sign tokens. Endpoints will require the public key to validate
+    token authenticity.
 
     The keys should be stored in the application root. Usually where the
     wsgi file is located.
@@ -60,254 +61,245 @@ class Auth(object):
 
     Args:
         expire (int): Token life-span in seconds. (default 60 seconds)
-
-    Attributes:
-        authenticated (bool): Wether authenticated.
-        token (str): Token.
-        json (str): Token in JSON.
-        roles (tuple): Roles applied.
-        user_id (str): User ID.
-        user_domain (str): Login domain.
-        tenant_id (str): Scope tenant context.
-        domain (str): Scope domain context.
     """
-    __slots__ = ('_token_expire',
-                 '_credentials',
-                 '_rsakey',
+    __slots__ = ('_token',
+                 '_token_expire',
+                 '_header',
+                 '_jwt',
+                 '_rsa_pub',
+                 '_rsa_prv',
                  )
 
     def __init__(self, expire=60):
+        def read_file(path):
+            with open(path, 'rb') as f:
+                return f.read()
+
+        # JWT Token header.
+        self._header = {'alg': 'RS256'}
+
         # Create initial token dict.
         self.clear()
 
+        # Token expiry.
         self._token_expire = expire
 
-        self._rsakey = rsa.RSAKey()
-
+        # Read private key.
         if files.exists(g.app.path.rstrip('/') + '/private.pem'):
-            password = g.app.config.get('tokens',
-                                        'key_password',
-                                        fallback=None)
-            self._rsakey.load_pem_key_file(g.app.path.rstrip('/') +
-                                           '/private.pem',
-                                           password=password)
+            with open(g.app.path.rstrip('/') + '/private.pem', 'rb') as f:
+                self._rsa_prv = f.read()
+        else:
+            self._rsa_prv = None
+
+        # Read public key.
         if files.exists(g.app.path.rstrip('/') + '/public.pem'):
-            self._rsakey.load_pem_key_file(g.app.path.rstrip('/') +
-                                           '/public.pem')
+            with open(g.app.path.rstrip('/') + '/public.pem', 'rb') as f:
+                self._rsa_pub = f.read()
+        else:
+            self._rsa_pub = None
 
     def clear(self):
         """Clear authentication."""
-        self._credentials = {}
+        self._token = None
+        self._jwt = None
+
+    def validate(self):
+        if self._jwt:
+            try:
+                self._jwt.validate()
+                return True
+            except authlib.jose.errors.ExpiredTokenError:
+                raise TokenExpiredError()
+        else:
+            raise TokenMissingError()
 
     @property
     def authenticated(self):
-        if 'expire' in self._credentials:
-            return True
-        return False
+        try:
+            return self.validate()
+        except TokenExpiredError:
+            return False
+        except TokenMissingError:
+            return False
 
     @property
     def token(self):
         if not self.authenticated:
             raise TokenMissingError()
 
-        if now() > to_utc(self._credentials['expire']):
-            raise TokenExpiredError()
-
-        bytes_token = if_unicode_to_bytes(js.dumps(self._credentials,
-                                                   indent=None))
-        b64_token = base64.b64encode(bytes_token)
-        token_sig = if_unicode_to_bytes(self._rsakey.sign(b64_token))
-        token = if_bytes_to_unicode(token_sig + b'!!!!' + b64_token)
-        if len(token) > 1280:
-            raise ValueError("Auth Token exceeded 10KB" +
-                             " - Revise Assignments for credentials")
-
-        return token
+        if not self._token:
+            if self._rsa_prv:
+                return jwt.encode(self._header,
+                                  self._jwt,
+                                  self._rsa_prv)
+            else:
+                raise AccessDeniedError('No private key for signing JWT Token')
+        else:
+            return self._token
 
     @token.setter
     def token(self, token):
-        token = if_unicode_to_bytes(token)
-        try:
-            signature, b64_token = token.split(b'!!!!')
-            self._rsakey.verify(signature, b64_token)
-        except ValueError as e:
-            raise AccessDeniedError('Invalid Auth Token. %s' % e)
+        if not self._rsa_pub:
+            raise AccessDeniedError('No public key for validating JWT Token')
 
-        decoded = js.loads(base64.b64decode(b64_token))
-        utc_expire = to_utc(decoded['expire'])
-
-        if now() > utc_expire:
-            raise TokenExpiredError()
-
-        self._credentials = decoded
+        if token is not None:
+            self._token = token
+            self._jwt = jwt.decode(token, self._rsa_pub)
+            self.validate()
 
     @property
     def json(self):
-        if not self.authenticated:
-            raise TokenMissingError()
-
-        utc_expire = to_utc(self._credentials['expire'])
-        if now() > utc_expire:
-            raise TokenExpiredError()
-
-        credentials = {}
-        credentials['token'] = self.token
-        credentials.update(self._credentials)
-        return js.dumps(credentials)
-
-    def __len__(self):
-        return len(self.token)
-
-    def __repr__(self):
-        return self.json
-
-    def __str__(self):
-        return self.json
+        self.validate()
+        return js.dumps({**self._jwt, 'token': self.token})
 
     def new(self, user_id, username=None, domain=None,
-            roles=None, region=None, confederation=None):
-        """New Authentication token.
-
-        Args:
-            user_id (str): Unique user identifier.
-            username (str): Username (optional).
-            domain (str): Domain (optional).
-            roles (list): List of roles (optional).
-        """
-
+            roles=None, region=None, confederation=None, metadata={}):
         self.clear()
 
-        if 'expire' not in self._credentials:
-            # Create New Token
-            expire = (now() + timedelta(seconds=self._token_expire))
-            self._credentials['expire'] = expire
-            self._credentials['loginat'] = now()
-
-        self._credentials['user_id'] = user_id
+        claims = {}
+        claims['user_id'] = user_id
+        claims['metadata'] = metadata
 
         if region is not None:
-            self._credentials['user_region'] = region
+            claims['user_region'] = region
 
         if confederation is not None:
-            self._credentials['user_confederation'] = confederation
+            claims['user_confederation'] = confederation
 
         if username is not None:
-            self._credentials['username'] = username
+            claims['username'] = username
 
         if domain is not None:
-            self._credentials['user_domain'] = domain
+            claims['user_domain'] = domain
 
         if roles is not None:
-            self.roles = roles
+            claims['roles'] = list(set(roles))
+
+        claims['exp'] = int(epoch() + self._token_expire)
+        self._jwt = JWTClaims(claims, self._header)
 
     def extend(self):
-        expire = (now() + timedelta(seconds=self._token_expire))
-        self._credentials['expire'] = expire
+        self._token = None
+        self.validate()
+        self._jwt['exp'] = int(epoch() + self._token_expire)
 
     @property
     def roles(self):
-        return tuple(self._credentials.get('roles', []))
+        if self._jwt:
+            self.validate()
+            return tuple(self._jwt.get('roles', []))
+        return ()
 
     @roles.setter
     def roles(self, value):
+        self._token = None
         self.validate()
 
-        if 'roles' not in self._credentials:
-            self._credentials['roles'] = []
+        if 'roles' not in self._jwt:
+            self._jwt['roles'] = []
 
         if isinstance(value, (list, tuple,)):
-            self._credentials['roles'] += list(value)
-            self._credentials['roles'] = list(set(self._credentials['roles']))
+            self._jwt['roles'] += list(value)
+            self._jwt['roles'] = list(set(self._jwt['roles']))
         elif isinstance(value, str):
-            self._credentials['roles'].append(value)
-            self._credentials['roles'] = list(set(self._credentials['roles']))
+            self._jwt['roles'].append(value)
+            self._jwt['roles'] = list(set(self._jwt['roles']))
         else:
             raise ValueError("Appending roles requires 'str', 'tuple'" +
                              " or 'list'")
 
     @property
-    def tenant_id(self):
-        return self._credentials.get('tenant_id', None)
+    def metadata(self):
+        if self._jwt:
+            self.validate()
+            return self._jwt.get('metadata', None)
 
-    @tenant_id.setter
-    def tenant_id(self, value):
+    @metadata.setter
+    def metadata(self, value):
+        self._token = None
         self.validate()
-
-        if ('tenant_id' in self._credentials and
-                self._credentials['tenant_id'] is not None):
-            if self._credentials['tenant_id'] != value:
-                raise AccessDeniedError("Token already scoped in 'tenant'")
-
-        self._credentials['tenant_id'] = value
+        self._jwt['metadata'] = value
 
     @property
     def user_id(self):
-        return self._credentials.get('user_id', None)
+        if self._jwt:
+            self.validate()
+            return self._jwt.get('user_id', None)
+
+    @property
+    def username(self):
+        if self._jwt:
+            self.validate()
+            return self._jwt.get('username', None)
 
     @property
     def user_domain(self):
-        return self._credentials.get('user_domain', None)
+        if self._jwt:
+            self.validate()
+            return self._jwt.get('user_domain', None)
 
     @property
     def user_region(self):
-        return self._credentials.get('user_region', None)
+        if self._jwt:
+            self.validate()
+            return self._jwt.get('user_region', None)
 
     @property
     def user_confederation(self):
-        return self._credentials.get('user_confederation', None)
+        if self._jwt:
+            self.validate()
+            return self._jwt.get('user_confederation', None)
 
     @property
     def default_tenant_id(self):
-        return self._credentials.get('default_tenant_id', None)
+        if self._jwt:
+            self.validate()
+            return self._jwt.get('default_tenant_id', None)
 
     @default_tenant_id.setter
     def default_tenant_id(self, value):
-        self._credentials['default_tenant_id'] = value
+        if self._jwt:
+            self.validate()
+            self._jwt['default_tenant_id'] = value
+
+    @property
+    def tenant_id(self):
+        if self._jwt:
+            self.validate()
+            return self._jwt.get('tenant_id', None)
+
+    @tenant_id.setter
+    def tenant_id(self, value):
+        self._token = None
+        self.validate()
+
+        if ('tenant_id' in self._jwt and
+                self._jwt['tenant_id'] is not None):
+            if self._jwt['tenant_id'] != value:
+                raise AccessDeniedError("Token already scoped in 'tenant'")
+
+        self._jwt['tenant_id'] = value
 
     @property
     def domain(self):
-        return self._credentials.get('domain', None)
+        if self._jwt:
+            self.validate()
+            return self._jwt.get('domain', None)
 
     @domain.setter
     def domain(self, value):
+        self._token = None
         self.validate()
 
-        if ('domain' in self._credentials and
-                self._credentials['domain'] is not None):
-            if self._credentials['domain'] != value:
+        if ('domain' in self._jwt and
+                self._jwt['domain'] is not None):
+            if self._jwt['domain'] != value:
                 raise AccessDeniedError("Token already scoped in 'domain'")
 
-        self._credentials['domain'] = value
+        self._jwt['domain'] = value
 
-    def validate(self):
-        """Vaidate current token."""
-        if not self.authenticated:
-            raise TokenMissingError() from None
-        elif 'expire' in self._credentials:
-            utc_expire = to_utc(self._credentials['expire'])
-            if now() > utc_expire:
-                self.clear()
-                raise TokenExpiredError() from None
+    def __repr__(self):
+        return repr(self._jwt)
 
-    def __setattr__(self, attr, value):
-        if attr in self.__slots__:
-            return object.__setattr__(self, attr, value)
-        try:
-            return object.__setattr__(self, attr, value)
-        except AttributeError:
-            self.validate()
-            if (attr in self._credentials and
-                    self._credentials[attr] is not None):
-                raise AccessDeniedError("Token scope '%s'" % attr +
-                                        " not allowed") from None
-            self._credentials[attr] = value
-
-    def __getattr__(self, attr):
-        try:
-            return object.__getattribute__(self, attr)
-        except AttributeError:
-            try:
-                self.validate()
-                return self._credentials[attr]
-            except KeyError:
-                return None
+    def __str__(self):
+        return self.json

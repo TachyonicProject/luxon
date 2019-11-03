@@ -31,6 +31,21 @@ import re
 
 from luxon.utils.text import join
 from luxon.utils.cast import to_list
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+
+def sql(server, username, password, host, port, db, debug=False):
+    # Debug results in duplicate messages.
+    engine = create_engine('%s://%s' % (server, username,) +
+                           ':%s' % password +
+                           '@%s' % host +
+                           ':%s' % port +
+                           '/%s' % db,
+                           echo=debug,
+                           pool_pre_ping=True)
+    return sessionmaker(bind=engine)
+
 
 AS_FIELD = re.compile(r'^(?P<orig>.+) AS[ ]+(?P<field>[a-z0-9_]+)$',
                       re.IGNORECASE)

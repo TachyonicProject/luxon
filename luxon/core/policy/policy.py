@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Rademan <chris@fwiw.co.za>.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -71,7 +71,7 @@ class Policy(object):
         else:
             self._compiled, self._rule_set = rule_set
 
-    def validate(self, rule):
+    def validate(self, rule, access_denied_raise=False):
         """Validate Access to view.
 
         Args:
@@ -99,8 +99,12 @@ class Policy(object):
                 val = exec_globals['_validate_result']
             log.info('Rule %s validated to %s.' % (rule, val),
                      timer=elapsed())
-        except AccessDeniedError:
-            raise
+        except AccessDeniedError as e:
+            if access_denied_raise:
+                raise
+            else:
+                log.error("AccessDeniedError validating '%s' %s" %
+                          (rule, e,))
         except Exception as e:
             log.error("Failed validating '%s' %s:%s" %
                       (rule, e.__class__.__name__, e))

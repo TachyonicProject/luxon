@@ -27,20 +27,42 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
-from luxon import g
-from luxon.utils.encoding import if_bytes_to_unicode
+
+BYTES_AVAILABLE_UNITS = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB']
 
 
-class TrackToken(object):
-    def __init__(self, expire):
-        self._session_id = g.current_request.unscoped_token
+def bytes_metric(byte_amount):
+    for index, unit in enumerate(BYTES_AVAILABLE_UNITS):
+        lower_threshold = 0 if index == 0 else 1024 ** (index - 1)
+        upper_threshold = 1024 ** index
+        if lower_threshold <= byte_amount < upper_threshold:
+            if lower_threshold == 0:
+                val = str(round(byte_amount, 2))
+                return val + unit
+            else:
+                val = str(round(byte_amount / lower_threshold, 2))
+                return val + BYTES_AVAILABLE_UNITS[index - 1]
+    # Default to the maximum
+    max_index = len(BYTES_AVAILABLE_UNITS) - 1
+    val = str(round(byte_amount / (1024 ** max_index), 2))
+    return val + BYTES_AVAILABLE_UNITS[max_index]
 
-    def clear(self):
-        pass
 
-    def save(self):
-        pass
+AVAILABLE_UNITS = ['', 'K', 'M', 'B', 'T', 'Q']
 
-    def __str__(self):
-        return if_bytes_to_unicode(str(self._session_id),
-                                   'ISO-8859-1')
+
+def unit_metric(amount):
+    for index, unit in enumerate(AVAILABLE_UNITS):
+        lower_threshold = 0 if index == 0 else 1000 ** (index - 1)
+        upper_threshold = 1000 ** index
+        if lower_threshold <= amount < upper_threshold:
+            if lower_threshold == 0:
+                val = str(round(amount, 2))
+                return val + unit
+            else:
+                val = str(round(amount / lower_threshold, 2))
+                return val + AVAILABLE_UNITS[index - 1]
+    # Default to the maximum
+    max_index = len(AVAILABLE_UNITS) - 1
+    val = str(round(amount / (1000 ** max_index), 2))
+    return val + AVAILABLE_UNITS[max_index]

@@ -330,9 +330,9 @@ class MPLogger(object):
 
     def close(self):
         self._running = False
-        self._client.close()
-        self._server.close()
-        self._log_thread.join()
+        self._log_thread.terminate()
+        # self._client.close()
+        # self._server.close()
 
 
 class GetLogger(metaclass=NamedSingleton):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Christiaan Frans Rademan.
+# Copyright (c) 2018-2019 Christiaan Rademan <chris@fwiw.co.za>.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -299,10 +299,10 @@ class Request(RequestBase):
                        with session backend class specified in the settings.ini
                        file.
 
-        user_token (str): The value of the token for the user's current
+        unscoped_token (str): The value of the token for the user's current
                           request.
 
-        scope_token (str): The value of the scoped token for the user's current
+        scoped_token (str): The value of the scoped token for the user's current
                            scoped request.
 
         cookies (dict): A dict of name/value cookie pairs.
@@ -344,8 +344,8 @@ class Request(RequestBase):
         '_cached_none_match',
         '_cached_tjsl',
         '_cached_headers',
-        '_user_token',
-        '_scope_token',
+        '_unscoped_token',
+        '_scoped_token',
     )
 
     def __init__(self, env, start_response):
@@ -372,8 +372,8 @@ class Request(RequestBase):
         self.env = env
 
         # Caching
-        self._user_token = None
-        self._scope_token = None
+        self._unscoped_token = None
+        self._scoped_token = None
         self._cached_json = None
         self._cached_session = None
         self._cached_app_uri = None
@@ -660,7 +660,7 @@ class Request(RequestBase):
 
         # As per PEP-3333 use the host header first if present.
         try:
-            netloc_value = env['HTTP_HOST']
+            netloc_value = env['HTTP_HOST'].split(',')[0]
         except KeyError:
             netloc_value = env['SERVER_NAME']
 
@@ -936,30 +936,43 @@ class Request(RequestBase):
             return self._cached_tjsl
 
     @property
-    def user_token(self):
-        if self._user_token is not None:
-            return self._user_token
+    def unscoped_token(self):
+        if self._unscoped_token is not None:
+            return self._unscoped_token
 
         if self.get_header('X-Auth-Token'):
-            self._user_token = self.get_header('X-Auth-Token')
+            self._unscoped_token = self.get_header('X-Auth-Token')
+
         elif self.tjsl and 'token' in self.tjsl:
             return self.tjsl['token']
+
         elif self.host in self.cookies and 'token' in self.session:
             return self.session['token']
 
-        return self._user_token
+        elif 'unscoped_token' in self.cookies:
+            return self.cookies['unscoped_token']
 
-    @user_token.setter
-    def user_token(self, value):
-        self._user_token = value
+        return self._unscoped_token
 
-        self.session['token'] = value
-        self.session.save()
+    @unscoped_token.setter
+    def unscoped_token(self, value):
+        self._unscoped_token = value
+
+        if value:
+            self.response.set_cookie('unscoped_token',
+                                     value,
+                                     domain=self.host)
+        else:
+            self.response.unset_cookie('unscoped_token',
+                                       self.host)
+
+        # self.session['token'] = value
+        # self.session.save()
 
     @property
-    def scope_token(self):
-        if self._scope_token is not None:
-            return self._scope_token
+    def scoped_token(self):
+        if self._scoped_token is not None:
+            return self._scoped_token
 
         elif self.tjsl and 'scoped_token' in self.tjsl:
             return self.tjsl['scoped_token']
@@ -967,14 +980,24 @@ class Request(RequestBase):
         elif self.host in self.cookies and 'scoped' in self.session:
             return self.session['scoped']
 
-        return self._scope_token
+        elif 'scoped_token' in self.cookies:
+            return self.cookies['scoped_token']
 
-    @scope_token.setter
-    def scope_token(self, value):
-        self._scope_token = value
+        return self._scoped_token
 
-        self.session['scoped'] = value
-        self.session.save()
+    @scoped_token.setter
+    def scoped_token(self, value):
+        self._scoped_token = value
+
+        if value:
+            self.response.set_cookie('scoped_token',
+                                     value,
+                                     domain=self.host)
+        else:
+            self.response.unset_cookie('scoped_token',
+                                       self.host)
+        # self.session['scoped'] = value
+        # self.session.save()
 
     @property
     def proxy_context(self):

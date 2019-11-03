@@ -81,6 +81,11 @@ class Application(object):
             log.critical("%s" % trace)
             raise
 
+    def post_middleware(self, request, response, error):
+        # Process the middleware 'post' at the end
+        for middleware in reversed(register._middleware_post):
+            middleware(request, response, error)
+
     def __call__(self, *args, **kwargs):
         """Application Request Interface.
 
@@ -134,7 +139,8 @@ class Application(object):
 
                 # If route tagged validate with policy
                 if tag is not None:
-                    if not request.policy.validate(tag):
+                    if not request.policy.validate(tag,
+                                                   access_denied_raise=True):
                         raise AccessDeniedError("Access Denied by" +
                                                 " policy '%s'" % tag)
 
@@ -156,8 +162,7 @@ class Application(object):
                                             " Route '%s'" % request.route)
                 finally:
                     # Process the middleware 'post' at the end
-                    for middleware in register._middleware_post:
-                        middleware(request, response)
+                    self.post_middleware(request, response, False)
 
             # Cache GET Response.
             # Only cache for GET responses!
@@ -216,11 +221,13 @@ class Application(object):
         except HTTPError as exception:
             trace = str(traceback.format_exc())
             self.handle_error(request, response, exception, trace)
+            self.post_middleware(request, response, True)
             # Return response object.
             return response()
         except Error as exception:
             trace = str(traceback.format_exc())
             self.handle_error(request, response, exception, trace)
+            self.post_middleware(request, response, True)
             # Return response object.
             return response()
         except Exception as exception:
@@ -229,6 +236,7 @@ class Application(object):
                               response,
                               exception,
                               trace)
+            self.post_middleware(request, response, True)
             # Return response object.
             return response()
         finally:

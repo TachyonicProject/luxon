@@ -115,8 +115,7 @@ class Rmq(object):
             channel = self.channel()
             channel.queue_declare(queue=queue, durable=True)
             channel.basic_qos(prefetch_count=prefetch)
-            channel.basic_consume(callback_wrapper,
-                                  queue=queue)
+            channel.basic_consume(queue, callback_wrapper)
             try:
                 channel.start_consuming()
             except KeyboardInterrupt:

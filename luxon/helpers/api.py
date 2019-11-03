@@ -389,3 +389,32 @@ def obj(req, ModelClass, sql_id=None, hide=None):
         model.delete()
 
     return model
+
+
+def elastic(response):
+    hits = []
+    aggs = {}
+    for aggregation in response['aggregations']:
+        aggs[aggregation] = {}
+        aggs[aggregation]['title'] = aggregation.replace("_", " ").title()
+        aggs[aggregation]['labels'] = []
+        aggs[aggregation]['datasets'] = []
+        datasets = {}
+        for bucket in response['aggregations'][aggregation]['buckets']:
+            aggs[aggregation]['labels'].append(bucket['key'])
+            for metric in bucket:
+                if metric not in ['key']:
+                    try:
+                        value = bucket[metric]['value']
+                    except Exception:
+                        continue
+                    if metric not in datasets:
+                        datasets[metric] = []
+                    datasets[metric].append(value)
+                else:
+                    continue
+        for dataset in datasets:
+            aggs[aggregation]['datasets'].append({'label': dataset,
+                                                  'data': datasets[dataset]})
+
+    return {'hits': hits, 'aggregations': aggs}
