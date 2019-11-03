@@ -36,6 +36,7 @@ from luxon.core.logger import GetLogger
 log = GetLogger(__name__)
 
 _models = []
+_sa_models = []
 _middleware_pre = []
 _middleware_resource = []
 _middleware_post = []
@@ -74,9 +75,15 @@ class Register(object):
 
     def model(self, *args, **kwargs):
         def model_wrapper(cls):
-            cls._sql = True
-            _models.append(cls)
-            return cls
+            if hasattr(cls, '__table__'):
+                # SQLAlchmey Models.
+                _sa_models.append(cls)
+                return cls
+            else:
+                # Old Models.
+                cls._sql = True
+                _models.append(cls)
+                return cls
 
         return model_wrapper
 

@@ -42,13 +42,14 @@ class Cache(metaclass=Singleton):
     def __init__(self):
         max_objects = g.app.config.getint('cache',
                                           'max_objects',
-                                          fallback=None)
+                                          fallback=2048)
         max_object_size = g.app.config.getint('cache',
                                               'max_object_size',
                                               fallback=50)
         self._cached_backend = get_class(
             g.app.config.get('cache',
-                             'backend'))(
+                             'backend',
+                             fallback="luxon.core.cache:Memory"))(
                              max_objects,
                              max_object_size)
 
