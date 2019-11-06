@@ -31,9 +31,13 @@ import re
 
 from luxon.utils.text import join
 from luxon.utils.cast import to_list
+import pymssql
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+def mssql(username, password, host, db):
+    return pymssql.connect(host, username, password, db)
+    
 
 def sql(server, username, password, host, port, db, debug=False):
     # Debug results in duplicate messages.
