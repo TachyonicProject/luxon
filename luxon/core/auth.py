@@ -186,8 +186,11 @@ class Auth(object):
     @property
     def roles(self):
         if self._jwt:
-            self.validate()
-            return tuple(self._jwt.get('roles', []))
+            try:
+                self.validate()
+                return tuple(self._jwt.get('roles', []))
+            except AccessDeniedError:
+                pass
         return ()
 
     @roles.setter
@@ -229,43 +232,36 @@ class Auth(object):
     @property
     def username(self):
         if self._jwt:
-            self.validate()
             return self._jwt.get('username', None)
 
     @property
     def user_domain(self):
         if self._jwt:
-            self.validate()
             return self._jwt.get('user_domain', None)
 
     @property
     def user_region(self):
         if self._jwt:
-            self.validate()
             return self._jwt.get('user_region', None)
 
     @property
     def user_confederation(self):
         if self._jwt:
-            self.validate()
             return self._jwt.get('user_confederation', None)
 
     @property
     def default_tenant_id(self):
         if self._jwt:
-            self.validate()
             return self._jwt.get('default_tenant_id', None)
 
     @default_tenant_id.setter
     def default_tenant_id(self, value):
         if self._jwt:
-            self.validate()
             self._jwt['default_tenant_id'] = value
 
     @property
     def tenant_id(self):
         if self._jwt:
-            self.validate()
             return self._jwt.get('tenant_id', None)
 
     @tenant_id.setter
@@ -283,7 +279,6 @@ class Auth(object):
     @property
     def domain(self):
         if self._jwt:
-            self.validate()
             return self._jwt.get('domain', None)
 
     @domain.setter

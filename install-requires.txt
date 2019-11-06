@@ -30,6 +30,7 @@ docutils
 SQLAlchemy
 mysqlclient
 PyMySQL
+pymssql
 
 # Redis
 redis
