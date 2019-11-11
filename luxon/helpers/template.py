@@ -49,7 +49,12 @@ def render_template(template, *args, rst2html=False, **kwargs):
 
     """
     try:
-        app = g.current_request.app.strip('/').strip()
+        try:
+            app = g.current_request.app.strip('/').strip()
+        except AttributeError:
+            # If we are working outside of WSGI, then there is no URL
+            app = ''
+
         if app != '':
             app = '/' + app
 
@@ -57,11 +62,16 @@ def render_template(template, *args, rst2html=False, **kwargs):
             'APP': app,
             'SITE': app,
             'REQ': g.current_request,
-            'REQUEST_ID': g.current_request.id,
-            'STATIC': g.current_request.static,
             'CONTEXT': g.current_request.context,
             'policy': g.current_request.policy.validate
         }
+
+        try:
+            context['REQUEST_ID'] = g.current_request.id
+            context['REQUEST_ID'] = g.current_request.static
+        except NotImplementedError:
+            # CMD does not have request-id or static
+            pass
 
         if hasattr(g.current_request, 'policy'):
             context['POLICY'] = g.current_request.policy.validate
