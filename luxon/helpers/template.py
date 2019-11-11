@@ -68,7 +68,7 @@ def render_template(template, *args, rst2html=False, **kwargs):
 
         try:
             context['REQUEST_ID'] = g.current_request.id
-            context['REQUEST_ID'] = g.current_request.static
+            context['STATIC'] = g.current_request.static
         except NotImplementedError:
             # CMD does not have request-id or static
             pass
