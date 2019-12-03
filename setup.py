@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Christiaan Frans Rademan.
+# Copyright (c) 2018-2020 Christiaan Frans Rademan <chris@fwiw.co.za>.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@
 import os
 import sys
 import glob
-import platform
 from importlib.machinery import SourceFileLoader
 
 try:
@@ -43,47 +42,12 @@ except ImportError:
     print('`pip install setuptools`')
     exit()
 
-try:
-    from Cython.Build import cythonize
-except ImportError:
-    print('Requires `cython` to be installed')
-    print('`pip install cython`')
-    exit()
-
 # DEFINE ROOT PACKAGE NAME
 PACKAGE = 'luxon'
-
 
 ##############################################################################
 # DO NOT EDIT CODE BELOW THIS POINT ##########################################
 ##############################################################################
-
-if platform.system() == "Linux":
-    includes = []
-    libraries = ['rt']
-elif platform.system() == "Darwin":
-    # APPLE
-    includes = []
-    libraries = []
-else:
-    print("Supported `Linux` or 'MacOS X / Darwin' only")
-    exit()
-
-extensions = [
-    Extension("luxon.structs.ipc",
-              sources=["luxon/structs/ipc.pyx"],
-              include_dirs=['/opt/local/include'] + includes,
-              libraries=['pthread'] + libraries,
-              language='c++',
-              extra_compile_args=['-std=gnu++17'],),
-    Extension("luxon.structs.lru",
-              sources=["luxon/structs/lru.pyx"],
-              include_dirs=['/opt/local/include'] + includes,
-              libraries=['pthread'] + libraries,
-              language='c++',
-              extra_compile_args=['-std=gnu++17'],),
-]
-
 
 cmdclass = {}
 MYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -108,48 +72,6 @@ def requirements(path):
             dependency = req.read().splitlines()
 
     return dependency
-
-
-def list_modules(path, ext='py'):
-    filenames = glob.glob(os.path.join(path, '*.%s' % ext))
-
-    module_names = []
-    for name in filenames:
-        module, ext = os.path.splitext(os.path.basename(name))
-        if module != '__init__':
-            module_names.append(module)
-
-    return module_names
-
-
-def list_packages(package):
-    path = os.path.join(MYDIR, package)
-    packages = []
-
-    scan_dir = os.path.join(path)
-    top_dir = "/" + "/".join(scan_dir.strip('/').split('/')[:-1])
-
-    for directory, directories, files in os.walk(scan_dir):
-        if '__init__.py' in files:
-            packages.append((os.path.relpath(directory,
-                                             top_dir).replace('/', '.')))
-
-    return packages
-
-
-cython_packages = [
-    'luxon.core.networking',
-    'luxon.utils',
-]
-
-extensions += [
-    Extension(
-        package + '.' + module,
-        [os.path.join(*(package.split('.') + [module + '.py']))]
-    )
-    for package in cython_packages
-    for module in list_modules(os.path.join(MYDIR, *package.split('.')))
-]
 
 
 def read(filename):
@@ -233,9 +155,6 @@ setup_dict = dict(
         ],
     },
     python_requires='>=3.6',
-    ext_modules=cythonize(extensions,
-                          compiler_directives={'language_level': 3}),
-
 )
 
 
