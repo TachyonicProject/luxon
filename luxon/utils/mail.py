@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018-2019 Christiaan Frans Rademan.
+# Copyright (c) 2018-2020 Christiaan Frans Rademan <chris@fwiw.co.za>.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -378,9 +378,10 @@ class SMTPClient(object):
             log.info("Sent email From: '%s' To: '%s' Subject: %s"
                      % (msg['From'], msg['To'], msg['subject'],))
             return True
-        except smtplib.SMTPException:
+        except smtplib.SMTPException as err:
             log.critical("Failed sending email From: '%s' To: '%s' Subject: %s"
-                         % (msg['From'], msg['To'], msg['subject'],))
+                         % (msg['From'], msg['To'], msg['subject'],) + 
+                         str(err))
             return False
 
     def __enter__(self):
