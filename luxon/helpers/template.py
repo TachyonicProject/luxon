@@ -30,6 +30,7 @@
 from docutils.core import publish_parts
 
 from luxon import g
+from luxon.utils.timezone import now
 from luxon.exceptions import NoContextError
 
 _cached_env = None
@@ -62,8 +63,10 @@ def render_template(template, *args, rst2html=False, **kwargs):
             'APP': app,
             'SITE': app,
             'REQ': g.current_request,
+            'CTX': g.current_request.context,
             'CONTEXT': g.current_request.context,
-            'policy': g.current_request.policy.validate
+            'policy': g.current_request.policy.validate,
+            'now': now,
         }
 
         try:
