@@ -33,7 +33,7 @@ import sys
 from importlib.machinery import SourceFileLoader
 
 try:
-    from setuptools import setup, Extension, find_packages
+    from setuptools import setup, find_packages
     from setuptools.command.test import test as TestCommand
 except ImportError:
     print('Requires `setuptools` to be installed')
