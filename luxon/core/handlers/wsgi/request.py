@@ -342,7 +342,7 @@ class Request(RequestBase):
         '_cached_cache_control',
         '_cached_match',
         '_cached_none_match',
-        '_cached_tjsl',
+        '_cached_jwt_cookie',
         '_cached_headers',
         '_unscoped_token',
         '_scoped_token',
@@ -398,7 +398,7 @@ class Request(RequestBase):
         self._cached_cache_control = None
         self._cached_match = None
         self._cached_none_match = None
-        self._cached_tjsl = None
+        self._cached_jwt_cookie = None
         self._cached_headers = None
 
     @property
@@ -923,17 +923,17 @@ class Request(RequestBase):
             raise HTTPInvalidHeader(header, msg)
 
     @property
-    def tjsl(self):
+    def jwt_cookie(self):
         if not self.is_ajax and not self.get_header('X-Auth-Token'):
-            if self._cached_tjsl is None:
-                if 'tachyonLogin' in self.cookies:
+            if self._cached_jwt_cookie is None:
+                if 'photonicLogin' in self.cookies:
                     try:
-                        self._cached_tjsl = js.loads(
-                            base64.b64decode(self.cookies['tachyonLogin']))
+                        self._cached_jwt_cookie = js.loads(
+                            base64.b64decode(self.cookies['photonicLogin']))
                     except Exception:
-                        log.error('TJSL Cookie corrupt: %s' %
-                                  self.cookies['tachyonLogin'])
-            return self._cached_tjsl
+                        log.error('JWT Cookie corrupt: %s' %
+                                  self.cookies['photomicLogin'])
+            return self._cached_jwt_cookie
 
     @property
     def unscoped_token(self):
@@ -943,8 +943,8 @@ class Request(RequestBase):
         if self.get_header('X-Auth-Token'):
             self._unscoped_token = self.get_header('X-Auth-Token')
 
-        elif self.tjsl and 'token' in self.tjsl:
-            return self.tjsl['token']
+        elif self.jwt_cookie and 'token' in self.jwt_cookie:
+            return self.jwt_cookie['token']
 
         elif self.host in self.cookies and 'token' in self.session:
             return self.session['token']
@@ -974,8 +974,8 @@ class Request(RequestBase):
         if self._scoped_token is not None:
             return self._scoped_token
 
-        elif self.tjsl and 'scoped_token' in self.tjsl:
-            return self.tjsl['scoped_token']
+        elif self.jwt_cookie and 'scoped_token' in self.jwt_cookie:
+            return self.jwt_cookie['scoped_token']
 
         elif self.host in self.cookies and 'scoped' in self.session:
             return self.session['scoped']
@@ -1023,15 +1023,17 @@ class Request(RequestBase):
         region = g.app.config.get('identity', 'region', fallback=None)
         if region:
             return region
-        else:
-            if self.get_header('X-Region'):
-                return self.get_header('X-Region')
 
-            elif self.tjsl and 'region' in self.tjsl:
-                return self.tjsl['region']
+        if self.get_header('X-Region'):
+            return self.get_header('X-Region')
 
-            elif self.host in self.cookies and 'region' in self.session:
-                return self.session.get('region')
+        if self.jwt_cookie and 'region' in self.jwt_cookie:
+            return self.jwt_cookie['region']
+
+        if self.host in self.cookies and 'region' in self.session:
+            return self.session.get('region')
+
+        return None
 
     @context_region.setter
     def context_region(self, region):
@@ -1043,15 +1045,15 @@ class Request(RequestBase):
         domain = g.app.config.get('identity', 'domain', fallback=None)
         if domain:
             return domain
-        else:
-            if self.get_header('X-Domain'):
-                return self.get_header('X-Domain')
-            elif self.tjsl and 'domain' in self.tjsl:
-                return self.tjsl['domain']
-            elif self.host in self.cookies and 'domain' in self.session:
-                return self.session.get('domain')
-            else:
-                return self.credentials.domain
+
+        if self.get_header('X-Domain'):
+            return self.get_header('X-Domain')
+        if self.jwt_cookie and 'domain' in self.jwt_cookie:
+            return self.jwt_cookie['domain']
+        if self.host in self.cookies and 'domain' in self.session:
+            return self.session.get('domain')
+
+        return self.credentials.domain
 
     @context_domain.setter
     def context_domain(self, domain):
@@ -1063,10 +1065,10 @@ class Request(RequestBase):
         if self.get_header('X-Tenant-Id'):
             return self.get_header('X-Tenant-Id')
 
-        elif self.tjsl and 'tenant_id' in self.tjsl:
-            return self.tjsl['tenant_id']
+        if self.jwt_cookie and 'tenant_id' in self.jwt_cookie:
+            return self.jwt_cookie['tenant_id']
 
-        elif self.host in self.cookies and 'tenant_id' in self.session:
+        if self.host in self.cookies and 'tenant_id' in self.session:
             return self.session.get('tenant_id')
 
         return g.app.config.get('identity', 'tenant_id',
