@@ -153,6 +153,24 @@ class HTMLDoc(object):
 
         return to_return
 
+    def get_text(self):
+        """Get Text output for current element and contents.
+
+        Returns Text.
+        """
+        to_return = ''
+
+        for content in self.contents:
+            if isinstance(content, HTMLDoc):
+                to_return += content.get_text()
+                if (content.element == 'br' or
+                        content.element == 'p'):
+                    to_return += '\n'
+            else:
+                to_return += str(content + ' ')
+
+        return to_return
+
     def parse_html(self, html):
         """Load HTMLDoc string into document object.
 

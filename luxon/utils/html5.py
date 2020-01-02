@@ -35,7 +35,7 @@ from luxon.utils.objects import orderdict
 from luxon.structs.htmldoc import HTMLDoc
 
 
-BR_P_HTML_TAG = re.compile('<(br|/p)>', re.IGNORECASE)
+BR_P_HTML_TAG = re.compile('<(br.*?|/p)>', re.IGNORECASE)
 
 
 def strip_tags(html):
