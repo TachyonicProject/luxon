@@ -28,18 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 # THE POSSIBILITY OF SUCH DAMAGE.
 from luxon import g
-from luxon.utils.sql import sql as sql_util
 from luxon.utils.sql import mssql as mssql_util
-
-def sql(config='database'):
-    kwargs = g.app.config.kwargs(config)
-    return sql_util(kwargs.get('type', 'mysql'),
-                    kwargs.get('username', 'None'),
-                    kwargs.get('password', 'None'),
-                    kwargs.get('host', 'localhost'),
-                    kwargs.get('port', '3306'),
-                    kwargs.get('database', 'tachyonic'))
-
 
 def mssql(config='mssql'):
     kwargs = g.app.config.kwargs(config)
