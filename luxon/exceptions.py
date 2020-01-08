@@ -183,7 +183,8 @@ class FieldError(ValidationError):
             msg += " '%s'" % (label,)
         else:
             msg += " '%s'" % (field.title().replace('_', ' '),)
-        msg += " %s" % description
+        if description:
+            msg += " %s" % description
         super().__init__(msg)
 
 
